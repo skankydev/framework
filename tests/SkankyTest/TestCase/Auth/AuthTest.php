@@ -26,7 +26,6 @@ class AuthTest extends TestCase
 
         // Le cache statique des keepers doit repartir de zéro entre chaque test.
         $ref = new \ReflectionProperty(Auth::class, 'keepers');
-        $ref->setAccessible(true);
         $ref->setValue(null, []);
     }
 
