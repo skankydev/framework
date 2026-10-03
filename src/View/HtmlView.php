@@ -87,20 +87,36 @@ class HtmlView {
 
 	/** Renders a view template in isolation and returns its output. */
 	protected function renderView(string $view, array $data): string {
-		$viewPath = $this->makePath($view);
-		extract($data);
-		ob_start();
-		require $viewPath;
-		return ob_get_clean();
+		return $this->renderFile($this->makePath($view), $data);
 	}
 
 	/** Renders a layout template in isolation and returns its output. */
 	protected function renderLayout(string $layout, array $data): string {
-		$layoutPath = $this->makePath($layout);
-		extract($data);
+		return $this->renderFile($this->makePath($layout), $data);
+	}
+
+	/**
+	 * Includes a template inside a closure so only `$this` and the extracted
+	 * `$data` are visible to it. Output buffers left open by the template (or by
+	 * an unfinished startBlock()) are closed if it throws.
+	 */
+	private function renderFile(string $file, array $data): string {
+		$level  = ob_get_level();
+		$blocks = count($this->blockStack);
 		ob_start();
-		require $layoutPath;
-		return ob_get_clean();
+		try {
+			(function (string $myFile, array $myData) {
+				extract($myData);
+				require $myFile;
+			})($file, $data);
+			return ob_get_clean();
+		} catch (\Throwable $e) {
+			while (ob_get_level() > $level) {
+				ob_end_clean();
+			}
+			array_splice($this->blockStack, $blocks);
+			throw $e;
+		}
 	}
 
 	/** Overrides the layout. Pass null to render without a layout. */
@@ -134,10 +150,7 @@ class HtmlView {
 			$option = array_merge($option, $part->data($option));
 		}
 
-		extract($option);
-		ob_start();
-		require $fileName;
-		return ob_get_clean();
+		return $this->renderFile($fileName, $option);
 	}
 
 	/**

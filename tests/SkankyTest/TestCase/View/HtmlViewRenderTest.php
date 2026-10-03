@@ -56,6 +56,24 @@ class HtmlViewRenderTest extends TestCase
         $this->assertStringContainsString('<h1>Bonjour</h1>', $output);
     }
 
+    public function testRenderClosesBuffersWhenTemplateThrows(): void
+    {
+        $level = ob_get_level();
+        $view  = new HtmlView('_test.throws');
+        $view->setLayout(null);
+
+        try {
+            $view->render();
+            $this->fail('The template exception should propagate.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('boom', $e->getMessage());
+        }
+
+        $this->assertSame($level, ob_get_level());
+        $stack = (new \ReflectionProperty(HtmlView::class, 'blockStack'))->getValue($view);
+        $this->assertSame([], $stack);
+    }
+
     public function testRenderEscapesVariables(): void
     {
         $view = new HtmlView('_test.index', ['title' => '<script>xss</script>']);
