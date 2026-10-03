@@ -1,0 +1,1 @@
+<span><?= e($msg) ?></span>
