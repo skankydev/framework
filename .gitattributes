@@ -1,0 +1,6 @@
+# Pas besoin de ça dans un projet qui installe le framework avec Composer
+/docs           export-ignore
+/tests          export-ignore
+/phpunit.xml    export-ignore
+/.gitattributes export-ignore
+/.gitignore     export-ignore

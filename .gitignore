@@ -1,0 +1,13 @@
+# Dépendances
+vendor/
+build/
+
+# Cache
+.phpunit.cache/
+
+# IDE & OS
+.claude
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+Desktop.ini
