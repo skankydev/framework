@@ -132,6 +132,22 @@ class FormFieldTest extends TestCase
 
     // ── render / makePath ────────────────────────────────────────────────────��
 
+    public function testRenderClosesBuffersWhenTemplateThrows(): void {
+        $field = new class('title') extends TextField {
+            protected string $viewHtml = 'fields.throws';
+        };
+        $level = ob_get_level();
+
+        try {
+            $field->render();
+            $this->fail('The template exception should propagate.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('boom', $e->getMessage());
+        }
+
+        $this->assertSame($level, ob_get_level());
+    }
+
     public function testRenderProducesHtml(): void {
         $field = new TextField('username', ['label' => 'Nom', 'value' => 'Simon']);
         $html  = $field->render();

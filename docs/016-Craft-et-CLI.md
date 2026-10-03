@@ -72,7 +72,7 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // menu numéroté
 
 Le dossier `Publishable/` du framework (`vendor/skankydev/framework/src/Publishable/`) contient les ressources génériques du framework qui ont une valeur par défaut, mais qu'un projet peut vouloir personnaliser : les vues d'erreur ([14](014-Gestion-des-Erreurs.md)), les templates du CrudMaker, quelques parts utilitaires (`table`, `paginator`, voir [10 View](010-View.md)), les templates des fields du `FormBuilder` ([12.1](012.1-Les-Fields.md)).
 
-Tant que tu n'y touches pas, tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. Le jour où tu veux personnaliser une de ces pièces, `php craft publish` la copie dans ton propre projet :
+Tant que tu n'y touches pas, presque tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. **Les parts (`table`, `paginator`) sont l'exception** : elles n'ont pas de clé de config, `part()` ne regarde que ton dossier de vues ([10 View](010-View.md)), donc il faut les publier pour qu'elles marchent (le starter les contient déjà). Le jour où tu veux personnaliser une de ces pièces, ou pour récupérer les parts, `php craft publish` la copie dans ton propre projet :
 
 ```bash
 php craft publish -p=error      # une ressource précise

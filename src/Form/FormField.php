@@ -89,14 +89,31 @@ abstract class FormField {
 		if(isset($this->labelAttr['class'])){
 			$this->labelAttr['class'] .= ' '.$this->required();
 		}
-		$path = $this->makePath($this->viewHtml);
-		$data = get_object_vars($this);
-		extract($data);
-		ob_start();
-		require $path;
-		return ob_get_clean();
+		return $this->renderFile($this->makePath($this->viewHtml), get_object_vars($this));
 	}
-	
+
+	/**
+	 * Includes a template inside a closure so only `$this` and the extracted
+	 * `$data` are visible to it. Output buffers left open by the template are
+	 * closed if it throws.
+	 */
+	private function renderFile(string $file, array $data): string {
+		$level = ob_get_level();
+		ob_start();
+		try {
+			(function (string $myFile, array $myData) {
+				extract($myData);
+				require $myFile;
+			})($file, $data);
+			return ob_get_clean();
+		} catch (\Throwable $e) {
+			while (ob_get_level() > $level) {
+				ob_end_clean();
+			}
+			throw $e;
+		}
+	}
+
 	public function setValue(mixed $value): self {
 		$this->value = $value;
 		return $this;

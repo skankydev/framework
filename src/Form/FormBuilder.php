@@ -203,9 +203,6 @@ abstract class FormBuilder {
 	 * sans bricoler du HTML brut dans le label.
 	 */
 	protected function renderSubmit(): string {
-		$label = $this->submitLabel;
-		$attributes = $this->submitAttributes;
-
 		// Publishable d'abord (défaut framework), sinon view.folder classique
 		// (permet à un projet de déposer son propre fields/submit.php sans
 		// toucher à la config) — même logique que FormField::makePath().
@@ -214,11 +211,34 @@ abstract class FormBuilder {
 			$path = Config::get('view.folder') . DS . 'fields' . DS . 'submit.php';
 		}
 
-		ob_start();
-		require $path;
-		return ob_get_clean();
+		return $this->renderFile($path, [
+			'label'      => $this->submitLabel,
+			'attributes' => $this->submitAttributes,
+		]);
 	}
-	
+
+	/**
+	 * Includes a template inside a closure so only `$this` and the extracted
+	 * `$data` are visible to it. Output buffers left open by the template are
+	 * closed if it throws.
+	 */
+	private function renderFile(string $file, array $data): string {
+		$level = ob_get_level();
+		ob_start();
+		try {
+			(function (string $myFile, array $myData) {
+				extract($myData);
+				require $myFile;
+			})($file, $data);
+			return ob_get_clean();
+		} catch (\Throwable $e) {
+			while (ob_get_level() > $level) {
+				ob_end_clean();
+			}
+			throw $e;
+		}
+	}
+
 	/**
 	 * Returns all registered field instances.
 	 */

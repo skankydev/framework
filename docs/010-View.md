@@ -101,7 +101,13 @@ Des bouts de vue réutilisables : un header, une pagination, un tableau généri
 
 Le nom suit la même dot-notation que `view()`, dans le même dossier de vues : `part.header` → `src_front/view/part/header.php`.
 
-Deux parts sont livrés par le framework (SkankyDev) : `part.table` (un tableau générique, piloté par `getDisplayField()` d'une Collection, voir [09 Model](009-Model.md)) et `part.paginator`. Les autres parts que tu verras dans le projet (`part.breadcrumb`, `part.header`...) sont côté `App`, pas fournis par défaut.
+Deux parts sont fournis par le framework (SkankyDev) : `part.table` (un tableau générique, piloté par `getDisplayField()` d'une Collection, voir [09 Model](009-Model.md)) et `part.paginator`. Mais attention : `part()` ne cherche que dans **ton** dossier de vues, donc ils ne marchent qu'une fois **publiés** dans ton projet (le starter les contient déjà). Si tu vois « the file … part/table.php does not exist » :
+
+```bash
+php craft publish -p=part
+```
+
+([16 Craft et CLI](016-Craft-et-CLI.md) détaille le Publishable.) Les autres parts que tu verras dans un projet (`part.breadcrumb`, `part.header`...) sont côté `App`, pas fournis par défaut.
 
 ### C'est encore plus cool, on peut lier des bouts de code
 
