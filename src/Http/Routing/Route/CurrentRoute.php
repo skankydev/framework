@@ -41,7 +41,7 @@ class CurrentRoute
 	 * @param string     $uri   the request URI
 	 * @param Route|null $route matched declared route, or null to fall back to convention parsing
 	 */
-	function __construct(string $uri, Route $route = null){
+	function __construct(string $uri, ?Route $route = null){
 		$this->uri = $uri;
 		if($route){
 			$this->initFromRoute($uri,$route);
