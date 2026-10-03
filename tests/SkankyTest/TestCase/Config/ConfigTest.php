@@ -119,6 +119,40 @@ class ConfigTest extends TestCase
         Config::$conf = $saved;
     }
 
+    /** Loads the "multi" fixture (two modules + a master config) through initConf(). */
+    private function loadMultiModuleConf(): void {
+        Config::$conf = null;
+        Config::initConf(dirname(__DIR__, 3) . DS . 'fixtures' . DS . 'multi');
+    }
+
+    public function testInitConfMergesTheConfigOfEveryModule(): void {
+        $this->loadMultiModuleConf();
+
+        $this->assertTrue(Config::get('only_alpha'));
+        $this->assertTrue(Config::get('only_beta'));
+        $this->assertTrue(Config::get('only_master'));
+    }
+
+    public function testInitConfLetsALaterModuleOverrideAnEarlierOne(): void {
+        $this->loadMultiModuleConf();
+
+        $this->assertSame('alpha', Config::get('shared.a')); // only Alpha sets it
+        $this->assertSame('beta', Config::get('shared.b'));  // Beta comes after Alpha
+    }
+
+    public function testInitConfLetsTheMasterConfigHaveTheLastWord(): void {
+        $this->loadMultiModuleConf();
+
+        $this->assertSame('master', Config::get('shared.c'));
+    }
+
+    public function testInitConfKeepsTheFrameworkDefaults(): void {
+        $this->loadMultiModuleConf();
+
+        // Not defined by the fixtures, so it must come from default.config.php
+        $this->assertSame('index', Config::getDefaultAction());
+    }
+
     public function testInitConfSkipsWhenAlreadyLoaded(): void {
         // Config is already set by bootstrap — initConf should be a no-op
         $before = Config::get('default.namespace');

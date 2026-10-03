@@ -79,17 +79,17 @@ class Config {
 				$basePath = APP_FOLDER;
 			}
 			$mConf = require $basePath.DS.'config'.DS.'master.config.php';
-			$tmpConf = [];
-			foreach ($mConf['Module'] as $key) {
-				if(!file_exists($basePath.DS.'src'.DS.$key.DS.'Config'.DS.'config.php') ){
+			$modulesConf = [];
+			foreach ($mConf['Module'] as $module) {
+				$file = $basePath.DS.'src'.DS.$module.DS.'Config'.DS.'config.php';
+				if(!file_exists($file)){
 					continue;
 				}
-				$tmpConf = require $basePath.DS.'src'.DS.$key.DS.'Config'.DS.'config.php';
-				$conf = array_replace_recursive($conf,$tmpConf);
+				$modulesConf = array_replace_recursive($modulesConf, require $file);
 			}
-			$conf = array_replace_recursive($tmpConf,$mConf);
 			$dConf = require SKANKY_FOLDER.DS.'Config'.DS.'default.config.php';
-			self::$conf = array_replace_recursive($dConf,$conf);
+			// Priority, lowest to highest: framework defaults < modules (in declared order) < project master config.
+			self::$conf = array_replace_recursive($dConf, $modulesConf, $mConf);
 		}
 		return self::$conf;
 	}

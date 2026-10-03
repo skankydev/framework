@@ -81,7 +81,45 @@ Le module intervient à trois endroits :
 - **Dans la config.** Le fichier `Config/config.php` de chaque module est fusionné avec le reste ([04 Config](004-Config.md)).
 - **Dans `php craft`.** Les commandes de chaque module sont découvertes toutes seules ([16](016-Craft-et-CLI.md)).
 
-<!-- À VÉRIFIER (Simon) : « la construction par module n'est pas encore tranchée ». Ce chapitre décrit ce que fait le code aujourd'hui (CurrentRoute, Config::initConf, CliApplication). Limite connue : le CrudMaker génère toujours dans le module App. -->
+### Créer un module
+
+Prenons un module `Admin`. Trois étapes :
+
+1. **Le déclarer** dans `config/master.config.php` :
+   ```php
+   'Module' => ['App', 'Admin'],
+   ```
+2. **Dire à Composer où il est**, dans `composer.json`, puis relancer l'autoload :
+   ```json
+   "autoload": {
+       "psr-4": {
+           "App\\": "src/App",
+           "Admin\\": "src/Admin"
+       }
+   }
+   ```
+   ```bash
+   composer dump-autoload
+   ```
+3. **Y mettre ce dont tu as besoin**, par exemple un controller :
+   ```php
+   namespace Admin\Controller;
+
+   use SkankyDev\Controller\MasterController;
+
+   class DashboardController extends MasterController {
+       public function index() {
+           return view('admin.dashboard.index');
+       }
+   }
+   ```
+
+Et c'est tout : `/admin/dashboard` appelle `Admin\Controller\DashboardController::index` (l'action par défaut, c'est `index`). Si tu ajoutes `src/Admin/Config/config.php`, il est fusionné avec la config, et une classe dans `src/Admin/Command/` apparaît toute seule dans `php craft`.
+
+Deux choses à savoir :
+
+- **Les vues ne sont pas rangées par module.** Elles restent toutes dans `src_front/view/` : `view('admin.dashboard.index')` ouvre `src_front/view/admin/dashboard/index.php`. C'est à toi de les ranger dans un sous-dossier au nom du module, comme ci-dessus.
+- **Le CrudMaker génère toujours dans `App`** ([16 Craft et CLI](016-Craft-et-CLI.md)). Pour un CRUD dans un autre module, déplace les fichiers générés (et change leur namespace).
 
 ## La suite
 
