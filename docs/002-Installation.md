@@ -1,10 +1,10 @@
 # 02 Installation
 
-On installe, on lance, et on a un CRUD qui tourne avant la fin du café. Promis, je l'ai testé (enfin, la partie CRUD).
+On installe, on lance, et on a un CRUD qui tourne avant la fin du café. Promis, je l'ai testé de bout en bout.
 
 ## Ce qu'il te faut
 
-- **PHP 8.4 ou plus**, avec l'extension `mongodb`.
+- **PHP 8.4 ou plus**, avec l'extension `mongodb`. Prends une version récente de l'extension (2.4.1 ou plus) : les plus anciennes empêchent Composer d'installer la version corrigée de la bibliothèque `mongodb/mongodb` (une faille de sécurité a été corrigée dans la 2.4.1). Pour vérifier ta version : `php --ri mongodb`.
 - **Composer**.
 - **Un MongoDB qui tourne** (en local, ça suffit largement).
 - **Node.js et npm**, pour compiler le CSS et le JS avec Vite.
@@ -20,8 +20,6 @@ cd mon-projet
 npm install
 npm run build
 ```
-
-<!-- À VÉRIFIER : cette commande ne marchera qu'une fois le framework (0.1.0) et le starter publiés sur Packagist. -->
 
 Le framework lui-même (`skankydev/framework`) arrive tout seul dans `vendor/`, comme n'importe quelle dépendance. Tu ne le vois pas dans ton projet, et c'est fait exprès : ton dossier ne contient que *ton* code. Pour le mettre à jour plus tard :
 

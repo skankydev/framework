@@ -69,6 +69,6 @@ Il y a aussi `Config::getCurrentNamespace()` et `Config::setCurrentNamespace()`.
 
 ## Sous le capot
 
-Un détail piégeux si tu relis `initConf()` : la variable `$conf` n'est jamais initialisée explicitement avant la boucle qui fusionne les modules, et pourtant ça marche. C'est parce que `master.config.php` fait lui-même `$conf = [...]; return $conf;`, et qu'un `require` fait à l'intérieur d'une méthode partage le scope de cette méthode : la variable `$conf` du fichier devient donc une variable locale de `initConf()`. Pratique, mais pas évident à la lecture si on ne le sait pas.
+`Config::initConf()` fait la fusion avec `array_replace_recursive`, dans cet ordre : les défauts du framework, puis la config de chaque module (dans l'ordre de la liste `Module`, donc un module déclaré plus tard écrase un module déclaré avant), puis `master.config.php`.
 
-<!-- À VÉRIFIER : dans initConf(), après la boucle, `$conf = array_replace_recursive($tmpConf, $mConf)` repart du seul dernier module chargé ($tmpConf) et écrase donc la fusion faite dans la boucle. Avec un seul module (App) ça marche ; avec plusieurs modules, les configs des premiers semblent perdues. -->
+Ton `master.config.php` n'a besoin de rien de spécial : il retourne simplement son tableau (`return [...]`, ou `$conf = [...]; return $conf;`, les deux marchent). Un module sans fichier `Config/config.php` est simplement ignoré.

@@ -33,7 +33,6 @@ class AuthMiddlewareTest extends TestCase
         Config::set('class.gates.fixture-check', FixtureCheckGate::class);
 
         $ref = new \ReflectionProperty(Auth::class, 'keepers');
-        $ref->setAccessible(true);
         $ref->setValue(null, []);
     }
 
@@ -56,7 +55,6 @@ class AuthMiddlewareTest extends TestCase
 
     private function headerOf(Response $response, string $name): ?string {
         $ref = new \ReflectionProperty($response, 'headers');
-        $ref->setAccessible(true);
         return $ref->getValue($response)[$name] ?? null;
     }
 

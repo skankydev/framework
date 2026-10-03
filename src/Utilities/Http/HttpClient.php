@@ -105,7 +105,6 @@ class HttpClient {
 		$body = curl_exec($ch);
 		$error = curl_error($ch);
 		$status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-		curl_close($ch);
 
 		if ($body === false) {
 			return new HttpResult(0, '', [], $error !== '' ? $error : 'Requête HTTP échouée');
