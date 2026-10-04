@@ -14,6 +14,8 @@
 namespace SkankyDev\Form;
 
 use SkankyDev\Config\Config;
+use SkankyDev\Form\Fields\FileField;
+use SkankyDev\Http\Request;
 use SkankyDev\Http\UrlBuilder;
 use SkankyDev\Utilities\Traits\HtmlHelper;
 use SkankyDev\Utilities\Traits\StringFacility;
@@ -165,8 +167,14 @@ abstract class FormBuilder {
 			$this->build();
 		}
 
+		$attributes = $this->attributes;
+		// without multipart the browser silently sends no file at all
+		if (!isset($attributes['enctype']) && $this->hasFileField()) {
+			$attributes['enctype'] = 'multipart/form-data';
+		}
+
 		$html = '<form action="' . $this->action . '" method="' . $this->method . '" ';
-		$html .= $this->createAttr($this->attributes);
+		$html .= $this->createAttr($attributes);
 		$html .= '>';
 		
 		// Ajouter le CSRF token si méthode POST
@@ -239,6 +247,19 @@ abstract class FormBuilder {
 		}
 	}
 
+	/** True when at least one field is a FileField (or a subclass). */
+	public function hasFileField(): bool {
+		if (empty($this->fields)) {
+			$this->build();
+		}
+		foreach ($this->fields as $field) {
+			if ($field instanceof FileField) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Returns all registered field instances.
 	 */
@@ -266,13 +287,22 @@ abstract class FormBuilder {
 	 * N'appelle pas setData($data) : les données du form restent celles posées
 	 * explicitement (ex: setData($user) en édition) — l'input soumis part de
 	 * toute façon en session via withInput() en cas d'échec, pas depuis ce $form.
+	 * Uploaded files are not part of Request::input(): for every file field missing
+	 * from $data, the UploadedFile is taken from Request::file() so rules like
+	 * `image` or `max_size` see it — and $data stays file-free for withInput().
 	 * @param array $data raw input data (typically from Request::input())
 	 */
 	public function validate(array $data): bool {
 		if(empty($this->fields)){
 			$this->build();
 		}
-		
+
+		foreach ($this->fields as $name => $field) {
+			if ($field instanceof FileField && !array_key_exists($name, $data)) {
+				$data[$name] = Request::getInstance()->file($name);
+			}
+		}
+
 		// Récupérer les règles depuis les champs
 		$rules = [];
 		foreach ($this->fields as $name => $field) {

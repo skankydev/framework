@@ -21,7 +21,7 @@ class Request {
 
 	protected array $query;      // $_GET
 	protected array $post;       // $_POST
-	protected array $files;      // $_FILES (ton joli tableau)
+	protected array $files;      // $_FILES → UploadedFile (or list of UploadedFile)
 	protected array $cookies;    // $_COOKIE
 	protected array $server;     // $_SERVER
 	protected array $headers;    // Headers HTTP
@@ -102,7 +102,12 @@ class Request {
 			?? $default;
 	}
 
-	/** Returns a normalized uploaded file array by key, or all files if key is null. */
+	/**
+	 * Returns the uploaded file of a field (UploadedFile, or a list of UploadedFile for
+	 * a `name="x[]"` field), null when the field is absent or was left empty.
+	 * Returns every file field when key is null.
+	 * @return UploadedFile|UploadedFile[]|array|null
+	 */
 	public function file(?string $key = null): mixed {
 		if ($key === null) {
 			return $this->files;
@@ -207,22 +212,30 @@ class Request {
 	}
 
 	/**
-	 * Normalizes $_FILES so that multi-file fields are indexed as array of files
-	 * rather than PHP's default structure of arrays of properties.
+	 * Turns $_FILES into UploadedFile objects. A multiple field (`name="x[]"`) gives a
+	 * list of UploadedFile instead of PHP's default arrays of properties.
+	 * Inputs left empty (UPLOAD_ERR_NO_FILE) are dropped, so file('x') is then null.
 	 */
 	protected function normalizeFiles(): array {
 
 		$normalized = [];
 		foreach ($_FILES as $field => $files) {
-			$test = current($files);
-			if(is_array($test)){
-				foreach ($files as $index => $value) {
-					foreach ($value as $key => $v) {
-						$normalized[$field][$key][$index] = $v;
+			if(is_array($files['name'] ?? null)){
+				$list = [];
+				foreach (array_keys($files['name']) as $index) {
+					$file = UploadedFile::fromArray(array_map(fn($prop) => $prop[$index] ?? null, $files));
+					if ($file->isUploaded()) {
+						$list[$index] = $file;
 					}
 				}
+				if (!empty($list)) {
+					$normalized[$field] = $list;
+				}
 			}else{
-				$normalized[$field] = $files;
+				$file = UploadedFile::fromArray($files);
+				if ($file->isUploaded()) {
+					$normalized[$field] = $file;
+				}
 			}
 		}
 

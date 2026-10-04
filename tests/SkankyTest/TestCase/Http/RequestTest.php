@@ -226,6 +226,35 @@ class RequestTest extends TestCase
         $files = $req->file('docs');
         $this->assertIsArray($files);
         $this->assertCount(2, $files);
+        $this->assertContainsOnlyInstancesOf(\SkankyDev\Http\UploadedFile::class, $files);
+        $this->assertEquals('b.pdf', $files[1]->clientName());
+        $this->assertEquals(200, $files[1]->size());
+    }
+
+    public function testFileReturnsUploadedFile(): void {
+        $_FILES = [
+            'avatar' => ['name' => 'me.png', 'type' => 'image/png', 'tmp_name' => '/tmp/x', 'error' => 0, 'size' => 10],
+        ];
+        $file = $this->makeRequest()->file('avatar');
+        $this->assertInstanceOf(\SkankyDev\Http\UploadedFile::class, $file);
+        $this->assertEquals('me.png', $file->clientName());
+    }
+
+    public function testEmptyFileInputGivesNull(): void {
+        // champ fichier laissé vide : PHP envoie quand même une entrée UPLOAD_ERR_NO_FILE
+        $_FILES = [
+            'avatar' => ['name' => '', 'type' => '', 'tmp_name' => '', 'error' => UPLOAD_ERR_NO_FILE, 'size' => 0],
+            'docs'   => [
+                'name'     => ['', 'b.pdf'],
+                'type'     => ['', 'application/pdf'],
+                'tmp_name' => ['', '/tmp/b'],
+                'error'    => [UPLOAD_ERR_NO_FILE, 0],
+                'size'     => [0, 200],
+            ],
+        ];
+        $req = $this->makeRequest();
+        $this->assertNull($req->file('avatar'));
+        $this->assertCount(1, $req->file('docs'));
     }
 
     // ── post / query / input with no key ─────────────────────────────────────
