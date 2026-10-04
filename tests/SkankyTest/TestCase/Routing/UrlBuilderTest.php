@@ -116,6 +116,24 @@ class UrlBuilderTest extends TestCase
         $this->assertEquals('/login', $url);
     }
 
+    public function testCompletLinkOnDeclaredRouteInheritsShortController(): void {
+        // régression : sur une route déclarée en FQCN, un lien partiel héritait du FQCN
+        Router::_add('/admin', ['controller' => 'Admin\Controller\DashboardController', 'action' => 'index']);
+        Router::_findCurrentRoute('/admin');
+
+        $link = UrlBuilder::_completLink(['action' => 'stats']);
+        $this->assertEquals('Dashboard', $link['controller']);
+        $this->assertEquals('Admin', $link['namespace']);
+        $this->assertEquals('/admin/dashboard/stats', UrlBuilder::_build(['action' => 'stats']));
+    }
+
+    public function testConventionLinkMatchesRouteDeclaredWithFqcn(): void {
+        Router::_add('/admin', ['controller' => 'Admin\Controller\DashboardController', 'action' => 'index']);
+
+        $url = UrlBuilder::_build(['namespace' => 'Admin', 'controller' => 'Dashboard', 'action' => 'index']);
+        $this->assertEquals('/admin', $url);
+    }
+
     public function testBuildWithUnknownNameThrows(): void {
         $this->expectException(RouteNotFoundException::class);
         UrlBuilder::_build(['name' => 'unknown']);

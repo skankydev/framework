@@ -39,6 +39,8 @@ Et ainsi, `http://mondomaine.com/` dirigera l'application vers `HomeController::
 
 La méthode `Router::add` accepte trois paramètres : l'URI voulue, le tableau link, et les règles de validation regex.
 
+Le `controller` peut être donné en nom complet (`DashboardController::class`, le plus pratique) ou en nom court (`'Dashboard'`, résolu dans le `namespace` du link). Avec le nom complet, le module est déduit de la classe : `Admin\Controller\DashboardController` donne le namespace `Admin`, pas besoin de le préciser. Dans les deux cas, la route garde en interne le même format qu'un lien par convention (`'controller' => 'Dashboard'`). C'est ce qui permet à `$this->url(['action' => 'x'])` de marcher sur une page servie par une route déclarée, et à un lien `['namespace' => 'Admin', 'controller' => 'Dashboard']` de retomber sur `/admin`.
+
 Exemple avec une URL de récupération de mot de passe :
 
 ```php
