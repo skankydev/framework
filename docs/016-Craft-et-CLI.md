@@ -24,6 +24,8 @@ Une convention simple, sans dépendance à un parseur externe :
 - `-h` est un alias de `help` ;
 - une valeur sans clé est indexée numériquement.
 
+Une commande qui accepte une forme courte et une forme longue lit simplement les deux clés : `$arg['publish'] ?? $arg['p']`.
+
 ## Créer une commande
 
 Tu crées une classe dans le dossier `Command/` de ton module, qui étend `MasterCommand`, avec une signature et une aide :
@@ -63,7 +65,12 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // menu numéroté
 
 ## Les commandes livrées
 
-- **`crud-maker`** : génère, de manière interactive, un Document, sa Collection, son Controller, un Form et les 4 vues CRUD (index, create, edit, show) à partir de templates (voir le Publishable plus bas).
+- **`crud-maker`** : génère, de manière interactive, un Document, sa Collection, son Controller, un Form et les 4 vues CRUD (index, create, edit, show) à partir de templates (voir le Publishable plus bas). Avec `-m=<Module>` (ou `--module=<Module>`), tout est généré dans ce module : les classes dans `src/{Module}/` (namespace `{Module}\…`), les vues dans `view/{module}/{document}/`. Le module doit être déclaré dans la config `Module`. Sans l'option, c'est le module par défaut (`App`), avec les vues directement dans `view/{document}/`.
+  ```bash
+  php craft crud-maker Article            # App
+  php craft crud-maker Article -m=Admin   # Admin
+  ```
+  Si tu as publié les templates (`php craft publish -p=template`), ta copie doit utiliser `$module` et `$viewPath` à la place de `App` et de `$dashed` dans les noms de vues, sinon elle générera toujours dans `App`.
 - **`db-sync`** : synchronise les index Mongo déclarés (`getIndexes()` de chaque Collection, voir [09 Model](009-Model.md)).
 - **`queue-worker`** : lance le worker qui traite les jobs en attente (voir [17 La Queue et les Jobs](017-Queue-et-Jobs.md)).
 - **`publish`** : copie dans ton projet les ressources par défaut du framework (détaillé juste en dessous).

@@ -11,11 +11,11 @@
  *
  */
 
-namespace App\Controller;
+namespace <?= $module ?>\Controller;
 
-use App\Form\<?= $name ?>Form;
-use App\Model\Document\<?= $name ?>;
-use App\Model\<?= $name ?>Collection;
+use <?= $module ?>\Form\<?= $name ?>Form;
+use <?= $module ?>\Model\Document\<?= $name ?>;
+use <?= $module ?>\Model\<?= $name ?>Collection;
 use SkankyDev\Controller\MasterController;
 use SkankyDev\Http\Middleware\Attribute\Middleware;
 use SkankyDev\Http\Request;
@@ -32,7 +32,7 @@ class <?= $name ?>Controller extends MasterController {
 <?php else: ?>
 		$<?= $pluralCamel ?> = $collection->paginate([], Request::_paginateInfo());
 <?php endif; ?>
-		return view('<?= $dashed ?>.index', ['<?= $pluralCamel ?>' => $<?= $pluralCamel ?>]);
+		return view('<?= $viewPath ?>.index', ['<?= $pluralCamel ?>' => $<?= $pluralCamel ?>]);
 	}
 
 	/**
@@ -40,7 +40,7 @@ class <?= $name ?>Controller extends MasterController {
 	 */
 	public function create(){
 		$form = new <?= $name ?>Form(['action' => 'store']);
-		return view('<?= $dashed ?>.create', ['form' => $form]);
+		return view('<?= $viewPath ?>.create', ['form' => $form]);
 	}
 
 	/**
@@ -63,7 +63,7 @@ class <?= $name ?>Controller extends MasterController {
 	 * Affiche un <?= $singularCamel ?> (résolu par model binding depuis l'ID de l'URL).
 	 */
 	public function show(Request $request, <?= $name ?> $<?= $singularCamel ?>){
-		return view('<?= $dashed ?>.show', ['<?= $singularCamel ?>' => $<?= $singularCamel ?>]);
+		return view('<?= $viewPath ?>.show', ['<?= $singularCamel ?>' => $<?= $singularCamel ?>]);
 	}
 
 	/**
@@ -72,7 +72,7 @@ class <?= $name ?>Controller extends MasterController {
 	public function edit(<?= $name ?> $<?= $singularCamel ?>){
 		$form = new <?= $name ?>Form(['action' => 'update', 'params' => [$<?= $singularCamel ?>->_id]]);
 		$form->setData($<?= $singularCamel ?>);
-		return view('<?= $dashed ?>.edit', ['form' => $form, '<?= $singularCamel ?>' => $<?= $singularCamel ?>]);
+		return view('<?= $viewPath ?>.edit', ['form' => $form, '<?= $singularCamel ?>' => $<?= $singularCamel ?>]);
 	}
 
 	/**
