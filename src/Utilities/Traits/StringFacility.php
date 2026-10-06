@@ -160,4 +160,24 @@ trait StringFacility {
 		$string = str_replace(['-', '_'], ' ', $string);
 		return ucwords($string);
 	}
+
+	/**
+	 * 
+	 */
+	static function slugify(string $text): string {
+		if (class_exists(\Transliterator::class)) {
+			$text = \Transliterator::create('Any-Latin; Latin-ASCII')?->transliterate($text) ?? $text;
+		} else {
+			$text = strtr($text, [
+				'à'=>'a','á'=>'a','â'=>'a','ä'=>'a','ã'=>'a','å'=>'a','æ'=>'ae','ç'=>'c',
+				'è'=>'e','é'=>'e','ê'=>'e','ë'=>'e','ì'=>'i','í'=>'i','î'=>'i','ï'=>'i',
+				'ñ'=>'n','ò'=>'o','ó'=>'o','ô'=>'o','ö'=>'o','õ'=>'o','ø'=>'o','œ'=>'oe',
+				'ù'=>'u','ú'=>'u','û'=>'u','ü'=>'u','ý'=>'y','ÿ'=>'y','ß'=>'ss',
+				'À'=>'a','Â'=>'a','Ä'=>'a','Ç'=>'c','É'=>'e','È'=>'e','Ê'=>'e','Ë'=>'e',
+				'Î'=>'i','Ï'=>'i','Ô'=>'o','Ö'=>'o','Œ'=>'oe','Ù'=>'u','Û'=>'u','Ü'=>'u',
+			]);
+		}
+		$text = preg_replace('/[^a-z0-9]+/', '-', strtolower($text));
+		return trim($text, '-');
+	}
 }
