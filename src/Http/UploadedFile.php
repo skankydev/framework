@@ -44,14 +44,15 @@ class UploadedFile {
 		'application/zip'  => 'zip',
 	];
 
-	const ERROR_MESSAGES = [
-		UPLOAD_ERR_INI_SIZE   => 'Le fichier dépasse la taille maximale autorisée par le serveur',
-		UPLOAD_ERR_FORM_SIZE  => 'Le fichier dépasse la taille maximale autorisée par le formulaire',
-		UPLOAD_ERR_PARTIAL    => 'Le fichier n\'a été que partiellement envoyé',
-		UPLOAD_ERR_NO_FILE    => 'Aucun fichier envoyé',
-		UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant sur le serveur',
-		UPLOAD_ERR_CANT_WRITE => 'Impossible d\'écrire le fichier sur le disque',
-		UPLOAD_ERR_EXTENSION  => 'Envoi bloqué par une extension PHP',
+	/** Upload error code → translation key (domain `skankydev`, cf. Publishable/lang). */
+	const ERROR_KEYS = [
+		UPLOAD_ERR_INI_SIZE   => 'skankydev.upload.ini_size',
+		UPLOAD_ERR_FORM_SIZE  => 'skankydev.upload.form_size',
+		UPLOAD_ERR_PARTIAL    => 'skankydev.upload.partial',
+		UPLOAD_ERR_NO_FILE    => 'skankydev.upload.no_file',
+		UPLOAD_ERR_NO_TMP_DIR => 'skankydev.upload.no_tmp_dir',
+		UPLOAD_ERR_CANT_WRITE => 'skankydev.upload.cant_write',
+		UPLOAD_ERR_EXTENSION  => 'skankydev.upload.extension',
 	];
 
 	private ?string $mime = null;
@@ -101,9 +102,9 @@ class UploadedFile {
 	/** Human-readable message for the upload error, null when there is none. */
 	public function errorMessage(): ?string {
 		if ($this->error === UPLOAD_ERR_OK) {
-			return $this->isValid() ? null : 'Fichier envoyé invalide';
+			return $this->isValid() ? null : __('skankydev.upload.invalid');
 		}
-		return self::ERROR_MESSAGES[$this->error] ?? 'Erreur inconnue lors de l\'envoi';
+		return __(self::ERROR_KEYS[$this->error] ?? 'skankydev.upload.unknown');
 	}
 
 	/** File name as sent by the browser: display only, never use it as a path. */

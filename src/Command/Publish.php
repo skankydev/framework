@@ -19,7 +19,7 @@ use SkankyDev\Config\Config;
  * Publie les ressources par défaut du framework (Publishable/) dans le
  * projet, pour qu'il puisse les personnaliser : vues d'erreur, templates du
  * CrudMaker, parts utilitaires (table, paginator), templates des fields de
- * FormBuilder.
+ * FormBuilder, traductions du framework.
  *
  * N'écrit jamais dans config/master.config.php (trop risqué de le modifier
  * automatiquement) : affiche seulement le snippet à y vérifier/ajouter.
@@ -27,21 +27,22 @@ use SkankyDev\Config\Config;
 class Publish extends MasterCommand {
 
 	static protected string $signature = 'publish';
-	static protected string $help = 'Publie les ressources par défaut du framework (error, template, part, fields, all) dans le projet';
+	static protected string $help = 'Publie les ressources par défaut du framework (error, template, part, fields, lang, all) dans le projet';
 
-	private const RESOURCES = ['error', 'template', 'part', 'fields'];
+	private const RESOURCES = ['error', 'template', 'part', 'fields', 'lang'];
 
 	private const RESOURCE_HELP = [
 		'error'    => "Vues d'erreur (debug + production) de l'ExceptionHandler",
 		'template' => 'Templates du CrudMaker (Document, Collection, Controller, Form, vues)',
 		'part'     => 'Parts utilitaires réutilisables (paginator, table)',
 		'fields'   => "Templates des champs de FormBuilder (hors fields spécifiques à l'app, ex: icon, editorjs)",
+		'lang'     => 'Traductions du framework (domaine skankydev : validation, upload)',
 		'all'      => 'Publie les ressources ci-dessus d\'un coup',
 	];
 
 	/**
 	 * @param array $arg accepte `--publish=<ressource>` ou `-p=<ressource>` pour choisir
-	 *                   sans passer par le menu interactif (valeurs : error, template, part, all) ;
+	 *                   sans passer par le menu interactif (valeurs : error, template, part, fields, lang, all) ;
 	 *                   `-h` affiche l'aide (arrive sous la forme `['help' => true]`, cf. ArgParser)
 	 */
 	public function run(array $arg = []): void {
@@ -75,6 +76,7 @@ class Publish extends MasterCommand {
 				'template' => $this->publishTemplate(),
 				'part'     => $this->publishPart(),
 				'fields'   => $this->publishFields(),
+				'lang'     => $this->publishLang(),
 			};
 		}
 
@@ -150,6 +152,15 @@ class Publish extends MasterCommand {
 			"    'fields' => VIEW_FOLDER.DS.'fields',",
 			"],",
 		]);
+	}
+
+	private function publishLang(): void {
+		// Translator lit d'abord le skankydev.php du projet (i18n.path) et ne
+		// retombe sur Publishable que s'il est absent : rien à ajouter dans la config.
+		$this->copyDirectory(
+			PUBLISHABLE_FOLDER . DS . 'lang',
+			Config::get('i18n.path') ?? LANG_FOLDER
+		);
 	}
 
 	/**

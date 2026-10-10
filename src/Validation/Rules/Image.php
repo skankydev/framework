@@ -12,6 +12,6 @@ class Image extends File {
 	}
 
 	public function message(string $field): string {
-		return $this->error ?? "Le champ {$field} doit être une image";
+		return $this->error ?? __('skankydev.validation.image', ['field' => $field]);
 	}
 }

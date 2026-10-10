@@ -55,6 +55,6 @@ class Unique extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Ce champ {$field} est déjà utilisé";
+		return __('skankydev.validation.unique', ['field' => $field]);
 	}
 }

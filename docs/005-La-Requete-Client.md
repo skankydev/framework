@@ -65,7 +65,7 @@ if ($file && $file->isValid()) {
 
 Ce que l'objet sait te dire :
 
-- `isValid()` / `errorMessage()` : l'envoi a marché ? Sinon, pourquoi (fichier trop gros pour le serveur, envoi partiel…). Les codes `UPLOAD_ERR_*` de PHP sont traduits en français.
+- `isValid()` / `errorMessage()` : l'envoi a marché ? Sinon, pourquoi (fichier trop gros pour le serveur, envoi partiel…). Les codes `UPLOAD_ERR_*` de PHP sont traduits dans la langue courante (domaine `skankydev`, voir [21](021-I18n.md)).
 - `mimeType()` : le **vrai** type, lu dans le contenu du fichier (`finfo`), pas celui annoncé par le navigateur.
 - `extension()` : l'extension déduite de ce vrai type (`jpg`, `png`, `pdf`…, `bin` si inconnu).
 - `isImage()`, `dimensions()` : `[largeur, hauteur]` pour une image.

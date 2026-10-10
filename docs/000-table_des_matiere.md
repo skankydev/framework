@@ -28,6 +28,7 @@ Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se
 ## L'affichage
 
 - [10 View](010-View.md) : les vues, les layouts, les blocks et les Parts.
+- [21 L'internationalisation](021-I18n.md) : `__()`, les fichiers de langue, ICU, choisir la langue.
 
 ## Formulaires et sécurité
 

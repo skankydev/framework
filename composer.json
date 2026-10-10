@@ -27,6 +27,7 @@
     ],
     "require": {
         "php": ">=8.4",
+        "ext-intl": "*",
         "mongodb/mongodb": "^2.1",
         "phpmailer/phpmailer": "^7.1"
     },

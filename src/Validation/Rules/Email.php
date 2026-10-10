@@ -26,6 +26,6 @@ class Email extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Le champ {$field} doit être un email valide";
+		return __('skankydev.validation.email', ['field' => $field]);
 	}
 }

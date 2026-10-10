@@ -14,6 +14,6 @@ class MaxSize extends File {
 	}
 
 	public function message(string $field): string {
-		return $this->error ?? "Le fichier {$field} ne doit pas dépasser {$this->kilobytes} Ko";
+		return $this->error ?? __('skankydev.validation.max_size', ['field' => $field, 'kilobytes' => $this->kilobytes]);
 	}
 }

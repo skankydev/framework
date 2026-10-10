@@ -6,11 +6,14 @@ Tout passe par `php craft <signature> [options]`. C'est un seul fichier à la ra
 
 ```php
 require(__DIR__ . '/vendor/autoload.php');
+\SkankyDev\Core\Bootstrap::boot();
 require(__DIR__ . '/config/bootstrap.php');
 
 use SkankyDev\Cli\CliApplication;
 $app = new CliApplication($argv);
 ```
+
+Le même démarrage que `public/index.php` : `Bootstrap::boot()` pour le framework (le `.env`, la config, la timezone), puis `config/bootstrap.php` pour ton application.
 
 `CliApplication` initialise la config (comme côté web), lit les arguments, puis retrouve et exécute la commande demandée. `php craft` tout seul (ou `help`) affiche la liste des commandes disponibles avec leur description.
 
@@ -77,9 +80,9 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // menu numéroté
 
 ## Le pattern Publishable
 
-Le dossier `Publishable/` du framework (`vendor/skankydev/framework/src/Publishable/`) contient les ressources génériques du framework qui ont une valeur par défaut, mais qu'un projet peut vouloir personnaliser : les vues d'erreur ([14](014-Gestion-des-Erreurs.md)), les templates du CrudMaker, quelques parts utilitaires (`table`, `paginator`, voir [10 View](010-View.md)), les templates des fields du `FormBuilder` ([12.1](012.1-Les-Fields.md)).
+Le dossier `Publishable/` du framework (`vendor/skankydev/framework/src/Publishable/`) contient les ressources génériques du framework qui ont une valeur par défaut, mais qu'un projet peut vouloir personnaliser : les vues d'erreur ([14](014-Gestion-des-Erreurs.md)), les templates du CrudMaker, quelques parts utilitaires (`table`, `paginator`, voir [10 View](010-View.md)), les templates des fields du `FormBuilder` ([12.1](012.1-Les-Fields.md)), les traductions du framework ([21](021-I18n.md)).
 
-Tant que tu n'y touches pas, presque tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. **Les parts (`table`, `paginator`) sont l'exception** : elles n'ont pas de clé de config, `part()` ne regarde que ton dossier de vues ([10 View](010-View.md)), donc il faut les publier pour qu'elles marchent (le starter les contient déjà). Le jour où tu veux personnaliser une de ces pièces, ou pour récupérer les parts, `php craft publish` la copie dans ton propre projet :
+Tant que tu n'y touches pas, presque tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. **Les parts (`table`, `paginator`) sont l'exception** : elles n'ont pas de clé de config, `part()` ne regarde que ton dossier de vues ([10 View](010-View.md)), donc il faut les publier pour qu'elles marchent (le starter les contient déjà). Les traductions (`lang`) n'ont pas de clé non plus, mais pour la raison inverse : le `Translator` lit d'abord le `skankydev.php` de ton dossier de langues et retombe tout seul sur celui du framework, donc une fois publié, il n'y a rien à configurer. Le jour où tu veux personnaliser une de ces pièces, ou pour récupérer les parts, `php craft publish` la copie dans ton propre projet :
 
 ```bash
 php craft publish -p=error      # une ressource précise

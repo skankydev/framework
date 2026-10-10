@@ -29,7 +29,7 @@ class Min extends Rule {
 	}
 	
 	public function message(string $field): string {
-		return "Le champ {$field} doit être supérieur ou égal à {$this->min}";
+		return __('skankydev.validation.min', ['field' => $field, 'min' => $this->min]);
 	}
 	
 }

@@ -9,7 +9,7 @@ Avant de plonger dans les chapitres, un tour d'horizon : ce qui se passe quand u
 
 Quand quelqu'un ouvre une page de ton site, voilà ce qui se passe, dans l'ordre :
 
-1. `public/index.php` démarre l'autoload et `config/bootstrap.php` (qui charge le `.env`), puis lance `Application::run()`.
+1. `public/index.php` démarre l'autoload, puis `Bootstrap::boot()`, le démarrage du framework (le `.env`, la config, la timezone), puis `config/bootstrap.php`, celui de ton application (le choix de la langue, voir [21](021-I18n.md)). Enfin, il lance `Application::run()`.
 2. La config est assemblée ([04 Config](004-Config.md)) et le gestionnaire d'erreurs est mis en place ([14](014-Gestion-des-Erreurs.md)).
 3. La requête est lue dans un objet `Request` ([05](005-La-Requete-Client.md)).
 4. Le routeur cherche la route : d'abord celles que tu as déclarées dans `routes/routes.php`, sinon il retombe sur la convention `/module/controller/action/params` ([06 Le Routing](006-Le-Routing.md)).
@@ -25,7 +25,7 @@ Voilà ce que tu as dans un projet créé avec le starter ([02 Installation](002
 
 ```
 config/            la config de ton projet
-  bootstrap.php      charge le .env et règle la timezone
+  bootstrap.php      le démarrage propre à ton application (la langue...)
   master.config.php  ta config, elle a toujours le dernier mot
 public/            le seul dossier visible depuis le web
   index.php          le point d'entrée
@@ -38,6 +38,7 @@ src_front/           tout ce qui touche à l'affichage
   js/                le JavaScript
   scss/              le style
   view/              les templates PHP (vues, layouts, parts)
+  lang/              les traductions, un dossier par langue (voir 21 L'internationalisation)
 logs/              les logs, créés au besoin
 vendor/            les dépendances, dont le framework (skankydev/framework)
 .env.dist          le modèle de ton .env

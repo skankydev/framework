@@ -33,6 +33,7 @@ const UPLOAD_FOLDER = PUBLIC_FOLDER.DS.'upload';
 const VIEW_FOLDER = APP_FOLDER.DS.'src_front'.DS.'view';
 const SRC_FOLDER = APP_FOLDER.DS.'src';
 const TEMPLATE_FOLDER = APP_FOLDER.DS.'src_front'.DS.'template';
+const LANG_FOLDER = APP_FOLDER.DS.'src_front'.DS.'lang';
 
 // Dossier du framework SkankyDev lui-même (contrairement à APP_FOLDER, qui
 // pointe sur le projet applicatif). Sert de racine aux ressources par défaut

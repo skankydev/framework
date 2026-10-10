@@ -42,6 +42,15 @@ Config::set('paginator', ['limit' => 10, 'page' => 1, 'count' => 1, 'range' => 5
 
 Config::set('class.parts', []);
 
+// Pas de skankydev.php dans fixtures/lang : les messages du framework
+// viennent de Publishable/lang (repli du Translator), en français.
+Config::set('i18n', [
+    'locale'    => 'fr_FR',
+    'fallback'  => 'fr',
+    'available' => ['fr_FR'],
+    'path'      => __DIR__ . '/fixtures/lang',
+]);
+
 Config::set('upload', ['folder' => PUBLIC_FOLDER . DS . 'upload', 'url' => '/upload']);
 
 Config::set('class.fields', [
