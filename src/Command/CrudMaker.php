@@ -23,7 +23,7 @@ class CrudMaker extends MasterCommand
 	use StringFacility;
 	
 	static protected string $signature = 'crud-maker';
-	static protected string $help = 'Crée les differante class et fichier pour fair un crud complet';
+	static protected string $help = 'skankydev.cli.crud_maker.help';
 
 	private array $fields   = [];
 	private array $variable = [];
@@ -52,14 +52,14 @@ class CrudMaker extends MasterCommand
 
 
 		if(!isset($arg[0])){
-			$this->error('Usage: php craft crud-maker <DocumentName> [-m=<Module>]');
+			$this->error(__('skankydev.cli.crud_maker.usage'));
 			return;
 		}
 		$this->documentName = $arg[0];
 
 		$this->module = $this->toCap((string) ($arg['m'] ?? $arg['module'] ?? Config::getDefaultNamespace()));
 		if(!in_array($this->module, Config::getModuleList() ?? [], true)){
-			$this->error("Le module « {$this->module} » n'est pas déclaré dans la config 'Module'.");
+			$this->error(__('skankydev.cli.crud_maker.unknown_module', ['module' => $this->module]));
 			return;
 		}
 		$this->initVariables();
@@ -78,27 +78,27 @@ class CrudMaker extends MasterCommand
 	 * Loop ends when the user submits an empty field name.
 	 */
 	private function initFields(): void {
-		$this->warning('Configuration des champs de '.$this->documentName.' :');
+		$this->warning(__('skankydev.cli.crud_maker.fields_title', ['document' => $this->documentName]));
 		$this->text('');
 		
 		$types = ['string', 'int', 'float', 'bool', 'date', 'datetime', 'array', 'ObjectId'];
 		
 		while (true) {
-			$fieldName = $this->ask(vert('Nom du champ').' ('.rouge('vide pour terminer').')');
+			$fieldName = $this->ask(vert(__('skankydev.cli.crud_maker.field_name')).' ('.rouge(__('skankydev.cli.crud_maker.empty_to_end')).')');
 			
 			if (empty($fieldName)) {
 				break;
 			}
 
-			$choix = $this->choice($types,vert('Type du champ')." ? ");
+			$choix = $this->choice($types,vert(__('skankydev.cli.crud_maker.field_type'))." ? ");
 			if (!isset($types[$choix])) {
-				$this->error("Type invalide !");
+				$this->error(__('skankydev.cli.crud_maker.invalid_type'));
 				continue;
 			}
 
 			$fieldType = $types[$choix];
 
-			$required = $this->valide('Requis') === 'y';
+			$required = $this->valide(__('skankydev.cli.crud_maker.required')) === 'y';
 			
 			$this->fields[] = [
 				'name' => $fieldName,
@@ -106,12 +106,12 @@ class CrudMaker extends MasterCommand
 				'required' => $required
 			];
 			
-			$this->success("✓ Champ '$fieldName' ajouté");
+			$this->success(__('skankydev.cli.crud_maker.field_added', ['field' => $fieldName]));
 			$this->text('');
 		}
 		
 		if (empty($this->fields)) {
-			$this->error('Aucun champ configuré !');
+			$this->error(__('skankydev.cli.crud_maker.no_fields'));
 			//exit;
 		}
 	}
@@ -200,7 +200,7 @@ class CrudMaker extends MasterCommand
 	 * Iterates over all file types and triggers generation for each one.
 	 */
 	private function generateFiles(): void {
-		$this->warning('Génération des fichiers...');
+		$this->warning(__('skankydev.cli.crud_maker.generating'));
 		$this->text('');
 
 		// Document
@@ -222,7 +222,7 @@ class CrudMaker extends MasterCommand
 		$this->generateFromTemplate('view/show', 'view');
 
 		$this->text('');
-		$this->success('✓ CRUD généré avec succès !');
+		$this->success(__('skankydev.cli.crud_maker.success'));
 	}
 
 	/**
@@ -240,11 +240,11 @@ class CrudMaker extends MasterCommand
 		
 		// Vérifier si le fichier existe déjà
 		if (file_exists($destPath)) {
-			$this->warning('⚠ Le fichier '.$this->files[$template].' existe déjà !');
-			$confirm = $this->valide('Écraser le fichier');
+			$this->warning(__('skankydev.cli.crud_maker.file_exists', ['file' => $this->files[$template]]));
+			$confirm = $this->valide(__('skankydev.cli.crud_maker.overwrite'));
 			
 			if ($confirm !== 'y') {
-				$this->info('→ '.$this->files[$template].' ignoré');
+				$this->info(__('skankydev.cli.crud_maker.skipped', ['file' => $this->files[$template]]));
 				return;
 			}
 		}
@@ -268,6 +268,6 @@ class CrudMaker extends MasterCommand
 		// Écrire le fichier
 		file_put_contents($destPath, $content);
 
-		$this->success('✔️ '.$destPath.' généré');
+		$this->success(__('skankydev.cli.crud_maker.generated', ['file' => $destPath]));
 	}
 }

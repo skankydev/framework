@@ -74,7 +74,7 @@ abstract class FormBuilder {
 	 */
 	public function add(string $name, string $type, array $options = []): self {
 		if (!isset($this->fieldTypes[$type])) {
-			throw new \Exception("Type de champ inconnu : {$type}");
+			throw new \Exception("Unknown field type: {$type}");
 		}
 		
 		$fieldClass = $this->fieldTypes[$type];
@@ -198,7 +198,7 @@ abstract class FormBuilder {
 	 */
 	public function renderField(string $name): string {
 		if (!isset($this->fields[$name])) {
-			throw new \Exception("Champ introuvable : {$name}");
+			throw new \Exception("Field not found: {$name}");
 		}
 		
 		return $this->fields[$name]->render();

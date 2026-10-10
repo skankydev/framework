@@ -54,7 +54,7 @@ class Translator {
 
 	/** Locale courante, sinon `i18n.locale`. */
 	static function getLocale(): string {
-		return self::$locale ?? self::canonicalize(Config::get('i18n.locale') ?? 'fr_FR');
+		return self::$locale ?? self::canonicalize(Config::get('i18n.locale') ?? 'en_US');
 	}
 
 	/** Langue de la locale courante : `fr` pour `fr_CA`. */
@@ -80,7 +80,7 @@ class Translator {
 	static function get(string $key, array $args = []): string {
 		$pattern = self::find($key);
 		if ($pattern === null) {
-			self::report("Traduction manquante : {$key} (" . self::getLocale() . ')');
+			self::report("Missing translation: {$key} (" . self::getLocale() . ')');
 			return $key;
 		}
 		return self::format($key, $pattern, $args);
@@ -170,7 +170,7 @@ class Translator {
 			$message = false;
 		}
 		if ($message === false) {
-			self::report("Message ICU invalide : {$key} « {$pattern} »");
+			self::report("Invalid ICU message: {$key} \"{$pattern}\"");
 			return $key;
 		}
 		return $message;

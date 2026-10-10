@@ -69,7 +69,7 @@ class MailSender {
 			return $mailer->send();
 		} catch (PHPMailerException $e) {
 			$destinataires = implode(', ', $recipients);
-			throw new MailException("Envoi du mail à {$destinataires} échoué : {$e->getMessage()}", 500);
+			throw new MailException("Failed to send mail to {$destinataires}: {$e->getMessage()}", 500);
 		}
 	}
 }

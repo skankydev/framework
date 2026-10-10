@@ -27,18 +27,9 @@ use SkankyDev\Config\Config;
 class Publish extends MasterCommand {
 
 	static protected string $signature = 'publish';
-	static protected string $help = 'Publie les ressources par défaut du framework (error, template, part, fields, lang, all) dans le projet';
+	static protected string $help = 'skankydev.cli.publish.help';
 
 	private const RESOURCES = ['error', 'template', 'part', 'fields', 'lang'];
-
-	private const RESOURCE_HELP = [
-		'error'    => "Vues d'erreur (debug + production) de l'ExceptionHandler",
-		'template' => 'Templates du CrudMaker (Document, Collection, Controller, Form, vues)',
-		'part'     => 'Parts utilitaires réutilisables (paginator, table)',
-		'fields'   => "Templates des champs de FormBuilder (hors fields spécifiques à l'app, ex: icon, editorjs)",
-		'lang'     => 'Traductions du framework (domaine skankydev : validation, upload)',
-		'all'      => 'Publie les ressources ci-dessus d\'un coup',
-	];
 
 	/**
 	 * @param array $arg accepte `--publish=<ressource>` ou `-p=<ressource>` pour choisir
@@ -61,8 +52,8 @@ class Publish extends MasterCommand {
 
 		$all = [...self::RESOURCES, 'all'];
 		if (!in_array($choice, $all)) {
-			$this->error("Ressource inconnue : {$choice}");
-			$this->text('Disponibles : ' . implode(', ', $all));
+			$this->error(__('skankydev.cli.publish.unknown_resource', ['resource' => $choice]));
+			$this->text(__('skankydev.cli.publish.available', ['list' => implode(', ', $all)]));
 			return;
 		}
 
@@ -70,7 +61,7 @@ class Publish extends MasterCommand {
 
 		foreach ($resources as $resource) {
 			$this->line();
-			$this->warning('Publication : ' . $resource);
+			$this->warning(__('skankydev.cli.publish.publishing', ['resource' => $resource]));
 			match ($resource) {
 				'error'    => $this->publishError(),
 				'template' => $this->publishTemplate(),
@@ -81,7 +72,7 @@ class Publish extends MasterCommand {
 		}
 
 		$this->text('');
-		$this->success('✓ Terminé !');
+		$this->success(__('skankydev.cli.done'));
 	}
 
 	/**
@@ -91,15 +82,15 @@ class Publish extends MasterCommand {
 	 */
 	private function displayHelp(): void {
 		$this->text('');
-		echo '  ' . vert(str_pad(static::$signature, 20)) . str_pad(static::$help, 60) . "\n";
+		echo '  ' . vert(str_pad(static::$signature, 20)) . str_pad(static::getInfo()['help'], 60) . "\n";
 		$this->text('');
-		$this->warning('Ressources disponibles (-p=<ressource> ou --publish=<ressource>) :');
+		$this->warning(__('skankydev.cli.publish.resources_title'));
 		$this->text('');
-		foreach (self::RESOURCE_HELP as $name => $description) {
-			echo '    ' . cyan(str_pad($name, 12)) . $description . "\n";
+		foreach ([...self::RESOURCES, 'all'] as $name) {
+			echo '    ' . cyan(str_pad($name, 12)) . __('skankydev.cli.publish.resource.' . $name) . "\n";
 		}
 		$this->text('');
-		$this->text('Sans argument : menu interactif pour choisir la ressource.');
+		$this->text(__('skankydev.cli.publish.no_argument'));
 		$this->text('');
 	}
 
@@ -109,7 +100,7 @@ class Publish extends MasterCommand {
 	 */
 	private function promptChoice(): string {
 		$options = [...self::RESOURCES, 'all'];
-		$answer = $this->choice($options, vert('Que veux-tu publier'));
+		$answer = $this->choice($options, vert(__('skankydev.cli.publish.prompt')));
 		return strtolower(trim($options[$answer] ?? ''));
 	}
 
@@ -169,11 +160,11 @@ class Publish extends MasterCommand {
 	 */
 	private function copyDirectory(string $source, string $destination): void {
 		if (!is_dir($source)) {
-			$this->error("Source introuvable : {$source}");
+			$this->error(__('skankydev.cli.publish.source_not_found', ['path' => $source]));
 			return;
 		}
 		if (realpath($source) === realpath($destination)) {
-			$this->warning("→ {$destination} est déjà la source active, rien à publier");
+			$this->warning(__('skankydev.cli.publish.already_active', ['path' => $destination]));
 			return;
 		}
 		if (!is_dir($destination)) {
@@ -201,16 +192,16 @@ class Publish extends MasterCommand {
 	 */
 	private function copyFile(string $from, string $to): void {
 		if (!file_exists($from)) {
-			$this->error("Source introuvable : {$from}");
+			$this->error(__('skankydev.cli.publish.source_not_found', ['path' => $from]));
 			return;
 		}
 		if (realpath($from) === realpath($to)) {
 			return;
 		}
 		if (file_exists($to)) {
-			$confirm = $this->valide('⚠ ' . $to . ' existe déjà, écraser');
+			$confirm = $this->valide(__('skankydev.cli.publish.exists_overwrite', ['path' => $to]));
 			if ($confirm !== 'y') {
-				$this->warning('→ ' . $to . ' ignoré');
+				$this->warning(__('skankydev.cli.publish.skipped', ['path' => $to]));
 				return;
 			}
 		}
@@ -221,7 +212,7 @@ class Publish extends MasterCommand {
 		}
 
 		copy($from, $to);
-		$this->success('✔️ ' . $to . ' publié');
+		$this->success(__('skankydev.cli.publish.published', ['path' => $to]));
 	}
 
 	/**
@@ -231,7 +222,7 @@ class Publish extends MasterCommand {
 	 */
 	private function configHint(array $lines): void {
 		$this->text('');
-		$this->info('À ajouter dans config/master.config.php :');
+		$this->info(__('skankydev.cli.publish.config_hint'));
 		$this->text('');
 		foreach ($lines as $line) {
 			$this->text('    ' . cyan($line));

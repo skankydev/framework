@@ -162,20 +162,20 @@ class UploadedFile {
 	 */
 	public function store(string $subdir = '', ?string $name = null): StoredFile {
 		if (!$this->isValid()) {
-			throw new \RuntimeException($this->errorMessage() ?? 'Fichier envoyé invalide');
+			throw new \RuntimeException('Invalid uploaded file (upload error code ' . $this->error . ')');
 		}
 
 		$subdir = trim(str_replace('\\', '/', $subdir), '/');
 		if (in_array('..', explode('/', $subdir), true)) {
-			throw new \RuntimeException("Sous-dossier d'upload invalide : {$subdir}");
+			throw new \RuntimeException("Invalid upload subfolder: {$subdir}");
 		}
 		if ($name !== null && ($name === '' || preg_match('#[/\\\\]|\.\.#', $name))) {
-			throw new \RuntimeException("Nom de fichier invalide : {$name}");
+			throw new \RuntimeException("Invalid file name: {$name}");
 		}
 
 		$dir = rtrim(Config::get('upload.folder'), '/\\') . ($subdir !== '' ? DS . str_replace('/', DS, $subdir) : '');
 		if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-			throw new \RuntimeException("Impossible de créer le dossier {$dir}");
+			throw new \RuntimeException("Unable to create folder {$dir}");
 		}
 
 		// read everything that needs the temp file before moving it
@@ -186,7 +186,7 @@ class UploadedFile {
 
 		$moved = $this->test ? rename($this->tmpName, $target) : move_uploaded_file($this->tmpName, $target);
 		if (!$moved) {
-			throw new \RuntimeException("Impossible de déplacer le fichier vers {$target}");
+			throw new \RuntimeException("Unable to move the file to {$target}");
 		}
 
 		return new StoredFile([

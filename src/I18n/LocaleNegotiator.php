@@ -40,7 +40,7 @@ class LocaleNegotiator {
 	static function negotiate(?string $header = null, ?array $available = null, ?string $default = null): string {
 		$header    ??= $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
 		$available ??= Config::get('i18n.available') ?? [];
-		$default   ??= Config::get('i18n.locale') ?? 'fr_FR';
+		$default   ??= Config::get('i18n.locale') ?? 'en_US';
 
 		foreach (self::parse($header) as $requested) {
 			$sameLanguage = null;

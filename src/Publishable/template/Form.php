@@ -52,7 +52,7 @@ class <?= $name ?>Form extends FormBuilder {
 <?php foreach($fkFields as $field): ?>
 
 	/**
-	 * id (string) => name, pour le select du <?= $this->fkRelated($field['name']) ?> lié.
+	 * id (string) => name, for the related <?= $this->fkRelated($field['name']) ?> select.
 	 */
 	private function <?= $this->toCamel($field['name'],'_') ?>Options(): array {
 		$options = [];

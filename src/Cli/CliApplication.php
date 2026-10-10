@@ -50,7 +50,7 @@ class CliApplication {
 		$target = $this->findCommand($this->arg['command']);
 
 		if(!$target){
-			$this->error('Command Not Found');
+			$this->error(__('skankydev.cli.command_not_found', ['command' => $this->arg['command']]));
 			exit;
 		}
 		$arg = $this->arg;
@@ -118,13 +118,13 @@ class CliApplication {
 		$this->success("│                                                      │");
 		$this->success("╰──────────────────────────────────────────────────────╯");
 		$this->text("");
-		$this->text(bleu('SkankyDev').' version '.jaune(Config::get('skankydev.version')));
+		$this->text(__('skankydev.cli.version', ['name' => bleu('SkankyDev'), 'version' => jaune(Config::get('skankydev.version'))]));
 		$this->text("");
-		$this->warning("Usage:");
+		$this->warning(__('skankydev.cli.usage'));
 		$this->text("");
 		$this->text("\tcommand [options] [arguments]");
 		$this->text("");
-		$this->text(jaune('Available commands:'));
+		$this->text(jaune(__('skankydev.cli.available_commands')));
 		$this->text("");
 
 

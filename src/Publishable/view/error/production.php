@@ -1,2 +1,2 @@
-<h1>Une erreur est survenue</h1>
-<p>Désolé, une erreur s'est produite. Veuillez réessayer plus tard.</p>
+<h1>An error occurred</h1>
+<p>Sorry, something went wrong. Please try again later.</p>

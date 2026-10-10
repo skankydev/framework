@@ -12,7 +12,7 @@ class QueueWork extends MasterCommand {
 
 
 	static protected string $signature = 'queue-worker';
-	static protected string $help = 'La description';
+	static protected string $help = 'skankydev.cli.queue_worker.help';
 
 	/**
 	 * Starts the queue worker loop.
@@ -21,7 +21,7 @@ class QueueWork extends MasterCommand {
 	 * @param array $arg unused
 	 */
 	public function run(array $arg = []): void {
-		$this->info('🚀 Queue worker started');
+		$this->info(__('skankydev.cli.queue_worker.started'));
 
 		while (true) {
 			$jobInfo = Queue::next();

@@ -68,7 +68,7 @@ class MasterDocument implements JsonSerializable, Persistable {
 	public static function find(string $id): ?static {
 		$collectionClass = static::collectionName();
 		if (!class_exists($collectionClass)) {
-			throw new \Exception("Collection {$collectionClass} introuvable pour " . static::class,404);
+			throw new \Exception("Collection {$collectionClass} not found for " . static::class,404);
 		}
 		return $collectionClass::_findById($id);
 	}
