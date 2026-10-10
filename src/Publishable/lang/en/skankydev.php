@@ -109,5 +109,18 @@ return [
 			'help'    => 'Runs the queue worker (processes pending jobs, runs until killed)',
 			'started' => '🚀 Queue worker started',
 		],
+		'lang_sync' => [
+			'help'            => 'Syncs the language files with the translation keys used in the code (--dry-run, --prune, --check)',
+			'scanned'         => '🔍 {files, plural, one {# file} other {# files}} scanned, {keys, plural, one {# key} other {# keys}} found',
+			'dynamic_title'   => 'Keys built at runtime (cannot be checked):',
+			'conflict'        => '⚠ {key} is used both as a message and as a group of messages',
+			'untranslated'    => '… {key} (not translated)',
+			'unused'          => '? {key} (unused)',
+			'pruned'          => '- {key} (removed)',
+			'written'         => '✔️ {file} updated',
+			'nothing_written' => 'Nothing written (--dry-run / --check).',
+			'check_failed'    => '✗ {count, plural, one {# key is} other {# keys are}} missing or not translated',
+			'up_to_date'      => '✓ No missing key or translation',
+		],
 	],
 ];

@@ -109,5 +109,18 @@ return [
 			'help'    => 'Lance le worker de la queue (traite les jobs en attente, tourne jusqu’à être arrêté)',
 			'started' => '🚀 Worker de queue démarré',
 		],
+		'lang_sync' => [
+			'help'            => 'Met les fichiers de langue à jour avec les clés utilisées dans le code (--dry-run, --prune, --check)',
+			'scanned'         => '🔍 {files, plural, one {# fichier analysé} other {# fichiers analysés}}, {keys, plural, one {# clé trouvée} other {# clés trouvées}}',
+			'dynamic_title'   => 'Clés construites à l’exécution (impossible à vérifier) :',
+			'conflict'        => '⚠ {key} est utilisée à la fois comme message et comme groupe de messages',
+			'untranslated'    => '… {key} (pas traduite)',
+			'unused'          => '? {key} (inutilisée)',
+			'pruned'          => '- {key} (supprimée)',
+			'written'         => '✔️ {file} mis à jour',
+			'nothing_written' => 'Rien n’a été écrit (--dry-run / --check).',
+			'check_failed'    => '✗ {count, plural, one {# clé manquante ou pas traduite} other {# clés manquantes ou pas traduites}}',
+			'up_to_date'      => '✓ Aucune clé ni traduction manquante',
+		],
 	],
 ];
