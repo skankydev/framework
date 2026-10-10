@@ -84,4 +84,32 @@ class RouteTest extends TestCase
         $this->assertEquals('home', $route->getName());
         $this->assertEquals(['Auth'], $route->getMiddlewares());
     }
+
+    // ── Controller normalization (FQCN → short name) ──────────────────────────
+
+    public function testFqcnControllerIsShortenedAndNamespaceDerived(): void {
+        $route = new Route('/admin', ['controller' => 'Admin\Controller\DashboardController']);
+        $link  = $route->getLink();
+        $this->assertEquals('Dashboard', $link['controller']);
+        $this->assertEquals('Admin', $link['namespace']);
+        $this->assertEquals('Admin\Controller\DashboardController', $route->getControllerClass());
+    }
+
+    public function testFqcnSubFolderControllerKeepsItsFolder(): void {
+        $route = new Route('/login', ['controller' => 'App\Controller\Auth\LoginController', 'action' => 'login']);
+        $this->assertEquals('Auth\Login', $route->getLink()['controller']);
+        $this->assertEquals('App\Controller\Auth\LoginController', $route->getControllerClass());
+    }
+
+    public function testExplicitNamespaceWinsOverFqcn(): void {
+        $route = new Route('/', ['controller' => 'App\Controller\HomeController', 'namespace' => 'Admin']);
+        $this->assertEquals('Admin', $route->getLink()['namespace']);
+        $this->assertEquals('App\Controller\HomeController', $route->getControllerClass());
+    }
+
+    public function testShortControllerResolvesClassFromNamespace(): void {
+        $route = new Route('/', ['controller' => 'Post', 'namespace' => 'Admin']);
+        $this->assertEquals('Post', $route->getLink()['controller']);
+        $this->assertEquals('Admin\Controller\PostController', $route->getControllerClass());
+    }
 }

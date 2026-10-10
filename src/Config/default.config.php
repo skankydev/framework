@@ -71,6 +71,10 @@ return [
 			'unique'     => \SkankyDev\Validation\Rules\Unique::class,
 			'same'       => \SkankyDev\Validation\Rules\Same::class,
 			'hex_color'  => \SkankyDev\Validation\Rules\HexColor::class,
+			'file'       => \SkankyDev\Validation\Rules\File::class,
+			'image'      => \SkankyDev\Validation\Rules\Image::class,
+			'mimes'      => \SkankyDev\Validation\Rules\Mimes::class,
+			'max_size'   => \SkankyDev\Validation\Rules\MaxSize::class,
 		],
 		'parts' => [],
 	],
@@ -83,6 +87,11 @@ return [
 	],
 	'template' => [
 		'folder' => PUBLISHABLE_FOLDER.DS.'template',
+	],
+	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it
+	'upload' => [
+		'folder' => UPLOAD_FOLDER,
+		'url'    => '/upload',
 	],
 	'timeHelper'=> [
 		'format'=>'Y-m-d H:i:s',

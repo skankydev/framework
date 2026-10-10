@@ -55,7 +55,7 @@ class Publish extends MasterCommand {
 		$this->info('═══════════════════════════════════════');
 		$this->text('');
 
-		$choice = $arg['--publish'] ?? $arg['-p'] ?? null;
+		$choice = $arg['publish'] ?? $arg['p'] ?? null;
 		$choice = $choice ? strtolower(trim($choice)) : $this->promptChoice();
 
 		$all = [...self::RESOURCES, 'all'];

@@ -52,7 +52,53 @@ Sans clé, tu récupères le tableau complet : `$request->query()` te rend tout 
 
 Et si tu t'en fiches de savoir par où la valeur est arrivée, il y a `input($key, $default)` : il cherche dans le POST, puis le body JSON, puis le GET, dans cet ordre. Il y a même un raccourci magique, `$request->email` fait `input('email')` derrière.
 
-Pour les fichiers, tu n'as rien de spécial à faire, `$request->file('documents')` te rend directement un tableau de fichiers, chacun avec ses clés `name`, `type`, `tmp_name`... (le détail de pourquoi, en bas dans « Sous le capot »).
+## Les fichiers uploadés
+
+`$request->file('avatar')` te rend un objet `UploadedFile`, ou `null` si le champ n'existe pas ou a été laissé vide. Pour un champ multiple (`name="docs[]"`), tu récupères une liste d'`UploadedFile`.
+
+```php
+$file = $request->file('img');
+if ($file && $file->isValid()) {
+    $persona->img = $file->store('img');   // StoredFile, rangé dans {upload.folder}/img/
+}
+```
+
+Ce que l'objet sait te dire :
+
+- `isValid()` / `errorMessage()` : l'envoi a marché ? Sinon, pourquoi (fichier trop gros pour le serveur, envoi partiel…). Les codes `UPLOAD_ERR_*` de PHP sont traduits en français.
+- `mimeType()` : le **vrai** type, lu dans le contenu du fichier (`finfo`), pas celui annoncé par le navigateur.
+- `extension()` : l'extension déduite de ce vrai type (`jpg`, `png`, `pdf`…, `bin` si inconnu).
+- `isImage()`, `dimensions()` : `[largeur, hauteur]` pour une image.
+- `clientName()`, `clientExtension()`, `size()` : le nom d'origine et la taille, pour l'affichage.
+- `store($sousDossier = '', $nom = null)` : déplace le fichier dans un sous-dossier du dossier d'upload (créé au besoin) sous un nom aléatoire (ou `$nom`) + l'extension sûre, et te rend un `StoredFile`. Le sous-dossier est relatif (`'img'`, `'media/2026'`) : un `..` est refusé, impossible de sortir du dossier d'upload.
+
+Le dossier d'upload et son URL publique viennent de la config ([04](004-Config.md)), à surcharger dans `master.config.php` si besoin :
+
+```php
+'upload' => [
+    'folder' => UPLOAD_FOLDER,   // public/upload par défaut
+    'url'    => '/upload',       // ou 'https://cdn.mondomaine.com' le jour où tu passes sur un CDN
+],
+```
+
+Pourquoi tant de méfiance ? Parce que tout ce qui vient du navigateur se falsifie. Si on gardait l'extension du nom envoyé, un `photo.php` atterrirait dans le dossier d'upload (servi par le serveur web) et deviendrait exécutable : n'importe qui pourrait lancer du PHP sur ton serveur. Ici, l'extension vient du contenu, donc un script déguisé en image finit en `.bin` ou en `.txt`, jamais en `.php`. Le SVG est volontairement absent de la liste : il peut contenir du JavaScript.
+
+### StoredFile
+
+`StoredFile` est un `EmbeddedDocument` ([09.1](009.1-Persistable.md)) : tu le ranges tel quel dans un document, et Mongo te le rend typé à la relecture.
+
+```php
+class Persona extends MasterDocument {
+    public ?StoredFile $img = null;
+}
+
+// dans la vue
+<img src="<?= e($persona->img?->url()) ?>" alt="">
+```
+
+Il ne stocke que le chemin relatif au dossier d'upload (`img/3f2a….png`), le nom d'origine, le type, le poids, et les dimensions pour une image. L'URL n'est **jamais stockée** : `url()` la calcule avec `upload.url` + le chemin (`url(true)` pour l'avoir en absolu, avec le domaine de la requête). Pareil pour `fullPath()` (le chemin sur le disque), avec `upload.folder`. Tu changes de domaine, tu déplaces les fichiers ou tu passes sur un CDN : tu changes la config, rien à migrer en base. Il y a aussi `isImage()`, `extension()` et `delete()` pour supprimer le fichier.
+
+Pour valider un fichier (type, poids, image), il y a les règles `file`, `image`, `mimes:…` et `max_size:…` ([12.2](012.2-La-Validation.md)).
 
 ## La Session
 
@@ -94,7 +140,7 @@ Attention, une fois lu il est supprimé : affiche-le une seule fois par page.
 
 Pour les curieux, ce que tu n'as pas besoin de savoir pour t'en servir mais qui explique pourquoi ça marche comme ça :
 
-- **Les fichiers.** `$_FILES` a une structure ignoble dès qu'il y a un champ multiple (`name[]`) : PHP te donne un tableau de propriétés au lieu d'un tableau de fichiers. `Request` remet tout ça à l'endroit dans son constructeur, d'où le `file('documents')` qui te rend direct une liste de fichiers.
+- **Les fichiers.** `$_FILES` a une structure ignoble dès qu'il y a un champ multiple (`name[]`) : PHP te donne un tableau de propriétés au lieu d'un tableau de fichiers. `Request` remet tout ça à l'endroit dans son constructeur et transforme chaque fichier en `UploadedFile`, d'où le `file('documents')` qui te rend direct une liste. Un champ laissé vide arrive quand même dans `$_FILES` (avec l'erreur `UPLOAD_ERR_NO_FILE`) : il est écarté, c'est pour ça que `file()` te rend `null`.
 - **L'injection.** Si `Request` arrive toute seule dans tes actions, c'est le `MasterFactory` qui la résout (voir [08 Controller](008-Controller.md)). C'est un singleton, il prend le raccourci `getInstance()`.
 - **Le flash.** Tout repose sur `Session::getAndClean($path)` : il lit une valeur et la supprime dans la foulée. C'est ça qui fait qu'un flash ne survit qu'une requête.
 - **`Session::regenerate()`.** Elle change l'ID de session en gardant les données. À appeler à la connexion, pour pas garder un ID émis avant l'authentification (sinon, c'est la porte ouverte à la fixation de session).

@@ -82,8 +82,8 @@ class CurrentRoute
 		$this->middlewares = $route->getMiddlewares();
 		Config::setCurrentNamespace($this->link['namespace']);
 
-		// Route déclarée : 'controller' est déjà le FQCN complet du controller (ex: App\Controller\Auth\VerifyController).
-		$this->controller = $this->link['controller'];
+		// The link holds the short name (like a convention route), the Route keeps the FQCN to dispatch.
+		$this->controller = $route->getControllerClass();
 		$this->action = $this->link['action'];
 	}
 

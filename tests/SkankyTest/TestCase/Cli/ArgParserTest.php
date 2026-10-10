@@ -26,17 +26,30 @@ class ArgParserTest extends TestCase
     public function testLongOptionWithEquals(): void {
         $result = $this->parse(['migrate', '--env=production']);
         $this->assertEquals('migrate',    $result['command']);
-        $this->assertEquals('production', $result['--env']);
+        $this->assertEquals('production', $result['env']);
     }
 
     public function testLongOptionWithSpace(): void {
         $result = $this->parse(['migrate', '--env', 'production']);
-        $this->assertEquals('production', $result['--env']);
+        $this->assertEquals('production', $result['env']);
     }
 
     public function testFlagWithoutValueIsTrue(): void {
         $result = $this->parse(['--force']);
-        $this->assertTrue($result['--force']);
+        $this->assertTrue($result['force']);
+    }
+
+    public function testShortOptionDropsDash(): void {
+        $result = $this->parse(['crud-maker', 'Post', '-m=Admin']);
+        $this->assertEquals('Admin', $result['m']);
+        $this->assertEquals('Post', $result[0]);
+        $this->assertArrayNotHasKey('-m', $result);
+    }
+
+    public function testPositionalBeforeFlag(): void {
+        $result = $this->parse(['make-admin', 'simon@test.fr', '--remove']);
+        $this->assertEquals('simon@test.fr', $result[0]);
+        $this->assertTrue($result['remove']);
     }
 
     public function testShortHelpAlias(): void {
@@ -58,7 +71,7 @@ class ArgParserTest extends TestCase
     public function testMultipleOptions(): void {
         $result = $this->parse(['queue:work', '--tries=3', '--sleep=5']);
         $this->assertEquals('queue:work', $result['command']);
-        $this->assertEquals('3', $result['--tries']);
-        $this->assertEquals('5', $result['--sleep']);
+        $this->assertEquals('3', $result['tries']);
+        $this->assertEquals('5', $result['sleep']);
     }
 }

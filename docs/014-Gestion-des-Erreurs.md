@@ -34,7 +34,7 @@ throw new ModelNotFoundException("Document introuvable", 404);
 
 `Application::run()` traite à part les exceptions de la famille `NotFoundException` (méthode, controller ou donnée introuvable : voir [09 Model](009-Model.md) et [06 Le Routing](006-Le-Routing.md)). Ce n'est pas un plantage, c'est un résultat attendu.
 
-- **Code 404 et hors debug** : pas la page d'erreur générique, mais la vraie page 404 (`notFound()`, une vue normale avec layout, CSS et JS, voir [11 Les Réponses](011-Les-Reponses.md)). L'exception est quand même loggée.
+- **Code 404 et hors debug** : pas la page d'erreur générique, mais la vraie page 404 (`notFound()`, une vue normale avec layout, CSS et JS, voir [11 Les Réponses](011-Les-Reponses.md)). L'exception est quand même loggée. Cette page est la vue `error.404`, donc le fichier `src_front/view/error/404.php` **de ton projet** : le framework ne la fournit pas (le starter en contient une), et sans elle tu auras une erreur au lieu de ta 404.
 - **Sinon** (mode debug, ou une `NotFoundException` réutilisée avec un autre code que 404) : `handle()` classique, comme n'importe quelle exception.
 
 Cette dernière distinction compte : une `NotFoundException` avec un code différent de 404 reste une vraie erreur en prod, elle n'est pas maquillée en 404 silencieuse.

@@ -75,16 +75,24 @@ class UrlBuilderTest extends TestCase
         $this->assertEquals('/message/view/youpi-test', $url);
     }
 
-    public function testBuildFromDefaultConventionOmitsCurentNamespace(): void {
-        // /post/index (établi dans setUp) résout namespace 'App' comme curentNamespace
+    public function testBuildFromDefaultConventionOmitsDefaultNamespace(): void {
         $url = UrlBuilder::_createUrlFromDefault(['namespace' => 'App', 'controller' => 'Message', 'action' => 'view']);
         $this->assertEquals('/message/view', $url);
     }
 
-    public function testBuildFromDefaultConventionIncludesNonCurentNamespace(): void {
+    public function testBuildFromDefaultConventionOmitsDefaultNamespaceFromOtherModule(): void {
+        // depuis une page Admin, un lien vers App n'a pas besoin du préfixe
         Config::setCurrentNamespace('Admin');
         $url = UrlBuilder::_createUrlFromDefault(['namespace' => 'App', 'controller' => 'Message', 'action' => 'view']);
-        $this->assertEquals('/app/message/view', $url);
+        $this->assertEquals('/message/view', $url);
+    }
+
+    public function testBuildFromDefaultConventionKeepsCurrentNonDefaultNamespace(): void {
+        // régression : depuis une page Admin, un lien vers Admin doit garder /admin,
+        // sinon l'URI sans préfixe est résolue dans le namespace par défaut (App)
+        Config::setCurrentNamespace('Admin');
+        $url = UrlBuilder::_createUrlFromDefault(['namespace' => 'Admin', 'controller' => 'Post', 'action' => 'create']);
+        $this->assertEquals('/admin/post/create', $url);
     }
 
     public function testBuildOmitsDefaultAction(): void {
@@ -106,6 +114,24 @@ class UrlBuilderTest extends TestCase
 
         $url = UrlBuilder::_build(['name' => 'login']);
         $this->assertEquals('/login', $url);
+    }
+
+    public function testCompletLinkOnDeclaredRouteInheritsShortController(): void {
+        // régression : sur une route déclarée en FQCN, un lien partiel héritait du FQCN
+        Router::_add('/admin', ['controller' => 'Admin\Controller\DashboardController', 'action' => 'index']);
+        Router::_findCurrentRoute('/admin');
+
+        $link = UrlBuilder::_completLink(['action' => 'stats']);
+        $this->assertEquals('Dashboard', $link['controller']);
+        $this->assertEquals('Admin', $link['namespace']);
+        $this->assertEquals('/admin/dashboard/stats', UrlBuilder::_build(['action' => 'stats']));
+    }
+
+    public function testConventionLinkMatchesRouteDeclaredWithFqcn(): void {
+        Router::_add('/admin', ['controller' => 'Admin\Controller\DashboardController', 'action' => 'index']);
+
+        $url = UrlBuilder::_build(['namespace' => 'Admin', 'controller' => 'Dashboard', 'action' => 'index']);
+        $this->assertEquals('/admin', $url);
     }
 
     public function testBuildWithUnknownNameThrows(): void {

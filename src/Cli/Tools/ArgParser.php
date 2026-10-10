@@ -32,6 +32,7 @@ class ArgParser {
 	 * - `-h` → alias for `help`
 	 * - `--key=value` or `--key value` → `['key' => 'value']`
 	 * - `--flag` alone → `['flag' => true]`
+	 * - `-m=value` → `['m' => 'value']` (leading dashes are always stripped from keys)
 	 * - Positional value without key → numerically indexed
 	 *
 	 * @param  array $arg raw argv (including script name at index 0)
@@ -52,7 +53,8 @@ class ArgParser {
 		}
 		while(!empty($arg)){
 			$data = preg_split("/[ =]+/", $arg[0]);
-			$key = $asso[$data[0]] ?? $data[0];
+			// leading dashes are dropped: `--force` and `-m` give the keys `force` and `m`
+			$key = $asso[$data[0]] ?? ltrim($data[0], '-');
 			if(isset($data[1])){
 				$this->options[$key] = $data[1];
 				unset($arg[0]);

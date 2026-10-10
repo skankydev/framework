@@ -42,6 +42,8 @@ Config::set('paginator', ['limit' => 10, 'page' => 1, 'count' => 1, 'range' => 5
 
 Config::set('class.parts', []);
 
+Config::set('upload', ['folder' => PUBLIC_FOLDER . DS . 'upload', 'url' => '/upload']);
+
 Config::set('class.fields', [
     'text'     => \SkankyDev\Form\Fields\TextField::class,
     'textarea' => \SkankyDev\Form\Fields\TextareaField::class,
@@ -67,4 +69,8 @@ Config::set('class.rules', [
     'same'       => \SkankyDev\Validation\Rules\Same::class,
     'hex_color'  => \SkankyDev\Validation\Rules\HexColor::class,
     'unique'     => \SkankyDev\Validation\Rules\Unique::class,
+    'file'       => \SkankyDev\Validation\Rules\File::class,
+    'image'      => \SkankyDev\Validation\Rules\Image::class,
+    'mimes'      => \SkankyDev\Validation\Rules\Mimes::class,
+    'max_size'   => \SkankyDev\Validation\Rules\MaxSize::class,
 ]);

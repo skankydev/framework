@@ -142,10 +142,13 @@ class UrlBuilder
 	/**
 	 * Builds a convention-based URL: /namespace/controller/action/param1/param2.
 	 * Omits namespace if it is the default, omits action if it is the default and there are no params.
+	 * The URL is absolute and CurrentRoute::initFromUri() resolves an unprefixed URI to the
+	 * default namespace, so the prefix may only be dropped for the default namespace, never
+	 * for the current one (otherwise /admin/post would link to /post/create → App).
 	 */
 	public function createUrlFromDefault(array $link): string {
 		$url = '';
-		if($link['namespace']!==Config::getCurrentNamespace()){
+		if($link['namespace']!==Config::getDefaultNamespace()){
 			$url .= '/'.$this->toDash($link['namespace']);
 		}
 		$url .= '/'.$this->toDash($link['controller']);

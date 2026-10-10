@@ -47,7 +47,7 @@ if (!function_exists('notFound')) {
 	 * Réponse 404 : passe par les vues normales (layout, JS, CSS…), contrairement
 	 * aux pages d'erreur de l'ExceptionHandler — un 404 n'est pas un plantage,
 	 * c'est un résultat attendu (ex: document non trouvé), l'appli tourne bien.
-	 * Vue rendue : src_front/view/error/error404.php.
+	 * Vue rendue : src_front/view/error/404.php (à fournir dans le projet, le starter l'a).
 	 */
 	function notFound(array $data = []) {
 		$response = new Response('error.404', $data);

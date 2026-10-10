@@ -23,7 +23,7 @@ $defaultValue = [
 ];
 $fkFields = array_filter($this->fields, fn($f) => $f['type'] === 'ObjectId');
 ?>
-namespace App\Form;
+namespace <?= $module ?>\Form;
 
 use SkankyDev\Form\FormBuilder;
 
@@ -56,7 +56,7 @@ class <?= $name ?>Form extends FormBuilder {
 	 */
 	private function <?= $this->toCamel($field['name'],'_') ?>Options(): array {
 		$options = [];
-		foreach (\App\Model\<?= $this->fkRelated($field['name']) ?>Collection::_find() as $item) {
+		foreach (\<?= $module ?>\Model\<?= $this->fkRelated($field['name']) ?>Collection::_find() as $item) {
 			$options[(string) $item->_id] = $item->name;
 		}
 		return $options;

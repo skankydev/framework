@@ -14,6 +14,8 @@
 namespace SkankyDev\Form;
 
 use SkankyDev\Config\Config;
+use SkankyDev\Form\Fields\FileField;
+use SkankyDev\Http\Request;
 use SkankyDev\Http\UrlBuilder;
 use SkankyDev\Utilities\Traits\HtmlHelper;
 use SkankyDev\Utilities\Traits\StringFacility;
@@ -165,8 +167,14 @@ abstract class FormBuilder {
 			$this->build();
 		}
 
+		$attributes = $this->attributes;
+		// without multipart the browser silently sends no file at all
+		if (!isset($attributes['enctype']) && $this->hasFileField()) {
+			$attributes['enctype'] = 'multipart/form-data';
+		}
+
 		$html = '<form action="' . $this->action . '" method="' . $this->method . '" ';
-		$html .= $this->createAttr($this->attributes);
+		$html .= $this->createAttr($attributes);
 		$html .= '>';
 		
 		// Ajouter le CSRF token si méthode POST
@@ -203,9 +211,6 @@ abstract class FormBuilder {
 	 * sans bricoler du HTML brut dans le label.
 	 */
 	protected function renderSubmit(): string {
-		$label = $this->submitLabel;
-		$attributes = $this->submitAttributes;
-
 		// Publishable d'abord (défaut framework), sinon view.folder classique
 		// (permet à un projet de déposer son propre fields/submit.php sans
 		// toucher à la config) — même logique que FormField::makePath().
@@ -214,11 +219,47 @@ abstract class FormBuilder {
 			$path = Config::get('view.folder') . DS . 'fields' . DS . 'submit.php';
 		}
 
-		ob_start();
-		require $path;
-		return ob_get_clean();
+		return $this->renderFile($path, [
+			'label'      => $this->submitLabel,
+			'attributes' => $this->submitAttributes,
+		]);
 	}
-	
+
+	/**
+	 * Includes a template inside a closure so only `$this` and the extracted
+	 * `$data` are visible to it. Output buffers left open by the template are
+	 * closed if it throws.
+	 */
+	private function renderFile(string $file, array $data): string {
+		$level = ob_get_level();
+		ob_start();
+		try {
+			(function (string $myFile, array $myData) {
+				extract($myData);
+				require $myFile;
+			})($file, $data);
+			return ob_get_clean();
+		} catch (\Throwable $e) {
+			while (ob_get_level() > $level) {
+				ob_end_clean();
+			}
+			throw $e;
+		}
+	}
+
+	/** True when at least one field is a FileField (or a subclass). */
+	public function hasFileField(): bool {
+		if (empty($this->fields)) {
+			$this->build();
+		}
+		foreach ($this->fields as $field) {
+			if ($field instanceof FileField) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Returns all registered field instances.
 	 */
@@ -246,13 +287,22 @@ abstract class FormBuilder {
 	 * N'appelle pas setData($data) : les données du form restent celles posées
 	 * explicitement (ex: setData($user) en édition) — l'input soumis part de
 	 * toute façon en session via withInput() en cas d'échec, pas depuis ce $form.
+	 * Uploaded files are not part of Request::input(): for every file field missing
+	 * from $data, the UploadedFile is taken from Request::file() so rules like
+	 * `image` or `max_size` see it — and $data stays file-free for withInput().
 	 * @param array $data raw input data (typically from Request::input())
 	 */
 	public function validate(array $data): bool {
 		if(empty($this->fields)){
 			$this->build();
 		}
-		
+
+		foreach ($this->fields as $name => $field) {
+			if ($field instanceof FileField && !array_key_exists($name, $data)) {
+				$data[$name] = Request::getInstance()->file($name);
+			}
+		}
+
 		// Récupérer les règles depuis les champs
 		$rules = [];
 		foreach ($this->fields as $name => $field) {

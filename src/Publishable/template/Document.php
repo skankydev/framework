@@ -24,7 +24,7 @@ $noLiteralDefault = ['date', 'datetime', 'ObjectId'];
 $fkFields = array_filter($this->fields, fn($f) => $f['type'] === 'ObjectId');
 ?>
 
-namespace App\Model\Document;
+namespace <?= $module ?>\Model\Document;
 
 use SkankyDev\Model\Document\MasterDocument;
 use SkankyDev\Model\Document\Traits\TimedTrait;
