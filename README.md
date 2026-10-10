@@ -1,9 +1,5 @@
 # SkankyDev
 
-**English** · [Français](README.fr.md)
-
-> A small homemade PHP MVC framework, built to do CRUD on MongoDB without the headache.
-
 ![PHP](https://img.shields.io/badge/PHP-8.4%2B-blue.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-5.0%2B-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -12,6 +8,9 @@
 [![Tests](https://github.com/skankydev/framework/actions/workflows/tests.yml/badge.svg)](https://github.com/skankydev/framework/actions/workflows/tests.yml)
 [![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat&labelColor=18181b)](https://whyphp.dev)
 
+**English** · [Français](README.fr.md)
+
+> A small homemade PHP MVC framework, built to do CRUD on MongoDB without the headache.
 
 I built it to understand how frameworks work, and I keep evolving it project after project. It's simple, it has its conventions, and it lets me focus on the business logic with peace of mind.
 
