@@ -4,7 +4,7 @@ On installe, on lance, et on a un CRUD qui tourne avant la fin du café. Promis,
 
 ## Ce qu'il te faut
 
-- **PHP 8.4 ou plus**, avec l'extension `mongodb`. Prends une version récente de l'extension (2.4.1 ou plus) : les plus anciennes empêchent Composer d'installer la version corrigée de la bibliothèque `mongodb/mongodb` (une faille de sécurité a été corrigée dans la 2.4.1). Pour vérifier ta version : `php --ri mongodb`.
+- **PHP 8.4 ou plus**, avec les extensions `mongodb` et `intl` (pour les traductions, voir [21](021-I18n.md)). Prends une version récente de l'extension (2.4.1 ou plus) : les plus anciennes empêchent Composer d'installer la version corrigée de la bibliothèque `mongodb/mongodb` (une faille de sécurité a été corrigée dans la 2.4.1). Pour vérifier ta version : `php --ri mongodb`.
 - **Composer**.
 - **Un MongoDB qui tourne** (en local, ça suffit largement).
 - **Node.js et npm**, pour compiler le CSS et le JS avec Vite.

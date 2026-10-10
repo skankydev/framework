@@ -36,6 +36,8 @@ Pour une requête, le `MiddlewareManager` empile trois sources, dans cet ordre :
 
 Un détail sur `RateLimit` : il ne compte que les POST (afficher le formulaire en GET n'use aucune tentative), et il ne se remet pas à zéro tout seul quand ça réussit. C'est au controller d'appeler `RateLimiter::clear()` avec la même clé.
 
+Les messages (flash et JSON) de ces middlewares passent par les traductions (domaine `skankydev`, [21](021-I18n.md)).
+
 ## En ajouter un
 
 Une classe qui implémente `MiddlewareInterface`, rien de plus :

@@ -117,10 +117,10 @@ Prenons un module `Admin`. Trois étapes :
 
 Et c'est tout : `/admin/dashboard` appelle `Admin\Controller\DashboardController::index` (l'action par défaut, c'est `index`). Si tu ajoutes `src/Admin/Config/config.php`, il est fusionné avec la config, et une classe dans `src/Admin/Command/` apparaît toute seule dans `php craft`.
 
-Deux choses à savoir :
+Un truc à savoir :
 
 - **Les vues ne sont pas rangées par module.** Elles restent toutes dans `src_front/view/` : `view('admin.dashboard.index')` ouvre `src_front/view/admin/dashboard/index.php`. C'est à toi de les ranger dans un sous-dossier au nom du module, comme ci-dessus.
-- **Le CrudMaker génère toujours dans `App`** ([16 Craft et CLI](016-Craft-et-CLI.md)). Pour un CRUD dans un autre module, déplace les fichiers générés (et change leur namespace).
+
 
 ## La suite
 

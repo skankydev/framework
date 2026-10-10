@@ -90,6 +90,8 @@ $this->surround('Nouveau', 'span', ['class' => 'badge']);
 // <span class="badge">Nouveau</span>
 ```
 
+Et ceux qui dépendent de la langue (`__()`, `$this->htmlLang()`, `$this->number()`, `$this->date()`...) sont dans [21 L'internationalisation](021-I18n.md).
+
 ## Les Parts
 
 Des bouts de vue réutilisables : un header, une pagination, un tableau générique. C'est l'équivalent des *View Cells* de CakePHP ou des *View Composers* de Laravel. C'est cool, on les appelle depuis n'importe quelle vue ou layout :

@@ -48,6 +48,8 @@ class Cleanup extends MasterCommand {
 
 `$arg` contient les options parsées, sans la clé `command` (déjà consommée par `CliApplication`).
 
+`$help` peut aussi être une clé de traduction (`'app.cli.cleanup.help'`, voir [21 L'internationalisation](021-I18n.md)) : si la clé existe, `php craft` affiche sa traduction, sinon il affiche le texte tel quel. Les commandes du framework font comme ça, et parlent la langue de `i18n.locale` (en CLI, il n'y a pas de navigateur pour en demander une autre).
+
 Tu n'as rien à enregistrer : `CliApplication::autoRegister()` scanne le dossier `Command/` de chaque module déclaré en config, plus celui de SkankyDev lui-même. Une classe valide dans le bon dossier suffit pour apparaître dans `php craft help`.
 
 ### Les helpers d'affichage
