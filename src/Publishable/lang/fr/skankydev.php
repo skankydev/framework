@@ -45,10 +45,6 @@ return [
 		'method_not_allowed' => 'Méthode non autorisée',
 		'too_many_attempts'  => 'Trop de tentatives, réessaie plus tard.',
 	],
-	'form' => [
-		'password_toggle' => 'Afficher le mot de passe',
-		'password_hint'   => 'Votre mot de passe doit contenir des lettres majuscules et minuscules, ainsi que des chiffres et des caractères spéciaux.',
-	],
 	'cli' => [
 		'version'            => '{name} version {version}',
 		'usage'              => 'Utilisation :',

@@ -45,10 +45,6 @@ return [
 		'method_not_allowed' => 'Method not allowed',
 		'too_many_attempts'  => 'Too many attempts, please try again later.',
 	],
-	'form' => [
-		'password_toggle' => 'Show password',
-		'password_hint'   => 'Your password must contain uppercase and lowercase letters, numbers and special characters.',
-	],
 	'cli' => [
 		'version'            => '{name} version {version}',
 		'usage'              => 'Usage:',

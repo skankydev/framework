@@ -1,6 +1,4 @@
 <?php
-// Un DateTime doit être formaté dans le format attendu par l'input HTML,
-// sinon l'echo plante (pas de __toString) et la value n'est pas reconnue.
 $displayValue = $value;
 if ($value instanceof \DateTime) {
 	$displayValue = $value->format($type === 'date' ? 'Y-m-d' : 'Y-m-d\TH:i');
