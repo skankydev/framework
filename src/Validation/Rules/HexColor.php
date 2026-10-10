@@ -26,6 +26,6 @@ class HexColor extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Le champ {$field} doit être une couleur hexadécimale valide";
+		return __('skankydev.validation.hex_color', ['field' => $field]);
 	}
 }

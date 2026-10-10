@@ -26,6 +26,6 @@ class Numeric extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Le champ {$field} doit être un nombre";
+		return __('skankydev.validation.numeric', ['field' => $field]);
 	}
 }

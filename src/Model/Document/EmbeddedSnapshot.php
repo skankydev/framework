@@ -62,7 +62,7 @@ abstract class EmbeddedSnapshot extends EmbeddedDocument {
 	 */
 	public function copyFrom(MasterDocument $source): static {
 		if (empty($source->_id)) {
-			throw new \LogicException(static::class . ' : le document source ' . $source::class . ' doit être sauvegardé (pas d\'_id)');
+			throw new \LogicException(static::class . ': source document ' . $source::class . ' must be saved first (no _id)');
 		}
 		$data = array_intersect_key(get_object_vars($source), array_flip(static::syncedFields()));
 		$this->fill($data);

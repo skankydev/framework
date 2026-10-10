@@ -35,6 +35,7 @@ class Route
 	private $regex = false;
 	private $middlewares = [];
 	private $name = null;
+	private string $controllerClass = '';
 
 
 	/**
@@ -60,18 +61,40 @@ class Route
 	/**
 	 * init the link with the default value
 	 */
-	/** Fills in default action and namespace if not provided in the link array. */
+	/**
+	 * Fills in default action and namespace if not provided in the link array, and normalizes
+	 * the controller to its short name (`Admin\Controller\DashboardController` → `Dashboard`,
+	 * namespace `Admin`) so the link has the same shape as a convention link: UrlBuilder can
+	 * then inherit it (completLink) and match it (matcheWithRoute). The FQCN is kept apart
+	 * for dispatching, see getControllerClass().
+	 */
 	private function initLink(): void {
 		if(!isset($this->link['action'])){
 			$this->link['action'] = Config::getDefaultAction();
 		}
+
+		$controller = ltrim($this->link['controller'] ?? '', '\\');
+		$pos = strpos($controller, '\\Controller\\');
+		if($pos !== false){
+			// FQCN: explicit namespace wins, otherwise taken from the class
+			$this->controllerClass = $controller;
+			$this->link['namespace'] ??= substr($controller, 0, $pos);
+			$this->link['controller'] = preg_replace('/Controller$/', '', substr($controller, $pos + strlen('\\Controller\\')));
+		}
+
 		if(!isset($this->link['namespace'])){
-			$this->link['namespace'] = Config::getDefaultNamespace();	
-		}		
+			$this->link['namespace'] = Config::getDefaultNamespace();
+		}
+		if($this->controllerClass === ''){
+			// short name (e.g. `Post` or `Auth\Login`): resolved the same way as a convention route
+			$this->controllerClass = $this->link['namespace'].'\\Controller\\'.$this->link['controller'].'Controller';
+		}
 	}
 
-	
-	
+	/** Fully qualified class name of the target controller, used by CurrentRoute to dispatch. */
+	public function getControllerClass(): string {
+		return $this->controllerClass;
+	}
 
 	/**
 	 * get the link array

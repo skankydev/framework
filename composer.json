@@ -16,6 +16,7 @@
     "autoload-dev": {
         "psr-4": {
             "SkankyTest\\": "tests/SkankyTest",
+            "TestApp\\View\\Part\\": "tests/App/View/part",
             "TestApp\\":    "tests/App"
         }
     },
@@ -27,6 +28,7 @@
     ],
     "require": {
         "php": ">=8.4",
+        "ext-intl": "*",
         "mongodb/mongodb": "^2.1",
         "phpmailer/phpmailer": "^7.1"
     },

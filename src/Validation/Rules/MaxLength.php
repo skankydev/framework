@@ -29,6 +29,6 @@ class MaxLength extends Rule {
 	}
 	
 	public function message(string $field): string {
-		return "Le champ {$field} doit contenir maximum {$this->max} caractères";
+		return __('skankydev.validation.max_length', ['field' => $field, 'max' => $this->max]);
 	}
 }

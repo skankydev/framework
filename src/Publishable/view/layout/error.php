@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
 <head>
 	<title>Exception</title>
 	<link href="/dist/styles.css" rel="stylesheet" type="text/css">

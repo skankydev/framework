@@ -29,6 +29,6 @@ class Max extends Rule {
     }
     
     public function message(string $field): string {
-        return "Le champ {$field} doit être inférieur ou égal à {$this->max}";
+        return __('skankydev.validation.max', ['field' => $field, 'max' => $this->max]);
     }
 }

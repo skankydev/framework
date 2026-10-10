@@ -25,10 +25,10 @@ use SkankyDev\Model\MasterCollection;
 class DbSync extends MasterCommand {
 
 	static protected string $signature = 'db-sync';
-	static protected string $help = 'Crée/synchronise les index Mongo déclarés par les Collections';
+	static protected string $help = 'skankydev.cli.db_sync.help';
 
 	public function run(array $arg = []): void {
-		$this->info('🔧 Synchronisation des index...');
+		$this->info(__('skankydev.cli.db_sync.syncing'));
 
 		$found = 0;
 		foreach ($this->collectionClasses() as $class) {
@@ -44,15 +44,17 @@ class DbSync extends MasterCommand {
 			}
 
 			$collection->syncIndexes();
-			$this->success("✓ {$class} : " . count($indexes) . ' index' . ($snapshots ? ', ' . count($snapshots) . ' snapshot(s)' : ''));
+			$this->success($snapshots
+				? __('skankydev.cli.db_sync.synced_snaps', ['class' => $class, 'indexes' => count($indexes), 'snapshots' => count($snapshots)])
+				: __('skankydev.cli.db_sync.synced', ['class' => $class, 'indexes' => count($indexes)]));
 		}
 
 		if ($found === 0) {
-			$this->warning('Aucune Collection trouvée.');
+			$this->warning(__('skankydev.cli.db_sync.no_collection'));
 			return;
 		}
 
-		$this->info('Terminé.');
+		$this->info(__('skankydev.cli.done'));
 	}
 
 	/**

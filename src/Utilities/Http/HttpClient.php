@@ -107,7 +107,7 @@ class HttpClient {
 		$status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
 
 		if ($body === false) {
-			return new HttpResult(0, '', [], $error !== '' ? $error : 'Requête HTTP échouée');
+			return new HttpResult(0, '', [], $error !== '' ? $error : 'HTTP request failed');
 		}
 
 		return new HttpResult($status, $body, $responseHeaders, $error);

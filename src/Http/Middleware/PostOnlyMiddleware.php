@@ -33,7 +33,7 @@ class PostOnlyMiddleware implements MiddlewareInterface {
 		}
 
 		if ($request->wantsJson()) {
-			return (new Response('', ['ok' => false, 'error' => 'Méthode non autorisée']))
+			return (new Response('', ['ok' => false, 'error' => __('skankydev.http.method_not_allowed')]))
 				->status(405);
 		}
 
@@ -41,7 +41,7 @@ class PostOnlyMiddleware implements MiddlewareInterface {
 		return (new Response())
 			->status(302)
 			->header('Location', $back)
-			->withFlash('error', 'Méthode non autorisée.');
+			->withFlash('error', __('skankydev.http.method_not_allowed'));
 	}
 
 }

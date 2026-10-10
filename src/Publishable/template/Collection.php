@@ -11,11 +11,11 @@
  *
  */
 
-namespace App\Model;
+namespace <?= $module ?>\Model;
 
 use SkankyDev\Utilities\Traits\Singleton;
 use SkankyDev\Model\MasterCollection;
-use App\Model\Document\<?= $name ?>;
+use <?= $module ?>\Model\Document\<?= $name ?>;
 
 class <?= $name ?>Collection extends MasterCollection {
 

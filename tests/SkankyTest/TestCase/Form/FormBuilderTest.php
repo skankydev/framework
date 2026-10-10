@@ -19,6 +19,13 @@ class TestForm extends FormBuilder {
     }
 }
 
+class TestFileForm extends FormBuilder {
+    public function build(): void {
+        $this->add('name', 'text', ['label' => 'Nom']);
+        $this->add('img',  'file', ['label' => 'Image', 'rules' => ['required', 'image']]);
+    }
+}
+
 class FormBuilderTest extends TestCase
 {
     protected function setUp(): void {
@@ -128,6 +135,38 @@ class FormBuilderTest extends TestCase
         $html = $form->open();
 
         $this->assertStringContainsString('_token', $html);
+    }
+
+    // ── file fields ───────────────────────────────────────────────────────────
+
+    public function testFormWithoutFileFieldHasNoMultipart(): void {
+        $this->assertStringNotContainsString('multipart', $this->makeForm()->open());
+    }
+
+    public function testFileFieldAddsMultipartAutomatically(): void {
+        $form = new TestFileForm();
+        $this->assertTrue($form->hasFileField());
+        $this->assertStringContainsString('enctype="multipart/form-data"', $form->open());
+    }
+
+    public function testValidateTakesFilesFromRequest(): void {
+        $ref = new \ReflectionProperty(\SkankyDev\Http\Request::class, '_instance');
+        $ref->setValue(null, null);
+        $_FILES = [];
+
+        // pas de fichier dans la requête → required échoue sur le champ fichier
+        $form = new TestFileForm();
+        $this->assertFalse($form->validate(['name' => 'Simon']));
+        $this->assertArrayHasKey('img', $form->getErrors());
+
+        // un fichier passé explicitement dans $data est utilisé tel quel
+        $path = tempnam(sys_get_temp_dir(), 'frm');
+        imagepng(imagecreatetruecolor(2, 2), $path);
+        $file = new \SkankyDev\Http\UploadedFile('a.png', $path, UPLOAD_ERR_OK, filesize($path), test: true);
+        $form = new TestFileForm();
+        $this->assertTrue($form->validate(['name' => 'Simon', 'img' => $file]));
+        unlink($path);
+        $ref->setValue(null, null);
     }
 
     public function testCloseReturnsClosingTag(): void {

@@ -13,6 +13,7 @@
 
 namespace SkankyDev\Command;
 
+use SkankyDev\I18n\Translator;
 use SkankyDev\Utilities\Traits\CliMessage;
 use ReflectionClass;
 
@@ -22,7 +23,8 @@ abstract class MasterCommand {
 	use CliMessage;
 
 	static protected string $signature = 'master';
-	static protected string $help = 'La description';
+	/** Description shown in `php craft`: a translation key, or plain text. */
+	static protected string $help = 'skankydev.cli.no_description';
 
 	/**
 	 * Returns the command metadata using Reflection on the called class.
@@ -35,7 +37,7 @@ abstract class MasterCommand {
 		$mirror = new ReflectionClass($class);
 
 		if (!$mirror->hasProperty('signature') || !$mirror->hasProperty('help') ) {
-			throw new CommandException("La Command $className est mal defini.");
+			throw new CommandException("Command {$class} is badly defined: static \$signature and \$help are required.");
 		}
 
 
@@ -45,7 +47,7 @@ abstract class MasterCommand {
 		return [
         	'class'     => $class,
         	'signature' => $signature,
-        	'help'      => $help,
+        	'help'      => Translator::has($help) ? __($help) : $help,
         ];
     }
 

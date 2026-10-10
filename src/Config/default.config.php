@@ -23,7 +23,7 @@ return [
 		'range' => 5,
 	],
 	'skankydev'  => [
-		'version'=>'0.1.1'
+		'version'=>'0.2.0'
 	],
 	'debug' => true,
 	'auth' => false,
@@ -71,6 +71,10 @@ return [
 			'unique'     => \SkankyDev\Validation\Rules\Unique::class,
 			'same'       => \SkankyDev\Validation\Rules\Same::class,
 			'hex_color'  => \SkankyDev\Validation\Rules\HexColor::class,
+			'file'       => \SkankyDev\Validation\Rules\File::class,
+			'image'      => \SkankyDev\Validation\Rules\Image::class,
+			'mimes'      => \SkankyDev\Validation\Rules\Mimes::class,
+			'max_size'   => \SkankyDev\Validation\Rules\MaxSize::class,
 		],
 		'parts' => [],
 	],
@@ -84,8 +88,23 @@ return [
 	'template' => [
 		'folder' => PUBLISHABLE_FOLDER.DS.'template',
 	],
+	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it
+	'upload' => [
+		'folder' => UPLOAD_FOLDER,
+		'url'    => '/upload',
+	],
 	'timeHelper'=> [
 		'format'=>'Y-m-d H:i:s',
 		'timezone'=>'UTC'
+	],
+	// internationalisation (cf. SkankyDev\I18n\Translator)
+	'i18n' => [
+		'locale'    => 'en_US',     // locale par défaut (format ICU : en_US, pas en-US)
+		'fallback'  => 'en',        // langue de secours quand une clé manque
+		// locales acceptées par LocaleNegotiator. Un seul élément ici : la config
+		// est fusionnée par array_replace_recursive, une liste plus longue
+		// survivrait en partie à celle du projet.
+		'available' => ['en_US'],
+		'path'      => LANG_FOLDER, // lang/{langue}/{domaine}.php
 	],
 ];

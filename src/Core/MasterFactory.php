@@ -68,11 +68,11 @@ class MasterFactory {
 		try {
 			$reflector = new ReflectionClass($className);
 		} catch (\ReflectionException $e) {
-			throw new ClassNotFoundException("La classe {$className} n'existe pas", 404);
+			throw new ClassNotFoundException("Class {$className} does not exist", 404);
 		}
 
 		if (!$reflector->isInstantiable()) {
-			throw new ClassNotFoundException("La classe {$className} n'est pas instanciable",404);
+			throw new ClassNotFoundException("Class {$className} is not instantiable",404);
 		}
 
 		if (in_array(Singleton::class, $reflector->getTraitNames())) {
@@ -127,7 +127,7 @@ class MasterFactory {
 				if($id){
 					$model = $className::find($id);
 					if (!$model) {
-						throw new ModelNotFoundException("Document {$className} avec ID {$id} introuvable",404);
+						throw new ModelNotFoundException("Document {$className} with ID {$id} not found",404);
 					}
 					$dependencies[] = $model;
                 	continue;
@@ -148,7 +148,7 @@ class MasterFactory {
 				} else if ($parameter->isDefaultValueAvailable()) {
 					$dependencies[] = $parameter->getDefaultValue();
 				} else {
-					throw new ClassNotFoundException("Impossible de résoudre le paramètre {$name}",500);
+					throw new ClassNotFoundException("Unable to resolve parameter {$name}",500);
 				}
 				continue;
 			}

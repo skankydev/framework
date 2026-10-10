@@ -28,17 +28,17 @@ class Auth {
 	private static function makeKeeper(string $name): MasterGate {
 		$config = Config::get("auth.keepers.{$name}");
 		if (!is_array($config)) {
-			throw new \Exception("Keeper d'auth inconnu : « {$name} »", 500);
+			throw new \Exception("Unknown auth keeper: \"{$name}\"", 500);
 		}
 
 		$gateClass = Config::get('class.gates')[$config['gate']] ?? null;
 		if ($gateClass === null || !class_exists($gateClass)) {
-			throw new \Exception("Gate inconnue : « {$config['gate']} »", 500);
+			throw new \Exception("Unknown auth gate: \"{$config['gate']}\"", 500);
 		}
 
 		$providerClass = Config::get('auth.providers')[$config['provider']] ?? null;
 		if ($providerClass === null) {
-			throw new \Exception("Provider d'auth inconnu : « {$config['provider']} »", 500);
+			throw new \Exception("Unknown auth provider: \"{$config['provider']}\"", 500);
 		}
 
 		return new $gateClass($config, $providerClass);
