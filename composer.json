@@ -16,6 +16,7 @@
     "autoload-dev": {
         "psr-4": {
             "SkankyTest\\": "tests/SkankyTest",
+            "TestApp\\View\\Part\\": "tests/App/View/part",
             "TestApp\\":    "tests/App"
         }
     },
