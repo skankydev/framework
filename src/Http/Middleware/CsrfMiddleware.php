@@ -44,7 +44,7 @@ class CsrfMiddleware implements MiddlewareInterface {
 
 		// AJAX → JSON 419 ; navigation classique → retour arrière avec flash.
 		if ($request->wantsJson()) {
-			return (new Response('', ['ok' => false, 'error' => 'Token CSRF invalide ou session expirée']))
+			return (new Response('', ['ok' => false, 'error' => __('skankydev.http.csrf_invalid')]))
 				->status(419);
 		}
 
@@ -52,7 +52,7 @@ class CsrfMiddleware implements MiddlewareInterface {
 		return (new Response())
 			->status(302)
 			->header('Location', $back)
-			->withFlash('error', 'Session expirée, merci de réessayer.');
+			->withFlash('error', __('skankydev.http.session_expired'));
 	}
 
 }

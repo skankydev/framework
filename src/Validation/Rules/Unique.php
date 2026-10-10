@@ -40,7 +40,7 @@ class Unique extends Rule {
 		}
 
 		if (!class_exists($this->collectionClass)) {
-			throw new \Exception("Unique : collection introuvable « {$this->collectionClass} »", 500);
+			throw new \Exception("Unique: collection not found \"{$this->collectionClass}\"", 500);
 		}
 
 		$column     = $this->column ?? $field;
@@ -55,6 +55,6 @@ class Unique extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Ce champ {$field} est déjà utilisé";
+		return __('skankydev.validation.unique', ['field' => $field]);
 	}
 }

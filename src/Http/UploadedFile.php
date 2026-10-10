@@ -44,14 +44,15 @@ class UploadedFile {
 		'application/zip'  => 'zip',
 	];
 
-	const ERROR_MESSAGES = [
-		UPLOAD_ERR_INI_SIZE   => 'Le fichier dépasse la taille maximale autorisée par le serveur',
-		UPLOAD_ERR_FORM_SIZE  => 'Le fichier dépasse la taille maximale autorisée par le formulaire',
-		UPLOAD_ERR_PARTIAL    => 'Le fichier n\'a été que partiellement envoyé',
-		UPLOAD_ERR_NO_FILE    => 'Aucun fichier envoyé',
-		UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant sur le serveur',
-		UPLOAD_ERR_CANT_WRITE => 'Impossible d\'écrire le fichier sur le disque',
-		UPLOAD_ERR_EXTENSION  => 'Envoi bloqué par une extension PHP',
+	/** Upload error code → translation key (domain `skankydev`, cf. Publishable/lang). */
+	const ERROR_KEYS = [
+		UPLOAD_ERR_INI_SIZE   => 'skankydev.upload.ini_size',
+		UPLOAD_ERR_FORM_SIZE  => 'skankydev.upload.form_size',
+		UPLOAD_ERR_PARTIAL    => 'skankydev.upload.partial',
+		UPLOAD_ERR_NO_FILE    => 'skankydev.upload.no_file',
+		UPLOAD_ERR_NO_TMP_DIR => 'skankydev.upload.no_tmp_dir',
+		UPLOAD_ERR_CANT_WRITE => 'skankydev.upload.cant_write',
+		UPLOAD_ERR_EXTENSION  => 'skankydev.upload.extension',
 	];
 
 	private ?string $mime = null;
@@ -101,9 +102,9 @@ class UploadedFile {
 	/** Human-readable message for the upload error, null when there is none. */
 	public function errorMessage(): ?string {
 		if ($this->error === UPLOAD_ERR_OK) {
-			return $this->isValid() ? null : 'Fichier envoyé invalide';
+			return $this->isValid() ? null : __('skankydev.upload.invalid');
 		}
-		return self::ERROR_MESSAGES[$this->error] ?? 'Erreur inconnue lors de l\'envoi';
+		return __(self::ERROR_KEYS[$this->error] ?? 'skankydev.upload.unknown');
 	}
 
 	/** File name as sent by the browser: display only, never use it as a path. */
@@ -161,20 +162,20 @@ class UploadedFile {
 	 */
 	public function store(string $subdir = '', ?string $name = null): StoredFile {
 		if (!$this->isValid()) {
-			throw new \RuntimeException($this->errorMessage() ?? 'Fichier envoyé invalide');
+			throw new \RuntimeException('Invalid uploaded file (upload error code ' . $this->error . ')');
 		}
 
 		$subdir = trim(str_replace('\\', '/', $subdir), '/');
 		if (in_array('..', explode('/', $subdir), true)) {
-			throw new \RuntimeException("Sous-dossier d'upload invalide : {$subdir}");
+			throw new \RuntimeException("Invalid upload subfolder: {$subdir}");
 		}
 		if ($name !== null && ($name === '' || preg_match('#[/\\\\]|\.\.#', $name))) {
-			throw new \RuntimeException("Nom de fichier invalide : {$name}");
+			throw new \RuntimeException("Invalid file name: {$name}");
 		}
 
 		$dir = rtrim(Config::get('upload.folder'), '/\\') . ($subdir !== '' ? DS . str_replace('/', DS, $subdir) : '');
 		if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-			throw new \RuntimeException("Impossible de créer le dossier {$dir}");
+			throw new \RuntimeException("Unable to create folder {$dir}");
 		}
 
 		// read everything that needs the temp file before moving it
@@ -185,7 +186,7 @@ class UploadedFile {
 
 		$moved = $this->test ? rename($this->tmpName, $target) : move_uploaded_file($this->tmpName, $target);
 		if (!$moved) {
-			throw new \RuntimeException("Impossible de déplacer le fichier vers {$target}");
+			throw new \RuntimeException("Unable to move the file to {$target}");
 		}
 
 		return new StoredFile([

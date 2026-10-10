@@ -23,6 +23,6 @@ class Required extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Le champ {$field} est requis";
+		return __('skankydev.validation.required', ['field' => $field]);
 	}
 }

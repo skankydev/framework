@@ -17,14 +17,15 @@ use SkankyDev\Config\Config;
 use SkankyDev\Core\MasterFactory;
 use SkankyDev\Utilities\Traits\HtmlHelper;
 use SkankyDev\Utilities\Traits\StringFacility;
+use SkankyDev\Utilities\Traits\TranslatorHelper;
 
 /**
  * Renders PHP view templates with layout support, output buffering, and view parts.
- * Used as `$this` inside every template file — exposes helpers from HtmlHelper and StringFacility.
+ * Used as `$this` inside every template file — exposes helpers from HtmlHelper, StringFacility and TranslatorHelper.
  */
 class HtmlView {
 
-	use HtmlHelper, StringFacility;
+	use HtmlHelper, StringFacility, TranslatorHelper;
 
 	public string $keywords      = '';
 	public string $title         = '';

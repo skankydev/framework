@@ -22,6 +22,8 @@ Deux templates, choisis selon le mode :
 
 Les chemins sont configurables (`view.error` et `view.error_layout`). Par défaut, ce sont ceux livrés par le framework (le Publishable, voir [16 Craft et CLI](016-Craft-et-CLI.md)). Un projet peut publier les siens et pointer la config dessus, sans toucher au code.
 
+Ces pages sont en anglais, en dur : elles ne passent pas par les traductions, pour que la page d'erreur ne puisse pas planter à son tour à cause d'un fichier de langue cassé ([21 L'internationalisation](021-I18n.md)). Les messages d'exception aussi sont en anglais.
+
 ## Le code de l'exception = le statut HTTP
 
 C'est une convention dans tout le framework : le code que tu passes à l'exception sert de statut HTTP.

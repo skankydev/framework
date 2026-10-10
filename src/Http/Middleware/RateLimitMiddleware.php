@@ -42,7 +42,7 @@ class RateLimitMiddleware implements MiddlewareInterface {
 
 		if (RateLimiter::tooManyAttempts("{$this->key}:{$request->ip()}", $this->maxAttempts, $this->decaySeconds)) {
 			if ($request->wantsJson()) {
-				return (new Response('', ['ok' => false, 'error' => 'Trop de tentatives, réessaie plus tard.']))
+				return (new Response('', ['ok' => false, 'error' => __('skankydev.http.too_many_attempts')]))
 					->status(429);
 			}
 
@@ -50,7 +50,7 @@ class RateLimitMiddleware implements MiddlewareInterface {
 			return (new Response())
 				->status(302)
 				->header('Location', $back)
-				->withFlash('error', 'Trop de tentatives, réessaie plus tard.');
+				->withFlash('error', __('skankydev.http.too_many_attempts'));
 		}
 
 		return $next($request);

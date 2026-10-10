@@ -434,7 +434,7 @@ abstract class MasterCollection {
 	public function loadRelations(array $documents, array $with): void {
 		$relations = $this->relations();
 		foreach ($with as $name) {
-			$relation = $relations[$name] ?? throw new \InvalidArgumentException(static::class . " : relation '{$name}' inconnue");
+			$relation = $relations[$name] ?? throw new \InvalidArgumentException(static::class . ": unknown relation '{$name}'");
 			$target = $relation['collection']::getInstance();
 			$key = $relation['key'];
 
@@ -457,7 +457,7 @@ abstract class MasterCollection {
 					$doc->setRelation($name, $grouped[(string) $doc->_id] ?? []);
 				}
 			} else {
-				throw new \InvalidArgumentException(static::class . " : type '{$relation['type']}' inconnu pour '{$name}' (belongsTo, hasMany)");
+				throw new \InvalidArgumentException(static::class . ": unknown type '{$relation['type']}' for '{$name}' (belongsTo, hasMany)");
 			}
 		}
 	}
@@ -485,7 +485,7 @@ abstract class MasterCollection {
 		foreach ($this->embeddedIn() as $target) {
 			$target += ['sync' => true, 'onDelete' => 'keep'];
 			if (!in_array($target['onDelete'], ['keep', 'mark', 'unset'], true)) {
-				throw new \InvalidArgumentException(static::class . " : onDelete '{$target['onDelete']}' invalide (keep, mark, unset)");
+				throw new \InvalidArgumentException(static::class . ": invalid onDelete '{$target['onDelete']}' (keep, mark, unset)");
 			}
 			$targets[] = $target;
 		}

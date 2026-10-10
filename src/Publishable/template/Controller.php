@@ -23,7 +23,7 @@ use SkankyDev\Http\Request;
 class <?= $name ?>Controller extends MasterController {
 
 	/**
-	 * Liste paginée des <?= $pluralCamel ?>.
+	 * Paginated list of <?= $pluralCamel ?>.
 	 */
 	public function index(<?= $name ?>Collection $collection){
 <?php $relationNames = array_map(fn($f) => "'" . lcfirst($this->fkRelated($f['name'])) . "'", array_filter($this->fields, fn($f) => $f['type'] === 'ObjectId')); ?>
@@ -36,7 +36,7 @@ class <?= $name ?>Controller extends MasterController {
 	}
 
 	/**
-	 * Affiche le formulaire de création d'un <?= $singularCamel ?>.
+	 * Shows the creation form for a <?= $singularCamel ?>.
 	 */
 	public function create(){
 		$form = new <?= $name ?>Form(['action' => 'store']);
@@ -44,8 +44,8 @@ class <?= $name ?>Controller extends MasterController {
 	}
 
 	/**
-	 * Valide et enregistre un nouveau <?= $singularCamel ?>, puis redirige vers son show.
-	 * En cas d'échec de validation, retourne au formulaire avec erreurs et anciennes valeurs.
+	 * Validates and saves a new <?= $singularCamel ?>, then redirects to its show page.
+	 * On validation failure, goes back to the form with errors and old input.
 	 */
 	#[Middleware('PostOnly')]
 	public function store(Request $request){
@@ -56,18 +56,18 @@ class <?= $name ?>Controller extends MasterController {
 		}
 		$<?= $singularCamel ?> = new <?= $name ?>($form->only($input));
 		<?= $name ?>Collection::_save($<?= $singularCamel ?>);
-		return redirect(['action' => 'show', 'params' => [$<?= $singularCamel ?>->_id]])->withFlash('success', 'Enregistrement réussi');
+		return redirect(['action' => 'show', 'params' => [$<?= $singularCamel ?>->_id]])->withFlash('success', 'Successfully created');
 	}
 
 	/**
-	 * Affiche un <?= $singularCamel ?> (résolu par model binding depuis l'ID de l'URL).
+	 * Shows a <?= $singularCamel ?> (resolved by model binding from the URL ID).
 	 */
 	public function show(Request $request, <?= $name ?> $<?= $singularCamel ?>){
 		return view('<?= $viewPath ?>.show', ['<?= $singularCamel ?>' => $<?= $singularCamel ?>]);
 	}
 
 	/**
-	 * Affiche le formulaire d'édition d'un <?= $singularCamel ?>, pré-rempli avec ses données.
+	 * Shows the edit form for a <?= $singularCamel ?>, pre-filled with its data.
 	 */
 	public function edit(<?= $name ?> $<?= $singularCamel ?>){
 		$form = new <?= $name ?>Form(['action' => 'update', 'params' => [$<?= $singularCamel ?>->_id]]);
@@ -76,8 +76,8 @@ class <?= $name ?>Controller extends MasterController {
 	}
 
 	/**
-	 * Valide et met à jour un <?= $singularCamel ?> existant, puis redirige vers son show.
-	 * En cas d'échec de validation, retourne au formulaire avec erreurs et anciennes valeurs.
+	 * Validates and updates an existing <?= $singularCamel ?>, then redirects to its show page.
+	 * On validation failure, goes back to the form with errors and old input.
 	 */
 	#[Middleware('PostOnly')]
 	public function update(Request $request, <?= $name ?> $<?= $singularCamel ?>){
@@ -89,15 +89,15 @@ class <?= $name ?>Controller extends MasterController {
 		}
 		$<?= $singularCamel ?>->fill($form->only($input));
 		<?= $name ?>Collection::_save($<?= $singularCamel ?>);
-		return redirect(['action' => 'show', 'params' => [$<?= $singularCamel ?>->_id]])->withFlash('success', 'Modification réussie');
+		return redirect(['action' => 'show', 'params' => [$<?= $singularCamel ?>->_id]])->withFlash('success', 'Successfully updated');
 	}
 
 	/**
-	 * Supprime un <?= $singularCamel ?> puis redirige vers la liste.
+	 * Deletes a <?= $singularCamel ?> then redirects to the list.
 	 */
 	#[Middleware('PostOnly')]
 	public function delete(<?= $name ?> $<?= $singularCamel ?>){
 		<?= $name ?>Collection::_deleteOne($<?= $singularCamel ?>);
-		return redirect(['action' => 'index'])->withFlash('success', 'Suppression réussie');
+		return redirect(['action' => 'index'])->withFlash('success', 'Successfully deleted');
 	}
 }

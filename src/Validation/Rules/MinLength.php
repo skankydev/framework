@@ -29,7 +29,7 @@ class MinLength extends Rule {
     }
     
     public function message(string $field): string {
-        return "Le champ {$field} doit contenir au moins {$this->min} caractères";
+        return __('skankydev.validation.min_length', ['field' => $field, 'min' => $this->min]);
     }
 
 }

@@ -40,6 +40,6 @@ class File extends Rule {
 	}
 
 	public function message(string $field): string {
-		return $this->error ?? "Le champ {$field} doit être un fichier valide";
+		return $this->error ?? __('skankydev.validation.file', ['field' => $field]);
 	}
 }

@@ -107,7 +107,7 @@ class UrlBuilder
 	public function findRouteByName(string $name): mixed {
 		$route = Router::_findByName($name);
 		if(!$route){
-			throw new RouteNotFoundException("Aucune route déclarée avec le nom « {$name} »", 404);
+			throw new RouteNotFoundException("No route declared with the name \"{$name}\"", 404);
 		}
 		return $route;
 	}

@@ -34,7 +34,7 @@ class Regex extends Rule {
 	}
 	
 	public function message(string $field): string {
-		return "Le format du champ {$field} est invalide";
+		return __('skankydev.validation.regex', ['field' => $field]);
 	}
 	
 }

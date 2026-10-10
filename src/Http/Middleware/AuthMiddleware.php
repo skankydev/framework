@@ -30,10 +30,10 @@ class AuthMiddleware implements MiddlewareInterface {
 			return (new Response())
 				->status(302)
 				->header('Location', $redirect)
-				->withFlash('error', 'Merci de vous connecter.');
+				->withFlash('error', __('skankydev.http.login_required'));
 		}
 
-		return (new Response('', ['ok' => false, 'error' => 'Non authentifié']))->status(401);
+		return (new Response('', ['ok' => false, 'error' => __('skankydev.http.unauthenticated')]))->status(401);
 	}
 
 }

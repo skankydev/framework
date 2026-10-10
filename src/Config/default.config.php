@@ -97,4 +97,14 @@ return [
 		'format'=>'Y-m-d H:i:s',
 		'timezone'=>'UTC'
 	],
+	// internationalisation (cf. SkankyDev\I18n\Translator)
+	'i18n' => [
+		'locale'    => 'en_US',     // locale par défaut (format ICU : en_US, pas en-US)
+		'fallback'  => 'en',        // langue de secours quand une clé manque
+		// locales acceptées par LocaleNegotiator. Un seul élément ici : la config
+		// est fusionnée par array_replace_recursive, une liste plus longue
+		// survivrait en partie à celle du projet.
+		'available' => ['en_US'],
+		'path'      => LANG_FOLDER, // lang/{langue}/{domaine}.php
+	],
 ];

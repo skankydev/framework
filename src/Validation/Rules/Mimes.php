@@ -21,6 +21,6 @@ class Mimes extends File {
 	}
 
 	public function message(string $field): string {
-		return $this->error ?? "Le champ {$field} doit être un fichier de type : " . implode(', ', $this->extensions);
+		return $this->error ?? __('skankydev.validation.mimes', ['field' => $field, 'extensions' => implode(', ', $this->extensions)]);
 	}
 }

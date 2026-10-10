@@ -28,6 +28,6 @@ class Confirmed extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "La confirmation du champ {$field} ne correspond pas";
+		return __('skankydev.validation.confirmed', ['field' => $field]);
 	}
 }

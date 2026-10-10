@@ -1,39 +1,49 @@
 # SkankyDev
 
-Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se prendre la tête.
+![PHP](https://img.shields.io/badge/PHP-8.4%2B-blue.svg)
+![MongoDB](https://img.shields.io/badge/MongoDB-5.0%2B-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Packagist](https://img.shields.io/packagist/v/skankydev/framework.svg)](https://packagist.org/packages/skankydev/framework)
+![Last commit](https://img.shields.io/github/last-commit/skankydev/framework.svg)
+[![Tests](https://github.com/skankydev/framework/actions/workflows/tests.yml/badge.svg)](https://github.com/skankydev/framework/actions/workflows/tests.yml)
+[![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat&labelColor=18181b)](https://whyphp.dev)
 
-Je l'ai construit pour comprendre comment marchent les frameworks, et je le fais évoluer projet après projet. Il est simple, il a ses conventions, et il me laisse me concentrer sur la logique métier l'esprit tranquille.
+**English** · [Français](README.fr.md)
 
-## Pour démarrer
+> A small homemade PHP MVC framework, built to do CRUD on MongoDB without the headache.
 
-Le plus simple, c'est le [starter](https://github.com/skankydev/starter), un projet prêt à l'emploi :
+I built it to understand how frameworks work, and I keep evolving it project after project. It's simple, it has its conventions, and it lets me focus on the business logic with peace of mind.
+
+## Getting started
+
+The easiest way is the [starter](https://github.com/skankydev/starter), a ready-to-use project:
 
 ```bash
-composer create-project skankydev/starter mon-projet
+composer create-project skankydev/starter my-project
 ```
 
-## La doc
+## The docs
 
-Elle est dans le dossier [`docs/`](docs/000-table_des_matiere.md), versionnée avec le code. Commence par :
+They live in the [`docs/en/`](docs/en/000-Table-of-Contents.md) folder, versioned with the code (and in French in [`docs/fr/`](docs/fr/000-table_des_matiere.md)). Start with:
 
-- [01 Philosophie](docs/001-Philosophie.md) : d'où ça vient ;
-- [02 Installation](docs/002-Installation.md) : installer le starter et avoir un CRUD qui tourne ;
-- [03 Introduction](docs/003-Introduction.md) : le voyage d'une requête et la structure des dossiers.
+- [01 Philosophy](docs/en/001-Philosophy.md): where it comes from;
+- [02 Installation](docs/en/002-Installation.md): install the starter and get a CRUD running;
+- [03 Introduction](docs/en/003-Introduction.md): the journey of a request and the folder structure.
 
-## Ce qu'il faut
+## Requirements
 
-- PHP 8.4 ou plus, avec l'extension `mongodb` ;
+- PHP 8.4 or later, with the `mongodb` and `intl` extensions;
 - MongoDB.
 
-## Les tests
+## Tests
 
 ```bash
 composer install
 composer test
 ```
 
-Les tests d'intégration ont besoin d'un MongoDB qui tourne ([20 Les tests](docs/020-Les-Tests.md)).
+The integration tests need a running MongoDB ([20 Tests](docs/en/020-Tests.md)).
 
-## Licence
+## License
 
-MIT, voir [LICENSE.txt](LICENSE.txt).
+MIT, see [LICENSE.txt](LICENSE.txt).

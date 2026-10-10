@@ -72,7 +72,7 @@ class ExceptionHandlerTest extends TestCase
         $handler->handle($exception);
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('erreur', $output);
+        $this->assertStringContainsString('An error occurred', $output);
         $this->assertStringNotContainsString('Internal details', $output);
     }
 

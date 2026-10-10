@@ -13,6 +13,7 @@
 
 use SkankyDev\Http\Response;
 use SkankyDev\Http\UrlBuilder;
+use SkankyDev\I18n\Translator;
 use SkankyDev\Utilities\Session;
 use SkankyDev\Utilities\Token;
 
@@ -62,6 +63,17 @@ if (!function_exists('e')) {
 	 */
 	function e($value) {
 		return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+	}
+}
+
+if (!function_exists('__')) {
+	/**
+	 * Traduire une clé `domaine.chemin` (cf. Translator::get()).
+	 * Retourne le texte brut, non échappé : à toi d'échapper les arguments
+	 * qui viennent de l'utilisateur.
+	 */
+	function __(string $key, array $args = []): string {
+		return Translator::get($key, $args);
 	}
 }
 

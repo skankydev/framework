@@ -137,9 +137,9 @@ class MiddlewareManager {
 			$className = $this->asso[$name] ?? $name;
 			if (!class_exists($className)) {
 				throw new MiddlewareNotFoundException(
-					"Middleware introuvable : « {$name} »"
-					. ($className !== $name ? " (résolu en {$className})" : '')
-					. ". Vérifie le nom de classe, son import, ou son alias dans class.middlewares."
+					"Middleware not found: \"{$name}\""
+					. ($className !== $name ? " (resolved to {$className})" : '')
+					. ". Check the class name, its import, or its alias in class.middlewares."
 				);
 			}
 			$args = $spec['args'];

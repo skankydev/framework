@@ -14,7 +14,7 @@
 			<?= $this->createAttr($attributes) ?>
 		>
 		<div class="password-toggle">
-			<div class="btn-mini" data-password-toggle aria-label="Afficher le mot de passe">
+			<div class="btn-mini" data-password-toggle aria-label="<?= e(__('skankydev.form.password_toggle')) ?>">
 				<i class="icon-eye"></i>
 			</div>
 		</div>
@@ -30,7 +30,7 @@
 		</div>
 	</div>
 
-	<div class="password-hint">Votre mot de passe doit contenir des lettres majuscules et minuscules, ainsi que des chiffres et des caractères spéciaux.</div>
+	<div class="password-hint"><?= __('skankydev.form.password_hint') ?></div>
 	<?php endif ?>
 
 	<?php if ($errors): ?>

@@ -17,7 +17,7 @@ $this->addCrumb($<?= $singularCamel ?>-><?= $this->labelField() ?>, ['action' =>
 			Edit
 		</a>
 		<a href="%?= $this->url(['action'=>'delete','params'=>[$<?= $singularCamel ?>->_id]]) ?>" class="btn btn-error"
-			data-method="post" data-confirm="Supprimer ?">
+			data-method="post" data-confirm="Delete?">
 			<i class="icon-delete"></i>
 			Delete
 		</a>
@@ -33,13 +33,13 @@ $this->addCrumb($<?= $singularCamel ?>-><?= $this->labelField() ?>, ['action' =>
 			<dd>%?= e($<?= $singularCamel ?>-><?= lcfirst($this->fkRelated($field['name'])) ?>?->name ?? '—') ?></dd>
 <?php elseif($field['type'] === 'bool'): ?>
 			<dt><?= $this->toHuman($field['name']) ?></dt>
-			<dd><span class="text-%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? 'success' : 'error' ?>">%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? 'oui' : 'non' ?></span></dd>
+			<dd><span class="text-%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? 'success' : 'error' ?>">%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? 'yes' : 'no' ?></span></dd>
 <?php elseif($field['type'] === 'date'): ?>
 			<dt><?= $this->toHuman($field['name']) ?></dt>
-			<dd>%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? $<?= $singularCamel ?>-><?= $field['name'] ?>->format('d/m/Y') : '-' ?></dd>
+			<dd>%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? $this->date($<?= $singularCamel ?>-><?= $field['name'] ?>) : '-' ?></dd>
 <?php elseif($field['type'] === 'datetime'): ?>
 			<dt><?= $this->toHuman($field['name']) ?></dt>
-			<dd>%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? $<?= $singularCamel ?>-><?= $field['name'] ?>->format('d/m/Y H:i') : '-' ?></dd>
+			<dd>%?= $<?= $singularCamel ?>-><?= $field['name'] ?> ? $this->date($<?= $singularCamel ?>-><?= $field['name'] ?>, timeType: \IntlDateFormatter::SHORT) : '-' ?></dd>
 <?php elseif($field['type'] === 'array'): ?>
 			<dt><?= $this->toHuman($field['name']) ?></dt>
 			<dd>%?= !empty($<?= $singularCamel ?>-><?= $field['name'] ?>) ? implode(', ', array_map('e', $<?= $singularCamel ?>-><?= $field['name'] ?>)) : '-' ?></dd>
@@ -49,9 +49,9 @@ $this->addCrumb($<?= $singularCamel ?>-><?= $this->labelField() ?>, ['action' =>
 <?php endif; ?>
 <?php endforeach; ?>
 			<dt>created</dt>
-			<dd>%?= $<?= $singularCamel ?>->created_at?->format('d/m/Y H:i') ?></dd>
+			<dd>%?= $<?= $singularCamel ?>->created_at ? $this->date($<?= $singularCamel ?>->created_at, timeType: \IntlDateFormatter::SHORT) : '-' ?></dd>
 			<dt>updated</dt>
-			<dd>%?= $<?= $singularCamel ?>->updated_at?->format('d/m/Y H:i') ?></dd>
+			<dd>%?= $<?= $singularCamel ?>->updated_at ? $this->date($<?= $singularCamel ?>->updated_at, timeType: \IntlDateFormatter::SHORT) : '-' ?></dd>
 		</dl>
 	</div>
 </section>

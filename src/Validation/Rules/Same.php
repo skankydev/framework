@@ -29,6 +29,6 @@ class Same extends Rule {
 	}
 
 	public function message(string $field): string {
-		return "Le champ {$field} doit être identique à {$this->otherField}";
+		return __('skankydev.validation.same', ['field' => $field, 'other' => $this->otherField]);
 	}
 }

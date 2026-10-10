@@ -13,7 +13,7 @@ $this->addCrumb('<?= $name ?>', ['action' => 'index'], '');
 	<div class="page-action">
 		<a href="%?= $this->url(['action'=>'create']) ?>" class="btn btn-primary">
 			<i class="icon icon-add"></i>
-			Ajouter
+			Add
 		</a>
 	</div>
 </header>
