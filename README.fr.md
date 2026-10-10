@@ -2,7 +2,16 @@
 
 [English](README.md) · **Français**
 
-Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se prendre la tête.
+> Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se prendre la tête.
+
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)
+![MongoDB](https://img.shields.io/badge/MongoDB-5.0%2B-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat&labelColor=18181b)](https://whyphp.dev)
+[![Packagist](https://img.shields.io/packagist/v/skankydev/framework.svg)](https://packagist.org/packages/skankydev/framework)
+![Last commit](https://img.shields.io/github/last-commit/skankydev/framework.svg)
+[![Tests](https://github.com/skankydev/framework/actions/workflows/tests.yml/badge.svg)](https://github.com/skankydev/framework/actions/workflows/tests.yml)
+
 
 Je l'ai construit pour comprendre comment marchent les frameworks, et je le fais évoluer projet après projet. Il est simple, il a ses conventions, et il me laisse me concentrer sur la logique métier l'esprit tranquille.
 
