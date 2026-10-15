@@ -35,6 +35,8 @@ Elle est dans le dossier [`docs/fr/`](docs/fr/000-table_des_matiere.md), version
 - PHP 8.4 ou plus, avec les extensions `mongodb` et `intl` ;
 - MongoDB.
 
+Les liens, les versions et les pièges classiques : voir [02 Installation](docs/fr/002-Installation.md#ce-quil-te-faut).
+
 ## Les tests
 
 ```bash

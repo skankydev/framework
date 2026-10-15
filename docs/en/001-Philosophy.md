@@ -1,14 +1,23 @@
 # 01 Philosophy
 
-## Who am I
+## Homemade
 
-I'm a jack-of-all-trades developer, I started at 13, and my career has been a bit chaotic.
-I like to understand the tools I use,
-so I rewrite the features I don't understand.
+SkankyDev is a homemade framework, like grandma's recipe: nothing industrial or certified, but you know exactly what's in it.
 
-And from one side project to the next, I built SkankyDev.
+It was born from a simple urge: understand what happens under the hood. When a tool stays a black box, you take it apart and rewrite it to see how it works.
+Then it grew project after project, only adding what was actually useful.
 
-I think it can be a good start to understand how a framework works.
+The result: every line is known, so everything can be changed. It's small, it reads quickly, and it's a good starting point to understand how a framework works.
+
+
+## Why yet another framework?
+
+Fair question. There are already great ones out there, and SkankyDev doesn't pretend to replace them.
+
+But it doesn't do things the same way. Most ORMs were designed for SQL: tables, joins, fixed schemas. You can plug them into MongoDB, but you feel it quickly. You end up fighting the tool to handle documents, sub-documents or arrays.
+SkankyDev starts from MongoDB: documents are documents, not rows in disguise.
+
+And honestly, it's a side project. It's made first and foremost for fun and learning; profitability is for the day job.
 
 
 ## Wet kisses are the best
