@@ -35,6 +35,8 @@ They live in the [`docs/en/`](docs/en/000-Table-of-Contents.md) folder, versione
 - PHP 8.4 or later, with the `mongodb` and `intl` extensions;
 - MongoDB.
 
+Links, versions and the usual traps: see [02 Installation](docs/en/002-Installation.md#what-you-need).
+
 ## Tests
 
 ```bash

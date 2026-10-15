@@ -4,11 +4,33 @@ Install it, start it, and you've got a CRUD running before your coffee's done. P
 
 ## What you need
 
-- **PHP 8.4 or later**, with the `mongodb` and `intl` extensions (for translations, see [21](021-I18n.md)). Get a recent version of the extension (2.4.1 or later): older ones prevent Composer from installing the fixed version of the `mongodb/mongodb` library (a security flaw was fixed in 2.4.1). To check your version: `php --ri mongodb`.
-- **Composer**.
-- **A running MongoDB** (locally is more than enough).
-- **Node.js and npm**, to compile the CSS and JS with Vite.
+- **PHP 8.4 or later** ([php.net/downloads](https://www.php.net/downloads), or [windows.php.net](https://windows.php.net/download/) on Windows), with two extensions:
+  - `mongodb`, version 2.4.1 or later ([installation on php.net](https://www.php.net/manual/en/mongodb.installation.php));
+  - `intl`, for translations ([21 I18n](021-I18n.md)). It ships with PHP, you often just have to enable it in `php.ini`.
+- **Composer** ([getcomposer.org/download](https://getcomposer.org/download/)).
+- **A running MongoDB**: the [Community Server](https://www.mongodb.com/try/download/community) running locally is more than enough. [Compass](https://www.mongodb.com/products/tools/compass) is handy to see what's in your database.
 - A web server: Apache with `mod_rewrite`, or PHP's built-in server to try it out.
+- *Bonus*: **Node.js and npm** ([nodejs.org](https://nodejs.org/)). The starter ships with its CSS and JS already compiled, you only need them to change `src_front/` and recompile with Vite.
+
+### The usual traps
+
+- **Three different "MongoDB"s.** The MongoDB server (the database), the `mongodb` PHP extension (the driver, written in C) and the `mongodb/mongodb` library (written in PHP). You need all three, and Composer only takes care of the last one.
+- **The extension on Windows.** It comes as a DLL from the driver's [releases page](https://github.com/mongodb/mongo-php-driver/releases). Pick the one that matches your PHP exactly: same version (8.4), same architecture (x64), and TS or NTS depending on your build (`php -i` tells you, "Thread Safety" line). Copy `php_mongodb.dll` into PHP's `ext/` folder, then add `extension=mongodb` to `php.ini`.
+- **The right `php.ini`.** `php --ini` tells you which one is loaded. Careful, command-line PHP and Apache's PHP don't always use the same one: if it works in the terminal but not in the browser, that's often why.
+- **On Linux and Mac**, use [PIE](https://github.com/php/pie), which replaces PECL: `pie install mongodb/mongodb-extension`. Your distribution's package works too, if it's recent enough.
+
+### Check that everything is ready
+
+Before creating the project, each command should answer:
+
+```bash
+php -v                 # 8.4 or later
+php -m                 # must list mongodb and intl
+php --ri mongodb       # extension version, 2.4.1 or later
+composer --version
+```
+
+For MongoDB, connect to `mongodb://localhost:27017` with Compass, or run `mongosh` if it's installed (it ships separately from the server).
 
 ## Create the project
 
@@ -17,8 +39,12 @@ The starting project is called the **starter**. You grab it with Composer:
 ```bash
 composer create-project skankydev/starter my-project
 cd my-project
+```
+
+And if you installed Node.js, to be able to work on the front end:
+
+```bash
 npm install
-npm run build
 ```
 
 The framework itself (`skankydev/framework`) lands in `vendor/` on its own, like any other dependency. You don't see it in your project, and that's on purpose: your folder only contains *your* code. To update it later:
@@ -53,13 +79,13 @@ Open `http://localhost:8000`: you should land on the starter's home page. If you
 
 With Apache, point the document root to the `public/` folder (the `.htaccess` at the root redirects to `public/` if you can't). The only folder exposed to the world is `public/`.
 
-While you're tweaking the CSS or JS, keep this running in another terminal:
+While you're tweaking the CSS or JS (Node.js required), keep this running in another terminal:
 
 ```bash
 npm run dev
 ```
 
-It recompiles on every change in `src_front/`.
+It recompiles on every change in `src_front/`. When you're done, `npm run build` produces the final version in `public/dist/`.
 
 ## A CRUD in 10 minutes
 
@@ -108,5 +134,6 @@ If your Collection declares Mongo indexes (`getIndexes()`), the `php craft db-sy
 ## And if it doesn't work
 
 - **Blank page or connection error**: check that MongoDB is running, and the `DB_MONGO_*` values in the `.env`.
-- **The site shows up without any style**: you forgot `npm run build`.
+- **`composer create-project` refuses to install `mongodb/mongodb`**: the `mongodb` extension is missing or too old. Check with `php --ri mongodb`.
+- **The site shows up without any style**: `public/dist/` is empty or missing. Run `npm run build` again.
 - **404 everywhere except the home page** (with Apache): `mod_rewrite` isn't enabled, or `AllowOverride` is set to `None`.
