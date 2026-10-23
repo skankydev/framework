@@ -13,6 +13,12 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 - `Queue::PENDING`/`PROCESSING`/`SUCCESS`/`FAILED` are replaced by the `JobStatus` enum.
 - Run `php craft db-sync` to create the new index on `jobs`.
 
+### Added
+
+- `embeddedIn()`: `'many' => true` for a field holding an array of snapshots (e.g. a post's
+  tags). Only the matching items are synced (`arrayFilters`), `unset` pulls the item out.
+- `MasterCollection::updateMany()` takes driver options as an optional third argument.
+
 ### Fixed
 
 - Queue: two workers could run the same job (claiming is now atomic), and a job stayed

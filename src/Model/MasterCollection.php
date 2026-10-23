@@ -297,10 +297,11 @@ abstract class MasterCollection {
 	/**
 	 * Applies a raw Mongo update (`$set`, `$unset`…) to every document matching the filter.
 	 * Bypasses both behaviors and snapshot propagation.
+	 * @param array $options driver options (e.g. `arrayFilters`)
 	 * @return int number of modified documents
 	 */
-	public function updateMany(array $filter, array $update): int {
-		return $this->collection->updateMany($filter, $update)->getModifiedCount();
+	public function updateMany(array $filter, array $update, array $options = []): int {
+		return $this->collection->updateMany($filter, $update, $options)->getModifiedCount();
 	}
 
 	/**
@@ -469,8 +470,10 @@ abstract class MasterCollection {
 	 * - `class`      : snapshot class (e.g. UserSnapshot::class)
 	 * - `sync`       : true (default) immediate propagation, false through the Queue
 	 * - `onDelete`   : 'keep' (default) frozen snapshot, 'mark' → `_deleted` set to true, 'unset' → field removed
+	 * - `many`       : false (default) the field holds one snapshot, true an array of snapshots
+	 *                  (each item synced on its own; `unset` pulls the item out of the array)
 	 * None by default; override it. Read it through snapshotTargets() (defaults applied).
-	 * @return array<int, array{collection: string, field: string, class: string, sync?: bool, onDelete?: string}>
+	 * @return array<int, array{collection: string, field: string, class: string, sync?: bool, onDelete?: string, many?: bool}>
 	 */
 	public function embeddedIn(): array {
 		return [];
@@ -483,7 +486,7 @@ abstract class MasterCollection {
 	public function snapshotTargets(): array {
 		$targets = [];
 		foreach ($this->embeddedIn() as $target) {
-			$target += ['sync' => true, 'onDelete' => 'keep'];
+			$target += ['sync' => true, 'onDelete' => 'keep', 'many' => false];
 			if (!in_array($target['onDelete'], ['keep', 'mark', 'unset'], true)) {
 				throw new \InvalidArgumentException(static::class . ": invalid onDelete '{$target['onDelete']}' (keep, mark, unset)");
 			}
