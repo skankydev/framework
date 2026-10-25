@@ -24,6 +24,12 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 - Queue: two workers could run the same job (claiming is now atomic), and a job stayed
   `processing` forever when its worker died (lease, see `MasterJob::timeout()`).
 
+### Added
+
+- `MongoClient::_transaction()`, off by default (`db.MongoDB.transaction`, needs a replica set).
+  When on, a write and its snapshot propagation are done in one transaction.
+- `php craft db-replica`: initializes a single-node replica set.
+
 ## [0.2.0] - 2026-10-10
 
 ### Upgrading from 0.1

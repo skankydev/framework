@@ -48,7 +48,8 @@ class JobCollection extends MasterCollection {
 		// Expired lease and no attempt left: the worker died on the last try
 		$this->collection->updateMany(
 			['$and' => [$leaseExpired, ['$expr' => ['$gte' => ['$attempts', '$max_attempts']]]]],
-			[['$set' => ['status' => JobStatus::FAILED->value, 'error' => 'Lease expired', 'updated_at' => '$$NOW']]]
+			[['$set' => ['status' => JobStatus::FAILED->value, 'error' => 'Lease expired', 'updated_at' => '$$NOW']]],
+			$this->withSession()
 		);
 
 		$timeout = ['$ifNull' => ['$timeout', Config::get('queue.timeout') ?? 600]];
@@ -61,7 +62,7 @@ class JobCollection extends MasterCollection {
 				'updated_at'  => '$$NOW',
 				'lease_until' => ['$dateAdd' => ['startDate' => '$$NOW', 'unit' => 'second', 'amount' => $timeout]],
 			]]],
-			['sort' => ['created_at' => 1], 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER]
+			$this->withSession(['sort' => ['created_at' => 1], 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER])
 		);
 	}
 

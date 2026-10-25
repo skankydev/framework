@@ -110,7 +110,7 @@ abstract class MasterCollection {
 		$with = $options['with'] ?? [];
 		unset($options['with']);
 
-		$cursor = $this->collection->find($filter, $options);
+		$cursor = $this->collection->find($filter, $this->withSession($options));
 		$documents = iterator_to_array($cursor, false);
 
 		if ($with && $documents) {
@@ -127,7 +127,7 @@ abstract class MasterCollection {
 		$with = $options['with'] ?? [];
 		unset($options['with']);
 
-		$result = $this->collection->findOne($filter, $options);
+		$result = $this->collection->findOne($filter, $this->withSession($options));
 
 		if ($with && $result) {
 			$this->loadRelations([$result], $with);
@@ -149,20 +149,20 @@ abstract class MasterCollection {
 	
 	/**
 	 * Inserts a new document into the collection.
-	 * Fires beforeInsert and afterInsert behavior hooks, unless $withBehaviors is false
+	 * Fires beforeInsert and afterInsert behavior hooks, unless $beLoud is false
 	 * (e.g. a housekeeping write that shouldn't touch behavior-managed fields like updated_at).
 	 * Populates $document->_id with the inserted ObjectId.
 	 */
-	public function insert(object $document, bool $withBehaviors = true): bool {
+	public function insert(object $document, bool $beLoud = true): bool {
 		try {
-			if ($withBehaviors) {
+			if ($beLoud) {
 				$this->callBehaviors('beforeInsert', $document);
 			}
-			$result = $this->collection->insertOne($document);
+			$result = $this->collection->insertOne($document, $this->withSession());
 			if ($result->getInsertedId()) {
 				$document->_id = $result->getInsertedId();
 			}
-			if ($withBehaviors) {
+			if ($beLoud) {
 				$this->callBehaviors('afterInsert', $document);
 			}
 			if ($document instanceof MasterDocument) {
@@ -177,7 +177,7 @@ abstract class MasterCollection {
 
 	/**
 	 * Updates an existing document matched by its _id.
-	 * Fires beforeUpdate and afterUpdate behavior hooks, unless $withBehaviors is false
+	 * Fires beforeUpdate and afterUpdate behavior hooks, unless $beLoud is false
 	 * (e.g. a housekeeping write that shouldn't touch behavior-managed fields like updated_at).
 	 *
 	 * A MasterDocument only writes its changed fields (dirty tracking): two
@@ -187,13 +187,13 @@ abstract class MasterCollection {
 	 * is only resynced after them.
 	 * @throws \Exception if the document has no _id
 	 */
-	public function update(object $document, bool $withBehaviors = true): bool {
+	public function update(object $document, bool $beLoud = true): bool {
 		try {
 			if (empty($document->_id)) {
 				throw new \Exception("Cannot update document without _id");
 			}
 
-			if ($withBehaviors) {
+			if ($beLoud) {
 				$this->callBehaviors('beforeUpdate', $document);
 			}
 
@@ -202,18 +202,24 @@ abstract class MasterCollection {
 				return false;
 			}
 
-			$result = $this->collection->updateOne(
-				['_id' => $document->_id],
-				['$set' => $set]
-			);
+			$result = $this->atomic(function () use ($document, $set, $beLoud) {
+				$result = $this->collection->updateOne(
+					['_id' => $document->_id],
+					['$set' => $set],
+					$this->withSession()
+				);
 
-			if ($withBehaviors) {
-				$this->callBehaviors('afterUpdate', $document);
-			}
-			if ($document instanceof MasterDocument) {
-				if ($this->embeddedIn() && $withBehaviors) {
+				if ($beLoud) {
+					$this->callBehaviors('afterUpdate', $document);
+				}
+				if ($document instanceof MasterDocument && $this->embeddedIn() && $beLoud) {
 					$this->propagateSnapshots($document->_id, $document->getDirty());
 				}
+				return $result;
+			});
+
+			// After the transaction: a retried callback must still see the dirty fields
+			if ($document instanceof MasterDocument) {
 				$document->syncOriginal();
 			}
 
@@ -225,13 +231,13 @@ abstract class MasterCollection {
 
 	/**
 	 * Inserts or updates the document depending on whether _id is set.
-	 * @param bool $withBehaviors passé tel quel à insert()/update() — false pour désactiver les behaviors.
+	 * @param bool $beLoud passé tel quel à insert()/update() — false pour désactiver les behaviors.
 	 */
-	public function save(object $document, bool $withBehaviors = true): bool {
+	public function save(object $document, bool $beLoud = true): bool {
 		if (!empty($document->_id)) {
-			return $this->update($document, $withBehaviors);
+			return $this->update($document, $beLoud);
 		} else {
-			return $this->insert($document, $withBehaviors);
+			return $this->insert($document, $beLoud);
 		}
 	}
 
@@ -246,14 +252,13 @@ abstract class MasterCollection {
 	public function deleteById(string $id): bool {
 		try {
 			$objectId = new ObjectId($id);
-			$result = $this->collection->deleteOne([
-				'_id' => $objectId
-			]);
-			if ($result->getDeletedCount() > 0) {
-				$this->propagateSnapshots($objectId);
-			}
-
-			return $result->getDeletedCount() > 0;
+			return $this->atomic(function () use ($objectId) {
+				$result = $this->collection->deleteOne(['_id' => $objectId], $this->withSession());
+				if ($result->getDeletedCount() > 0) {
+					$this->propagateSnapshots($objectId);
+				}
+				return $result->getDeletedCount() > 0;
+			});
 		} catch (\Exception $e) {
 			throw $e;
 		}
@@ -264,14 +269,13 @@ abstract class MasterCollection {
 	 */
 	public function deleteOne(object $document): bool {
 		try {
-			$result = $this->collection->deleteOne([
-				'_id' => $document->_id
-			]);
-			if ($result->getDeletedCount() > 0) {
-				$this->propagateSnapshots($document->_id);
-			}
-
-			return $result->getDeletedCount() > 0;
+			return $this->atomic(function () use ($document) {
+				$result = $this->collection->deleteOne(['_id' => $document->_id], $this->withSession());
+				if ($result->getDeletedCount() > 0) {
+					$this->propagateSnapshots($document->_id);
+				}
+				return $result->getDeletedCount() > 0;
+			});
 		} catch (\Exception $e) {
 			throw $e;
 		}
@@ -282,13 +286,15 @@ abstract class MasterCollection {
 	 */
 	public function delete(array $filter): bool {
 		try {
-			// Deleted _ids can't be read afterwards: collect them first, if needed
-			$ids = $this->embeddedIn() ? $this->collection->distinct('_id', $filter) : [];
-			$result = $this->collection->deleteMany($filter);
-			foreach ($ids as $id) {
-				$this->propagateSnapshots($id);
-			}
-			return $result->getDeletedCount();
+			return $this->atomic(function () use ($filter) {
+				// Deleted _ids can't be read afterwards: collect them first, if needed
+				$ids = $this->embeddedIn() ? $this->collection->distinct('_id', $filter, $this->withSession()) : [];
+				$result = $this->collection->deleteMany($filter, $this->withSession());
+				foreach ($ids as $id) {
+					$this->propagateSnapshots($id);
+				}
+				return $result->getDeletedCount();
+			});
 		} catch (\Exception $e) {
 			throw $e;
 		}
@@ -301,7 +307,26 @@ abstract class MasterCollection {
 	 * @return int number of modified documents
 	 */
 	public function updateMany(array $filter, array $update, array $options = []): int {
-		return $this->collection->updateMany($filter, $update, $options)->getModifiedCount();
+		return $this->collection->updateMany($filter, $update, $this->withSession($options))->getModifiedCount();
+	}
+
+	/**
+	 * Adds the session of the transaction in progress (if any) to driver options.
+	 * Every operation must carry it, reads included: outside the session, a read
+	 * doesn't see the transaction's uncommitted writes (SnapshotSyncJob re-reads its source).
+	 */
+	protected function withSession(array $options = []): array {
+		$session = MongoClient::_getSession();
+		return $session ? $options + ['session' => $session] : $options;
+	}
+
+	/**
+	 * Runs a write and its snapshot propagation in one transaction (see MongoClient::transaction()),
+	 * so the source can't be written without its propagation (job pushed, or sync run).
+	 * Without embeddedIn() there's nothing to propagate: $callback just runs.
+	 */
+	private function atomic(callable $callback): mixed {
+		return $this->embeddedIn() ? MongoClient::_transaction($callback) : $callback();
 	}
 
 	/**
@@ -324,14 +349,14 @@ abstract class MasterCollection {
 	 * Returns the number of documents matching the filter.
 	 */
 	public function count(array $filter = []): int {
-		return $this->collection->countDocuments($filter);
+		return $this->collection->countDocuments($filter, $this->withSession());
 	}
 	
 	/**
 	 * Runs a MongoDB aggregation pipeline and returns the results as an array.
 	 */
 	public function aggregate(array $pipeline): array {
-		$cursor = $this->collection->aggregate($pipeline);
+		$cursor = $this->collection->aggregate($pipeline, $this->withSession());
 		return iterator_to_array($cursor, false);
 	}
 	
