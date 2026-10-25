@@ -93,6 +93,10 @@ return [
 		'folder' => UPLOAD_FOLDER,
 		'url'    => '/upload',
 	],
+	// queue worker: lease in seconds before a job stuck in processing is claimed again
+	'queue' => [
+		'timeout' => 600,
+	],
 	'timeHelper'=> [
 		'format'=>'Y-m-d H:i:s',
 		'timezone'=>'UTC'

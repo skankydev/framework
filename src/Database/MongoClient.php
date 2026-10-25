@@ -18,17 +18,23 @@ use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\Manager;
+use MongoDB\Driver\Session;
 use SkankyDev\Config\Config;
 use SkankyDev\Utilities\Traits\Singleton;
 
+use function MongoDB\with_transaction;
+
 class MongoClient {
 
-	
+
 	use Singleton;
 
 	private $manager;
 	private $client;
 	private $dbName;
+
+	/** Session of the transaction in progress, null outside a transaction. */
+	private ?Session $session = null;
 
 	/**
 	 * Builds the MongoDB URI from config and initializes the Manager and Client.
@@ -99,5 +105,39 @@ class MongoClient {
 	public function createIndex(string $name, array $index): mixed {
 		$collection = $this->getCollection($name);
 		return $collection->createIndexes($index);
+	}
+
+	/**
+	 * Returns the session of the transaction in progress, or null outside a transaction.
+	 * MasterCollection adds it to every operation (see MasterCollection::withSession()).
+	 */
+	public function getSession(): ?Session {
+		return $this->session;
+	}
+
+	/**
+	 * Runs $callback in a transaction: every MasterCollection operation inside it
+	 * is committed together, or not at all if an exception comes out.
+	 * Only when `db.MongoDB.transaction` is true (it needs a replica set): otherwise,
+	 * or when already inside a transaction (Mongo doesn't nest them), $callback just runs.
+	 * with_transaction() retries $callback on transient errors: it may run more than once.
+	 * @return mixed what $callback returns
+	 */
+	public function transaction(callable $callback): mixed {
+		if (!Config::get('db.MongoDB.transaction') || $this->session) {
+			return $callback();
+		}
+
+		$this->session = $this->client->startSession();
+		try {
+			$result = null;
+			with_transaction($this->session, function () use ($callback, &$result) {
+				$result = $callback();
+			});
+			return $result;
+		} finally {
+			$this->session->endSession();
+			$this->session = null;
+		}
 	}
 }

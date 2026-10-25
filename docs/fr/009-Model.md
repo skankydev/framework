@@ -109,6 +109,26 @@ Le gros intérêt, c'est le `save` : au lieu de renvoyer tout le document, seuls
 
 Un document tout neuf (`new User(...)`, jamais lu ni sauvé) n'a pas d'état d'origine, donc tous ses champs sont considérés comme modifiés. Logique : l'`insert` doit tout écrire la première fois.
 
+## Transactions
+
+Plusieurs écritures qui doivent réussir ensemble, ou pas du tout :
+
+```php
+MongoClient::_transaction(function () use ($order, $stock) {
+    OrderCollection::_save($order);
+    StockCollection::_save($stock);
+});
+```
+
+Si une exception sort du callback, tout est annulé et l'exception remonte. Toutes les opérations des Collections faites dedans (lectures comprises) rejoignent la transaction toutes seules, il n'y a rien à faire passer.
+
+C'est **désactivé par défaut**, parce que les transactions MongoDB demandent un replica set (un seul nœud suffit). Tu l'actives dans la config avec `db.MongoDB.transaction => true`. Pour monter le replica set, `php craft db-replica` te guide ([16 Craft et CLI](016-Craft-et-CLI.md)). Désactivé, le callback s'exécute simplement, sans transaction : ton code reste le même dans les deux cas.
+
+Deux choses à savoir :
+
+- Mongo n'imbrique pas les transactions : un `_transaction()` dans un autre rejoint simplement le premier.
+- Le callback peut tourner **plusieurs fois** : sur une erreur passagère (un conflit d'écriture, par exemple), Mongo relance toute la transaction. Évite là-dedans les effets de bord qu'on ne peut pas répéter (envoyer un mail...).
+
 ## Sous le capot
 
 ### Pourquoi `MongoDB\BSON\Persistable`

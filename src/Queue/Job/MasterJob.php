@@ -2,6 +2,7 @@
 
 namespace SkankyDev\Queue\Job;
 
+use SkankyDev\Config\Config;
 use SkankyDev\Model\Document\EmbeddedDocument;
 
 /**
@@ -15,6 +16,15 @@ abstract class MasterJob extends EmbeddedDocument {
 
 	/** Executes the job. Called by QueueWork when the job is processed. */
 	abstract public function run(): void;
+
+	/**
+	 * Lease duration in seconds (config `queue.timeout` by default): past it, a job still
+	 * in processing is considered abandoned and can be claimed again by another worker.
+	 * Override it for a job that legitimately runs longer, otherwise it would run twice.
+	 */
+	public function timeout(): int {
+		return Config::get('queue.timeout') ?? 600;
+	}
 
 	/**
 	 * Returns all job properties as an array.

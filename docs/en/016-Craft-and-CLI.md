@@ -77,6 +77,7 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // numbered menu
   ```
   If you published the templates (`php craft publish -p=template`), your copy must use `$module` and `$viewPath` instead of `App` and `$dashed` in the view names, otherwise it will always generate into `App`.
 - **`db-sync`**: syncs the declared Mongo indexes (each Collection's `getIndexes()`, see [09 Model](009-Model.md)).
+- **`db-replica`**: initializes a single-node replica set, needed by transactions ([09 Model](009-Model.md#transactions)). It can't edit MongoDB's config file for you: if MongoDB isn't started as a replica set member, it tells you what to add and where. Safe to run again, it just tells you where things stand.
 - **`queue-worker`**: runs the worker that processes pending jobs (see [17 Queue and Jobs](017-Queue-and-Jobs.md)).
 - **`lang-sync`**: updates the language files with the keys used in the code (`--dry-run`, `--prune`, `--check`, see [21 Internationalization](021-I18n.md)).
 - **`publish`**: copies the framework's default resources into your project (detailed just below).

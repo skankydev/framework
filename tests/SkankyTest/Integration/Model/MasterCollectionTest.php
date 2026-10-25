@@ -63,6 +63,8 @@ class Article extends MasterDocument
 {
     public string $title = '';
     public ?AuthorSnapshot $author = null;
+    /** @var AuthorSnapshot[] cible `many` */
+    public array $coauthors = [];
 }
 
 class ArticleCollection extends MasterCollection
@@ -115,6 +117,36 @@ class AsyncAuthorCollection extends AuthorCollection
     public function embeddedIn(): array
     {
         return [['collection' => ArticleCollection::class, 'field' => 'author', 'class' => AuthorSnapshot::class, 'sync' => false]];
+    }
+}
+
+class ManyAuthorCollection extends AuthorCollection
+{
+    use Singleton;
+
+    public function embeddedIn(): array
+    {
+        return [['collection' => ArticleCollection::class, 'field' => 'coauthors', 'class' => AuthorSnapshot::class, 'many' => true]];
+    }
+}
+
+class ManyMarkAuthorCollection extends AuthorCollection
+{
+    use Singleton;
+
+    public function embeddedIn(): array
+    {
+        return [['collection' => ArticleCollection::class, 'field' => 'coauthors', 'class' => AuthorSnapshot::class, 'many' => true, 'onDelete' => 'mark']];
+    }
+}
+
+class ManyUnsetAuthorCollection extends AuthorCollection
+{
+    use Singleton;
+
+    public function embeddedIn(): array
+    {
+        return [['collection' => ArticleCollection::class, 'field' => 'coauthors', 'class' => AuthorSnapshot::class, 'many' => true, 'onDelete' => 'unset']];
     }
 }
 
@@ -359,6 +391,7 @@ class MasterCollectionTest extends IntegrationTestCase
         $target = (new AuthorCollection())->snapshotTargets()[0];
         $this->assertTrue($target['sync']);
         $this->assertSame('keep', $target['onDelete']);
+        $this->assertFalse($target['many']);
         $this->assertSame('author', $target['field']);
     }
 
@@ -507,6 +540,105 @@ class MasterCollectionTest extends IntegrationTestCase
 
         $jobDoc->payload->run(); // ce que fait queue-work
         $this->assertSame('Skanky', $this->reloadArticle($article)->author->name);
+    }
+
+    // ── snapshots : cible many (tableau) ──────────────────────────────────────
+
+    /** Deux auteurs + un article qui porte leurs snapshots dans `coauthors`. */
+    private function authorsWithArticle(MasterCollection $authors): array
+    {
+        $this->dropCollection('test_authors');
+        $this->dropCollection('test_articles');
+
+        $simon = new Author(['name' => 'Simon']);
+        $other = new Author(['name' => 'Claude']);
+        $authors->insert($simon);
+        $authors->insert($other);
+
+        $article = new Article(['title' => 'Post à deux']);
+        $article->coauthors = [new AuthorSnapshot($simon), new AuthorSnapshot($other)];
+        (new ArticleCollection())->insert($article);
+
+        return [$simon, $other, $article];
+    }
+
+    public function testManyUpdatePropagatesOnlyToMatchingItem(): void
+    {
+        $authors = new ManyAuthorCollection();
+        [$simon, , $article] = $this->authorsWithArticle($authors);
+
+        $simon->name = 'Skanky';
+        $authors->update($simon);
+
+        $coauthors = $this->reloadArticle($article)->coauthors;
+        $this->assertCount(2, $coauthors);
+        $this->assertInstanceOf(AuthorSnapshot::class, $coauthors[0]);
+        $this->assertSame('Skanky', $coauthors[0]->name);
+        $this->assertEquals($simon->_id, $coauthors[0]->_id);
+        $this->assertSame('Claude', $coauthors[1]->name);
+    }
+
+    public function testManyUpdatePropagatesToEveryDuplicateItem(): void
+    {
+        $authors = new ManyAuthorCollection();
+        [$simon, , $article] = $this->authorsWithArticle($authors);
+        (new ArticleCollection())->updateMany([], ['$push' => ['coauthors' => new AuthorSnapshot($simon)]]);
+
+        $simon->name = 'Skanky';
+        $authors->update($simon);
+
+        $coauthors = $this->reloadArticle($article)->coauthors;
+        $this->assertSame('Skanky', $coauthors[0]->name);
+        $this->assertSame('Skanky', $coauthors[2]->name);
+    }
+
+    public function testManyDeleteWithKeepLeavesItemsUntouched(): void
+    {
+        $authors = new ManyAuthorCollection();
+        [$simon, , $article] = $this->authorsWithArticle($authors);
+
+        $authors->deleteOne($simon);
+
+        $coauthors = $this->reloadArticle($article)->coauthors;
+        $this->assertCount(2, $coauthors);
+        $this->assertFalse($coauthors[0]->_deleted);
+    }
+
+    public function testManyDeleteWithMarkFlagsOnlyMatchingItem(): void
+    {
+        $authors = new ManyMarkAuthorCollection();
+        [$simon, , $article] = $this->authorsWithArticle($authors);
+
+        $authors->deleteOne($simon);
+
+        $coauthors = $this->reloadArticle($article)->coauthors;
+        $this->assertTrue($coauthors[0]->_deleted);
+        $this->assertSame('Simon', $coauthors[0]->name);
+        $this->assertFalse($coauthors[1]->_deleted);
+    }
+
+    public function testManyDeleteWithUnsetPullsItem(): void
+    {
+        $authors = new ManyUnsetAuthorCollection();
+        [$simon, , $article] = $this->authorsWithArticle($authors);
+
+        $authors->deleteOne($simon);
+
+        $coauthors = $this->reloadArticle($article)->coauthors;
+        $this->assertCount(1, $coauthors);
+        $this->assertSame('Claude', $coauthors[0]->name);
+    }
+
+    public function testSyncIndexesCreatesSnapshotIndexOnManyTarget(): void
+    {
+        $this->dropCollection('test_articles');
+        (new ManyAuthorCollection())->syncIndexes();
+
+        $keys = [];
+        foreach (MongoClient::getInstance()->getCollection('test_articles')->listIndexes() as $index) {
+            $keys[] = $index->getKey();
+        }
+        $this->assertContains(['coauthors._id' => 1], $keys);
     }
 
     // ── delete ────────────────────────────────────────────────────────────────
