@@ -12,18 +12,28 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.4', '8.5']
+        # standalone : le cas par défaut. replica set : les tests de transactions
+        mongo: ['standalone', 'replicaset']
 
-    # MongoDB pour la suite Integration (tests/bootstrap.php vise 127.0.0.1:27017)
-    services:
-      mongodb:
-        image: mongo:7
-        ports:
-          - 27017:27017
-
-    name: PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }} / Mongo ${{ matrix.mongo }}
 
     steps:
       - uses: actions/checkout@v4
+
+      # MongoDB pour la suite Integration (tests/bootstrap.php vise 127.0.0.1:27017).
+      # Lancé à la main plutôt qu'en `services` : un service ne peut pas recevoir --replSet
+      - name: Start MongoDB
+        run: |
+          if [ "${{ matrix.mongo }}" = "replicaset" ]; then
+            docker run -d --name mongo -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          else
+            docker run -d --name mongo -p 27017:27017 mongo:7
+          fi
+          until docker exec mongo mongosh --quiet --eval "db.adminCommand('ping')" > /dev/null 2>&1; do sleep 1; done
+          if [ "${{ matrix.mongo }}" = "replicaset" ]; then
+            docker exec mongo mongosh --quiet --eval "rs.initiate({_id: 'rs0', members: [{_id: 0, host: '127.0.0.1:27017'}]})"
+            until docker exec mongo mongosh --quiet --eval "db.hello().isWritablePrimary" | grep -q true; do sleep 1; done
+          fi
 
       - uses: shivammathur/setup-php@v2
         with:

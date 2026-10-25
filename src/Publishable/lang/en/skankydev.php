@@ -78,6 +78,18 @@ return [
 			'synced_snaps' => '✓ {class}: {indexes, plural, one {# index} other {# indexes}}, {snapshots, plural, one {# snapshot} other {# snapshots}}',
 			'no_collection'=> 'No Collection found.',
 		],
+		'db_replica' => [
+			'help'             => 'Initializes a single-node replica set (needed by transactions)',
+			'already'          => '✓ MongoDB is already a replica set ({name}), nothing to do.',
+			'not_enabled'      => '✗ MongoDB is not started as a replica set member.',
+			'config_file'      => 'Add this to the config file of your MongoDB ({file}):',
+			'config_unknown'   => 'Add this to the config file of your MongoDB (mongod.cfg on Windows, /etc/mongod.conf on Linux):',
+			'restart'          => 'Then restart MongoDB (Windows: Restart-Service MongoDB as admin, Linux: sudo systemctl restart mongod) and run php craft db-replica again.',
+			'initiating'       => '🔧 Initializing the replica set {name} on {host}...',
+			'initiated'        => '✓ Replica set ready.',
+			'timeout'          => '⚠ The node is not primary yet. Wait a few seconds, then run php craft db-replica again to check.',
+			'transaction_hint' => 'To use transactions, set db.MongoDB.transaction => true in your config.',
+		],
 		'publish' => [
 			'help'             => 'Publishes the framework default resources (error, template, part, fields, lang, all) into the project',
 			'unknown_resource' => 'Unknown resource: {resource}',

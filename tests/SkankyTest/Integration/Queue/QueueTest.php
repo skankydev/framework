@@ -2,7 +2,10 @@
 
 namespace SkankyTest\Integration\Queue;
 
+use MongoDB\BSON\UTCDateTime;
+use SkankyDev\Command\QueueWork;
 use SkankyDev\Database\MongoClient;
+use SkankyDev\Model\Enum\JobStatus;
 use SkankyDev\Model\JobCollection;
 use SkankyDev\Queue\Queue;
 use SkankyDev\Queue\Job\MasterJob;
@@ -20,6 +23,24 @@ class PingJob extends MasterJob
     }
 
     public function run(): void {}
+}
+
+class SlowJob extends MasterJob
+{
+    public function run(): void {}
+
+    public function timeout(): int
+    {
+        return 3600;
+    }
+}
+
+class BrokenJob extends MasterJob
+{
+    public function run(): void
+    {
+        throw new \Error('boom');
+    }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -64,7 +85,7 @@ class QueueTest extends IntegrationTestCase
         Queue::push(new PingJob('test'));
 
         $col = new JobCollection();
-        $job = $col->findOne(['status' => Queue::PENDING]);
+        $job = $col->findOne(['status' => JobStatus::PENDING->value]);
         $this->assertNotNull($job);
     }
 
@@ -105,33 +126,166 @@ class QueueTest extends IntegrationTestCase
         $this->assertNull(Queue::next());
     }
 
-    public function testNextReturnsPendingJob(): void
+    public function testPushStoresJobTimeout(): void
+    {
+        Queue::push(new SlowJob());
+
+        $job = (new JobCollection())->findOne();
+        $this->assertEquals(3600, $job->timeout);
+    }
+
+    public function testNextClaimsPendingJob(): void
     {
         Queue::push(new PingJob('premier'));
         $job = Queue::next();
         $this->assertNotNull($job);
-        $this->assertEquals(Queue::PENDING, $job->status);
+        $this->assertSame(JobStatus::PROCESSING, $job->status);
+        $this->assertEquals(1, $job->attempts);
+        $this->assertNotNull($job->started_at);
+        $this->assertInstanceOf(PingJob::class, $job->payload);
+    }
+
+    public function testNextSetsLeaseFromJobTimeout(): void
+    {
+        Queue::push(new PingJob('lease'));
+        $job = Queue::next();
+
+        $lease = $job->lease_until->getTimestamp() - $job->started_at->getTimestamp();
+        $this->assertEquals(600, $lease);
+    }
+
+    public function testNextIsPersistedAsProcessing(): void
+    {
+        Queue::push(new PingJob('persist'));
+        Queue::next();
+
+        $col = new JobCollection();
+        $this->assertEquals(1, $col->count(['status' => JobStatus::PROCESSING->value]));
+        $this->assertEquals(0, $col->count(['status' => JobStatus::PENDING->value]));
     }
 
     public function testNextReturnsFifoOrder(): void
     {
         // Les jobs sont triés par created_at ASC — le premier inséré doit revenir en premier
         Queue::push(new PingJob('premier'));
+        usleep(2000); // created_at est à la milliseconde côté Mongo
         Queue::push(new PingJob('second'));
+
+        $this->assertEquals('premier', Queue::next()->payload->target);
+        $this->assertEquals('second',  Queue::next()->payload->target);
+    }
+
+    public function testNextNeverClaimsTheSameJobTwice(): void
+    {
+        Queue::push(new PingJob('seul'));
+
+        $this->assertNotNull(Queue::next());
+        $this->assertNull(Queue::next());
+    }
+
+    // ── bail (lease) ─────────────────────────────────────────────────────────
+
+    public function testNextReclaimsJobWithExpiredLease(): void
+    {
+        Queue::push(new PingJob('bloque'));
+        Queue::next();
+        $this->expireLeases();
 
         $job = Queue::next();
         $this->assertNotNull($job);
-        // Le premier job inséré doit avoir created_at <= celui du second
-        $this->assertEquals(Queue::PENDING, $job->status);
+        $this->assertEquals('bloque', $job->payload->target);
+        $this->assertEquals(2, $job->attempts);
     }
 
-    // ── constantes ───────────────────────────────────────────────────────────
-
-    public function testQueueConstants(): void
+    public function testNextIgnoresJobWithRunningLease(): void
     {
-        $this->assertEquals('pending',    Queue::PENDING);
-        $this->assertEquals('processing', Queue::PROCESSING);
-        $this->assertEquals('success',    Queue::SUCCESS);
-        $this->assertEquals('failed',     Queue::FAILED);
+        Queue::push(new PingJob('en-cours'));
+        Queue::next();
+
+        $this->assertNull(Queue::next());
+    }
+
+    public function testExpiredLeaseWithoutAttemptsLeftMarksJobFailed(): void
+    {
+        Queue::push(new PingJob('mort'));
+        Queue::next();
+        $this->rawJobs()->updateMany([], ['$set' => ['attempts' => 3]]);
+        $this->expireLeases();
+
+        $this->assertNull(Queue::next());
+        $job = (new JobCollection())->findOne();
+        $this->assertSame(JobStatus::FAILED, $job->status);
+        $this->assertEquals('Lease expired', $job->error);
+    }
+
+    public function testNextHandlesJobWithoutStoredTimeout(): void
+    {
+        // Job mis en queue avant l'ajout du champ timeout
+        Queue::push(new PingJob('ancien'));
+        $this->rawJobs()->updateMany([], ['$unset' => ['timeout' => '']]);
+
+        $job = Queue::next();
+        $this->assertNotNull($job->lease_until);
+    }
+
+    // ── worker (QueueWork::processJob) ───────────────────────────────────────
+
+    public function testWorkerDeletesJobOnSuccess(): void
+    {
+        Queue::push(new PingJob('ok'));
+        $this->process(Queue::next());
+
+        $this->assertEquals(0, (new JobCollection())->count());
+    }
+
+    public function testWorkerPutsJobBackToPendingOnError(): void
+    {
+        // Une \Error (pas une \Exception) ne doit pas tuer le worker ni bloquer le job
+        Queue::push(new BrokenJob());
+        $this->process(Queue::next());
+
+        $job = (new JobCollection())->findOne();
+        $this->assertSame(JobStatus::PENDING, $job->status);
+        $this->assertEquals(1, $job->attempts);
+        $this->assertEquals('boom', $job->error);
+    }
+
+    public function testWorkerMarksJobFailedOnLastAttempt(): void
+    {
+        Queue::push(new BrokenJob());
+        for ($i = 0; $i < 3; $i++) {
+            $this->process(Queue::next());
+        }
+
+        $job = (new JobCollection())->findOne();
+        $this->assertSame(JobStatus::FAILED, $job->status);
+        $this->assertEquals(3, $job->attempts);
+        $this->assertNull(Queue::next());
+    }
+
+    // ── enum ─────────────────────────────────────────────────────────────────
+
+    public function testJobStatusValues(): void
+    {
+        $this->assertEquals('pending',    JobStatus::PENDING->value);
+        $this->assertEquals('processing', JobStatus::PROCESSING->value);
+        $this->assertEquals('failed',     JobStatus::FAILED->value);
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+
+    private function rawJobs(): \MongoDB\Collection
+    {
+        return MongoClient::_getCollection('jobs');
+    }
+
+    private function process(object $jobInfo): void
+    {
+        (new \ReflectionMethod(QueueWork::class, 'processJob'))->invoke(new QueueWork(), $jobInfo);
+    }
+
+    private function expireLeases(): void
+    {
+        $this->rawJobs()->updateMany([], ['$set' => ['lease_until' => new UTCDateTime((time() - 60) * 1000)]]);
     }
 }

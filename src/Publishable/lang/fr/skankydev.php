@@ -78,6 +78,18 @@ return [
 			'synced_snaps' => '✓ {class} : {indexes, plural, one {# index} other {# index}}, {snapshots, plural, one {# snapshot} other {# snapshots}}',
 			'no_collection'=> 'Aucune Collection trouvée.',
 		],
+		'db_replica' => [
+			'help'             => 'Initialise un replica set à un nœud (nécessaire aux transactions)',
+			'already'          => '✓ MongoDB est déjà en replica set ({name}), rien à faire.',
+			'not_enabled'      => '✗ MongoDB n\'est pas lancé en replica set.',
+			'config_file'      => 'Ajoute ceci dans le fichier de config de ton MongoDB ({file}) :',
+			'config_unknown'   => 'Ajoute ceci dans le fichier de config de ton MongoDB (mongod.cfg sous Windows, /etc/mongod.conf sous Linux) :',
+			'restart'          => 'Puis redémarre MongoDB (Windows : Restart-Service MongoDB en admin, Linux : sudo systemctl restart mongod) et relance php craft db-replica.',
+			'initiating'       => '🔧 Initialisation du replica set {name} sur {host}...',
+			'initiated'        => '✓ Replica set prêt.',
+			'timeout'          => '⚠ Le nœud n\'est pas encore primaire. Attends quelques secondes, puis relance php craft db-replica pour vérifier.',
+			'transaction_hint' => 'Pour utiliser les transactions, mets db.MongoDB.transaction => true dans ta config.',
+		],
 		'publish' => [
 			'help'             => 'Publie les ressources par défaut du framework (error, template, part, fields, lang, all) dans le projet',
 			'unknown_resource' => 'Ressource inconnue : {resource}',
