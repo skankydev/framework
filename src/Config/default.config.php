@@ -56,6 +56,7 @@ return [
 			'password' => \SkankyDev\Form\Fields\PasswordField::class,
 			'file'     => \SkankyDev\Form\Fields\FileField::class,
 			'hidden'   => \SkankyDev\Form\Fields\HiddenField::class,
+			'submit'   => \SkankyDev\Form\Fields\SubmitField::class,
 			'default'  => \SkankyDev\Form\Fields\TextField::class,
 		],
 		'rules' => [

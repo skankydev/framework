@@ -31,6 +31,8 @@ return view('article.create', ['form' => $form]);
 
 Si tu veux un layout plus perso que l'enchaînement automatique des champs, tu as les morceaux séparés : `$form->open()`, `$form->renderField('title')` un par un, puis `$form->close()`.
 
+Le bouton est un champ comme les autres (`SubmitField`, type `submit`). `submit('Enregistrer')` est un raccourci pour `add('submit', 'submit', ['label' => 'Enregistrer'])` : dans un layout perso, il se place avec `$form->renderField('submit')`. Tu peux aussi le déclarer toi-même avec `add()`, sous le nom que tu veux. Il n'y a pas de bouton par défaut : un form sans `submit()` (ni champ `submit`) n'en a pas. Le `<button>` ne porte pas d'attribut `name`, donc rien n'est envoyé dans le POST, et `only()` l'ignore.
+
 ## Pré-remplissage
 
 Pour un formulaire d'édition, `setData()` prend un objet (un Document, par exemple, [09 Model](009-Model.md)) ou un tableau. Ses propriétés deviennent les valeurs par défaut des champs :

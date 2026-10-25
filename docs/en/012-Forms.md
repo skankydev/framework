@@ -31,6 +31,8 @@ return view('article.create', ['form' => $form]);
 
 If you want a more custom layout than the automatic sequence of fields, you have the separate pieces: `$form->open()`, `$form->renderField('title')` one by one, then `$form->close()`.
 
+The button is a field like any other (`SubmitField`, type `submit`). `submit('Save')` is a shortcut for `add('submit', 'submit', ['label' => 'Save'])`: in a custom layout you place it with `$form->renderField('submit')`. You can also declare it yourself with `add()`, under any name. There is no default button: a form without `submit()` (or a `submit` field) has none. The `<button>` has no `name` attribute, so nothing is sent in the POST, and `only()` ignores it.
+
 ## Pre-filling
 
 For an edit form, `setData()` takes an object (a Document, for example, [09 Model](009-Model.md)) or an array. Its properties become the fields' default values:
