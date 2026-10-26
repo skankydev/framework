@@ -40,7 +40,24 @@ $this->addCss('/dist/post.css');
 $this->addJs('/dist/post.js');
 ```
 
-Côté layout, tout ressort d'un coup avec `<?= $this->getHeader() ?>` (metas + css + js accumulés).
+Pour l'Open Graph et les liens, deux méthodes de plus. `addProperty()` sort un `<meta property="…">` et peut être appelée plusieurs fois avec la même propriété (un `article:tag` par tag), là où `addMeta()` écrase la valeur précédente :
+
+```php
+$this->addProperty('og:title', $post->name);
+$this->addProperty('article:tag', 'php');
+$this->addProperty('article:tag', 'mongodb');
+$this->addLink('canonical', url(['name' => 'article-show', 'params' => ['slug' => $post->slug]], true));
+```
+
+Les valeurs sont échappées par `getHeader()` : passe le texte brut, sans `e()`. Pour tout le reste (du JSON-LD par exemple), le bloc `head` est ajouté à la fin du `<head>` :
+
+```php
+<?php $this->startBlock('head'); ?>
+<script type="application/ld+json"><?= json_encode($data, JSON_HEX_TAG) ?></script>
+<?php $this->stopBlock(); ?>
+```
+
+Côté layout, tout ressort d'un coup avec `<?= $this->getHeader() ?>` (metas, properties, links, css, js, puis le bloc `head`).
 
 Même principe pour un `<script>` inline : tu le captures depuis ta vue au lieu de l'écrire dans le layout.
 
