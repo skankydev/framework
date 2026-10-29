@@ -27,16 +27,16 @@ It runs like an onion: the first in the list is the outermost (it goes first and
 | Alias | What it does |
 |---|---|
 | `Session` | starts the session. Global, it always runs before everything else. |
-| `Csrf` | checks the CSRF token on methods that modify things (POST/PUT/PATCH/DELETE). Global too. On failure: 419 JSON for AJAX, otherwise back to the previous page + flash ([12.3 CSRF](012.3-CSRF.md)). |
+| `Csrf` | checks the CSRF token on methods that modify things (POST/PUT/PATCH/DELETE). Global too. On failure: 419 JSON for AJAX, otherwise back to the previous page + flash ([13.3 CSRF](013.3-CSRF.md)). |
 | `PostOnly` | only allows POST on the targeted action. Useful for actions that modify things (a delete, for example), because convention-based routing doesn't tell HTTP verbs apart: without it, they'd be reachable with GET. On failure: 405 JSON, or back to the previous page + flash. |
-| `Auth` | protects a route behind an auth keeper ([13 Auth](013-Auth.md)). If the user isn't logged in: redirect if `auth.keepers.{keeper}.redirect` exists and the client wants HTML, otherwise 401 JSON. |
+| `Auth` | protects a route behind an auth keeper ([14 Auth](014-Auth.md)). If the user isn't logged in: redirect if `auth.keepers.{keeper}.redirect` exists and the client wants HTML, otherwise 401 JSON. |
 | `RateLimit` | limits the number of POSTs per IP on an action (login, forgotten password...). It takes a key, a maximum number of attempts and a duration in seconds. |
 
 `Session` and `Csrf` are global by default. The other three are on demand: you put them where you need them.
 
 A detail about `RateLimit`: it only counts POSTs (showing the form with GET doesn't use up any attempt), and it doesn't reset itself on success. It's up to the controller to call `RateLimiter::clear()` with the same key.
 
-The flash and JSON messages of these middlewares go through the translations (`skankydev` domain, [21](021-I18n.md)).
+The flash and JSON messages of these middlewares go through the translations (`skankydev` domain, [12](012-I18n.md)).
 
 ## Adding one
 

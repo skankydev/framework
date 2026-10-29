@@ -34,7 +34,7 @@ $request->isJson();      // Content-Type: application/json
 $request->wantsJson();   // Accept: application/json
 ```
 
-`wantsJson()` is the most useful one: it's what lets the same action answer JSON to an AJAX call and HTML to regular browsing (see [11 Responses](011-Responses.md)).
+`wantsJson()` is the most useful one: it's what lets the same action answer JSON to an AJAX call and HTML to regular browsing (see [09 Responses](009-Responses.md)).
 
 ## Post, Get, and files
 
@@ -65,7 +65,7 @@ if ($file && $file->isValid()) {
 
 What the object can tell you:
 
-- `isValid()` / `errorMessage()`: did the upload work? If not, why (file too big for the server, partial upload…). PHP's `UPLOAD_ERR_*` codes are translated into the current language (`skankydev` domain, see [21](021-I18n.md)).
+- `isValid()` / `errorMessage()`: did the upload work? If not, why (file too big for the server, partial upload…). PHP's `UPLOAD_ERR_*` codes are translated into the current language (`skankydev` domain, see [12](012-I18n.md)).
 - `mimeType()`: the **real** type, read from the file content (`finfo`), not the one announced by the browser.
 - `extension()`: the extension deduced from that real type (`jpg`, `png`, `pdf`…, `bin` if unknown).
 - `isImage()`, `dimensions()`: `[width, height]` for an image.
@@ -85,7 +85,7 @@ Why so much distrust? Because anything coming from the browser can be faked. If 
 
 ### StoredFile
 
-`StoredFile` is an `EmbeddedDocument` ([09.1](009.1-Persistable.md)): you store it as is in a document, and Mongo gives it back typed when you read it again.
+`StoredFile` is an `EmbeddedDocument` ([10.1](010.1-Persistable.md)): you store it as is in a document, and Mongo gives it back typed when you read it again.
 
 ```php
 class Persona extends MasterDocument {
@@ -98,7 +98,7 @@ class Persona extends MasterDocument {
 
 It only stores the path relative to the upload folder (`img/3f2a….png`), the original name, the type, the size, and the dimensions for an image. The URL is **never stored**: `url()` computes it with `upload.url` + the path (`url(true)` to get it absolute, with the request's domain). Same for `fullPath()` (the path on disk), with `upload.folder`. You change domains, move the files or switch to a CDN: you change the config, nothing to migrate in the database. There's also `isImage()`, `extension()` and `delete()` to remove the file.
 
-To validate a file (type, size, image), there are the `file`, `image`, `mimes:…` and `max_size:…` rules ([12.2](012.2-Validation.md)).
+To validate a file (type, size, image), there are the `file`, `image`, `mimes:…` and `max_size:…` rules ([13.2](013.2-Validation.md)).
 
 ## The Session
 
@@ -117,7 +117,7 @@ Starting the session, you don't touch it: a middleware takes care of it ([07 Mid
 
 ## Inputs and flash messages
 
-A form that fails validation is the classic case: you want to send the user back to the page with what they had typed and the errors. You redirect with `->withErrors(...)->withInput(...)` ([12 Forms](012-Forms.md)) and that puts all of it in the session, for a single request. On the next page, you get it back with:
+A form that fails validation is the classic case: you want to send the user back to the page with what they had typed and the errors. You redirect with `->withErrors(...)->withInput(...)` ([13 Forms](013-Forms.md)) and that puts all of it in the session, for a single request. On the next page, you get it back with:
 
 ```php
 old('email');           // what they had typed, or '' by default

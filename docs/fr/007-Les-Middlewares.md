@@ -27,16 +27,16 @@ Pour une requête, le `MiddlewareManager` empile trois sources, dans cet ordre :
 | Alias | Ce qu'il fait |
 |---|---|
 | `Session` | démarre la session. Global, il passe toujours avant tout le reste. |
-| `Csrf` | vérifie le token CSRF sur les méthodes qui modifient (POST/PUT/PATCH/DELETE). Global aussi. En cas d'échec : 419 JSON en AJAX, sinon retour arrière + flash ([12.3 CSRF](012.3-CSRF.md)). |
+| `Csrf` | vérifie le token CSRF sur les méthodes qui modifient (POST/PUT/PATCH/DELETE). Global aussi. En cas d'échec : 419 JSON en AJAX, sinon retour arrière + flash ([13.3 CSRF](013.3-CSRF.md)). |
 | `PostOnly` | n'autorise que POST sur l'action ciblée. Utile pour les actions qui modifient (un delete, par exemple), parce que le routing par convention ne distingue pas les verbes HTTP : sans ça, elles seraient atteignables en GET. En cas d'échec : 405 JSON, ou retour arrière + flash. |
-| `Auth` | protège une route derrière un keeper d'auth ([13 Auth](013-Auth.md)). Si l'utilisateur n'est pas connecté : redirection si `auth.keepers.{keeper}.redirect` existe et que le client veut du HTML, sinon 401 JSON. |
+| `Auth` | protège une route derrière un keeper d'auth ([14 Auth](014-Auth.md)). Si l'utilisateur n'est pas connecté : redirection si `auth.keepers.{keeper}.redirect` existe et que le client veut du HTML, sinon 401 JSON. |
 | `RateLimit` | limite le nombre de POST par IP sur une action (login, mot de passe oublié...). Il prend une clé, un nombre max de tentatives et une durée en secondes. |
 
 `Session` et `Csrf` sont globaux par défaut. Les trois autres sont à la demande : tu les poses où tu en as besoin.
 
 Un détail sur `RateLimit` : il ne compte que les POST (afficher le formulaire en GET n'use aucune tentative), et il ne se remet pas à zéro tout seul quand ça réussit. C'est au controller d'appeler `RateLimiter::clear()` avec la même clé.
 
-Les messages (flash et JSON) de ces middlewares passent par les traductions (domaine `skankydev`, [21](021-I18n.md)).
+Les messages (flash et JSON) de ces middlewares passent par les traductions (domaine `skankydev`, [12](012-I18n.md)).
 
 ## En ajouter un
 

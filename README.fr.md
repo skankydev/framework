@@ -44,7 +44,7 @@ composer install
 composer test
 ```
 
-Les tests d'intégration ont besoin d'un MongoDB qui tourne ([20 Les tests](docs/fr/020-Les-Tests.md)).
+Les tests d'intégration ont besoin d'un MongoDB qui tourne ([21 Les tests](docs/fr/021-Les-Tests.md)).
 
 ## Licence
 
