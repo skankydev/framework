@@ -69,7 +69,7 @@ return [
 			'file_exists'   => '⚠ The file {file} already exists!',
 			'overwrite'     => 'Overwrite the file',
 			'skipped'       => '→ {file} skipped',
-			'generated'     => '✔️ {file} generated',
+			'generated'     => '✓ {file} generated',
 		],
 		'db_sync' => [
 			'help'         => 'Creates/syncs the Mongo indexes declared by the Collections',

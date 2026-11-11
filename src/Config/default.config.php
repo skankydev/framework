@@ -23,7 +23,7 @@ return [
 		'range' => 5,
 	],
 	'skankydev'  => [
-		'version'=>'0.2.1'
+		'version'=>'0.2.2'
 	],
 	'debug' => true,
 	'auth' => false,
@@ -56,6 +56,7 @@ return [
 			'password' => \SkankyDev\Form\Fields\PasswordField::class,
 			'file'     => \SkankyDev\Form\Fields\FileField::class,
 			'hidden'   => \SkankyDev\Form\Fields\HiddenField::class,
+			'submit'   => \SkankyDev\Form\Fields\SubmitField::class,
 			'default'  => \SkankyDev\Form\Fields\TextField::class,
 		],
 		'rules' => [

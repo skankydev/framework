@@ -6,7 +6,7 @@ Install it, start it, and you've got a CRUD running before your coffee's done. P
 
 - **PHP 8.4 or later** ([php.net/downloads](https://www.php.net/downloads), or [windows.php.net](https://windows.php.net/download/) on Windows), with two extensions:
   - `mongodb`, version 2.4.1 or later ([installation on php.net](https://www.php.net/manual/en/mongodb.installation.php));
-  - `intl`, for translations ([21 I18n](021-I18n.md)). It ships with PHP, you often just have to enable it in `php.ini`.
+  - `intl`, for translations ([12 I18n](012-I18n.md)). It ships with PHP, you often just have to enable it in `php.ini`.
 - **Composer** ([getcomposer.org/download](https://getcomposer.org/download/)).
 - **A running MongoDB**: the [Community Server](https://www.mongodb.com/try/download/community) running locally is more than enough. [Compass](https://www.mongodb.com/products/tools/compass) is handy to see what's in your database.
 - A web server: Apache with `mod_rewrite`, or PHP's built-in server to try it out.
@@ -65,7 +65,7 @@ DB_MONGO_PORT=27017
 DB_MONGO_DATABASE=MyProject
 ```
 
-`APP_DEBUG=1` gives you detailed error pages, perfect in dev. In production, set it to `0` ([14 Error handling](014-Error-Handling.md)). The `.env` is never committed: that's where your secrets live.
+`APP_DEBUG=1` gives you detailed error pages, perfect in dev. In production, set it to `0` ([15 Error handling](015-Error-Handling.md)). The `.env` is never committed: that's where your secrets live.
 
 ## Start the site
 
@@ -89,7 +89,7 @@ It recompiles on every change in `src_front/`. When you're done, `npm run build`
 
 ## A CRUD in 10 minutes
 
-This is where `php craft` comes in ([16 Craft and CLI](016-Craft-and-CLI.md)). You give it your document's name, it asks you a few questions about the fields, and it generates everything else:
+This is where `php craft` comes in ([17 Craft and CLI](017-Craft-and-CLI.md)). You give it your document's name, it asks you a few questions about the fields, and it generates everything else:
 
 ```bash
 php craft crud-maker Article
@@ -114,16 +114,16 @@ And it writes eight files:
 
 | File | Role |
 |---|---|
-| `src/App/Model/Document/Article.php` | the Document: the value ([09 Model](009-Model.md)) |
+| `src/App/Model/Document/Article.php` | the Document: the value ([10 Model](010-Model.md)) |
 | `src/App/Model/ArticleCollection.php` | the Collection: talks to MongoDB |
 | `src/App/Controller/ArticleController.php` | `index`, `create`, `store`, `show`, `edit`, `update`, `delete` |
-| `src/App/Form/ArticleForm.php` | the form, with its validation rules ([12 Forms](012-Forms.md)) |
+| `src/App/Form/ArticleForm.php` | the form, with its validation rules ([13 Forms](013-Forms.md)) |
 | `src_front/view/article/{index,create,edit,show}.php` | the four views |
 
 No route to write: convention-based routing takes care of everything ([06 Routing](006-Routing.md)). Go to `http://localhost:8000/article` and you get:
 
 - the paginated list of articles;
-- the creation form (`/article/create`), with CSRF protection already wired in ([12.3 CSRF](012.3-CSRF.md));
+- the creation form (`/article/create`), with CSRF protection already wired in ([13.3 CSRF](013.3-CSRF.md));
 - the show page, editing (with the form pre-filled) and deletion;
 - validation: if you leave `title` empty, you're sent back to the form with the error and what you had typed.
 

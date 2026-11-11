@@ -61,6 +61,7 @@ Config::set('class.fields', [
     'checkbox' => \SkankyDev\Form\Fields\CheckboxField::class,
     'email'    => \SkankyDev\Form\Fields\EmailField::class,
     'hidden'   => \SkankyDev\Form\Fields\HiddenField::class,
+    'submit'   => \SkankyDev\Form\Fields\SubmitField::class,
     'password' => \SkankyDev\Form\Fields\PasswordField::class,
     'file'     => \SkankyDev\Form\Fields\FileField::class,
 ]);

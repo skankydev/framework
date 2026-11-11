@@ -50,7 +50,7 @@ Certaines parties du framework (formulaires, validation, middlewares...) ne veul
 - `class.rules` : les règles de validation utilisables dans `$form->validate()`.
 - `class.middlewares` : alias → classe, utilisé par le pipeline de middlewares et par l'attribut `#[Middleware('Alias', ...)]`.
 
-Ça t'évite de retaper le namespace complet à chaque fois, et ça permet de changer l'implémentation derrière un alias sans toucher au code qui l'utilise. Les autres alias du même genre (`class.gates`, `class.parts`) sont expliqués dans leurs chapitres ([13 Auth](013-Auth.md), [10 View](010-View.md)).
+Ça t'évite de retaper le namespace complet à chaque fois, et ça permet de changer l'implémentation derrière un alias sans toucher au code qui l'utilise. Les autres alias du même genre (`class.gates`, `class.parts`) sont expliqués dans leurs chapitres ([14 Auth](014-Auth.md), [11 View](011-View.md)).
 
 ## Récupération des informations et utilisation
 

@@ -129,6 +129,40 @@ class HtmlViewTest extends TestCase
         $this->assertStringContainsString('/app.js', $header);
     }
 
+    public function testGetHeaderEscapesMetaContent(): void
+    {
+        $view = new HtmlView();
+        $view->addMeta('description', 'Un "titre" <b>');
+        $header = $view->getHeader();
+        $this->assertStringContainsString('content="Un &quot;titre&quot; &lt;b&gt;"', $header);
+    }
+
+    public function testAddPropertyCanRepeat(): void
+    {
+        $view = new HtmlView();
+        $view->addProperty('article:tag', 'php');
+        $view->addProperty('article:tag', 'mongodb');
+        $header = $view->getHeader();
+        $this->assertStringContainsString('<meta property="article:tag" content="php" />', $header);
+        $this->assertStringContainsString('<meta property="article:tag" content="mongodb" />', $header);
+    }
+
+    public function testAddLinkRendersLinkTag(): void
+    {
+        $view = new HtmlView();
+        $view->addLink('canonical', 'https://example.com/article/a?b=1&c=2');
+        $this->assertStringContainsString('<link rel="canonical" href="https://example.com/article/a?b=1&amp;c=2" />', $view->getHeader());
+    }
+
+    public function testGetHeaderAppendsHeadBlock(): void
+    {
+        $view = new HtmlView();
+        $view->startBlock('head');
+        echo '<script type="application/ld+json">{}</script>';
+        $view->stopBlock();
+        $this->assertStringEndsWith('<script type="application/ld+json">{}</script>', $view->getHeader());
+    }
+
     // ── script buffering ──────────────────────────────────────────────────────
 
     public function testScriptBuffering(): void

@@ -15,6 +15,7 @@ namespace SkankyDev\Form;
 
 use SkankyDev\Config\Config;
 use SkankyDev\Form\Fields\FileField;
+use SkankyDev\Form\Fields\SubmitField;
 use SkankyDev\Http\Request;
 use SkankyDev\Http\UrlBuilder;
 use SkankyDev\Utilities\Traits\HtmlHelper;
@@ -31,8 +32,6 @@ abstract class FormBuilder {
 	protected array $attributes = [];
 	protected array $fields = [];
 	protected array $fieldTypes = [];
-	protected ?string $submitLabel = 'save';
-	protected array $submitAttributes = ['type'=>'submit','class'=>'btn btn-primary'];
 	protected array $data = [];
 	protected array $errors = [];
 	protected array $old = [];
@@ -95,12 +94,12 @@ abstract class FormBuilder {
 	}
 	
 	/**
-	 * Sets the submit button label and optional extra attributes.
+	 * Shortcut for add('submit', 'submit', ...): adds a SubmitField named `submit`,
+	 * rendered with renderField('submit') in a custom layout.
+	 * There is no default button: a form without submit() (or a submit field) has none.
 	 */
 	public function submit(string $label, array $attributes = []): self {
-		$this->submitLabel = $label;
-		$this->submitAttributes = [...$this->submitAttributes , ...$attributes];
-		return $this;
+		return $this->add('submit', 'submit', ['label' => $label, 'attributes' => $attributes]);
 	}
 	
 	/**
@@ -112,14 +111,7 @@ abstract class FormBuilder {
 			$data = get_object_vars($data);
 		}
 		$this->data = $data;
-		
-		// Mettre à jour les valeurs des champs existants
-		/*foreach ($this->fields as $name => $field) {
-			if (isset($data[$name])) {
-				$field->setValue($data[$name]);
-			}
-		}*/
-		
+
 		return $this;
 	}
 	
@@ -140,19 +132,15 @@ abstract class FormBuilder {
 	}
 	
 	/**
-	 * Renders the full form: opening tag, all fields, submit button and closing tag.
+	 * Renders the full form: opening tag, all fields (submit button included) and closing tag.
 	 */
 	public function render(): string {
 		$html = $this->open();
-		
+
 		foreach ($this->fields as $field) {
 			$html .= $field->render();
 		}
-		
-		if ($this->submitLabel) {
-			$html .= $this->renderSubmit();
-		}
-		
+
 		$html .= $this->close();
 		
 		return $html;
@@ -204,49 +192,6 @@ abstract class FormBuilder {
 		return $this->fields[$name]->render();
 	}
 	
-	/**
-	 * Renders the submit button via src_front/view/fields/submit.php — un
-	 * template dédié (comme les autres champs) plutôt qu'une concaténation
-	 * de string, pour permettre de structurer le label (icône + span, etc.)
-	 * sans bricoler du HTML brut dans le label.
-	 */
-	protected function renderSubmit(): string {
-		// Publishable d'abord (défaut framework), sinon view.folder classique
-		// (permet à un projet de déposer son propre fields/submit.php sans
-		// toucher à la config) — même logique que FormField::makePath().
-		$path = Config::get('view.fields') . DS . 'submit.php';
-		if (!file_exists($path)) {
-			$path = Config::get('view.folder') . DS . 'fields' . DS . 'submit.php';
-		}
-
-		return $this->renderFile($path, [
-			'label'      => $this->submitLabel,
-			'attributes' => $this->submitAttributes,
-		]);
-	}
-
-	/**
-	 * Includes a template inside a closure so only `$this` and the extracted
-	 * `$data` are visible to it. Output buffers left open by the template are
-	 * closed if it throws.
-	 */
-	private function renderFile(string $file, array $data): string {
-		$level = ob_get_level();
-		ob_start();
-		try {
-			(function (string $myFile, array $myData) {
-				extract($myData);
-				require $myFile;
-			})($file, $data);
-			return ob_get_clean();
-		} catch (\Throwable $e) {
-			while (ob_get_level() > $level) {
-				ob_end_clean();
-			}
-			throw $e;
-		}
-	}
-
 	/** True when at least one field is a FileField (or a subclass). */
 	public function hasFileField(): bool {
 		if (empty($this->fields)) {
@@ -272,12 +217,14 @@ abstract class FormBuilder {
 	 * Sert à éviter le mass assignment (ex: `new User($form->only($input))`) quand $input
 	 * vient directement de la requête et peut contenir des clés en plus des champs attendus.
 	 * Appelle build() si les champs ne sont pas encore initialisés.
+	 * Les SubmitField sont exclus : un bouton ne porte pas de donnée.
 	 */
 	public function only(array $data): array {
 		if (empty($this->fields)) {
 			$this->build();
 		}
-		return array_intersect_key($data, $this->fields);
+		$fields = array_filter($this->fields, fn($field) => !$field instanceof SubmitField);
+		return array_intersect_key($data, $fields);
 	}
 
 	/**
