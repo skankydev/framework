@@ -8,6 +8,7 @@ use SkankyDev\Model\Document\EmbeddedSnapshot;
 use SkankyDev\Model\Document\MasterDocument;
 use SkankyDev\Model\JobCollection;
 use SkankyDev\Model\MasterCollection;
+use SkankyDev\Utilities\Log;
 use SkankyDev\Utilities\Traits\Singleton;
 use SkankyTest\IntegrationTestCase;
 
@@ -76,7 +77,7 @@ class TransactionTest extends IntegrationTestCase
     protected function tearDown(): void
     {
         Config::set('db.MongoDB.transaction', false);
-        foreach (glob(APP_FOLDER . '/logs/*.log') ?: [] as $f) {
+        foreach (glob(Log::folder() . '/*.log') ?: [] as $f) {
             unlink($f);
         }
     }

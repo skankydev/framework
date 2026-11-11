@@ -1,6 +1,6 @@
 # 16 Les Logs
 
-Pour logger, il y a `SkankyDev\Utilities\Log`, une classe statique. Elle écrit un fichier par jour dans `logs/` à la racine du projet, créé automatiquement au besoin.
+Pour logger, il y a `SkankyDev\Utilities\Log`, une classe statique. Elle écrit un fichier par jour dans le dossier de la config `storage.logs` (`storage/logs/` par défaut, constante `LOG_FOLDER`), créé automatiquement au besoin. `Log::folder()` te donne ce dossier.
 
 ```php
 Log::info('message', 'context');      // logs/{date}-context.log (context par défaut : 'skankydev')
@@ -18,4 +18,4 @@ Ce n'est pas réservé aux exceptions. `Queue` et `QueueWork` s'en servent pour 
 
 ## Nettoyage
 
-`Log::cleanup(int $days = 10)` supprime les fichiers de `logs/` plus vieux que `$days` jours. Rien ne l'appelle automatiquement dans le framework : c'est à toi de le déclencher (une commande CLI dédiée, un cron côté projet) si tu veux une rotation.
+`Log::cleanup(int $days = 10)` supprime les fichiers du dossier des logs plus vieux que `$days` jours. Rien ne l'appelle automatiquement dans le framework : c'est à toi de le déclencher (une commande CLI dédiée, un cron côté projet) si tu veux une rotation.

@@ -76,10 +76,13 @@ Le dossier d'upload et son URL publique viennent de la config ([04](004-Config.m
 
 ```php
 'upload' => [
-    'folder' => UPLOAD_FOLDER,   // public/upload par défaut
+    'folder' => UPLOAD_FOLDER,   // storage/files/public par défaut
     'url'    => '/upload',       // ou 'https://cdn.mondomaine.com' le jour où tu passes sur un CDN
+    'link'   => PUBLIC_FOLDER.DS.'upload',  // le lien créé dans public/ par php craft storage-link
 ],
 ```
+
+Les fichiers ne sont pas rangés dans `public/` : ils vivent dans `storage/files/public/`, et c'est le lien `public/upload` qui les rend visibles depuis le web. Une fois par installation, lance `php craft storage-link` ([17](017-Craft-et-CLI.md)) pour créer les dossiers et ce lien.
 
 Pourquoi tant de méfiance ? Parce que tout ce qui vient du navigateur se falsifie. Si on gardait l'extension du nom envoyé, un `photo.php` atterrirait dans le dossier d'upload (servi par le serveur web) et deviendrait exécutable : n'importe qui pourrait lancer du PHP sur ton serveur. Ici, l'extension vient du contenu, donc un script déguisé en image finit en `.bin` ou en `.txt`, jamais en `.php`. Le SVG est volontairement absent de la liste : il peut contenir du JavaScript.
 

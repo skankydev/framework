@@ -79,6 +79,8 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // numbered menu
 - **`db-sync`**: syncs the declared Mongo indexes (each Collection's `getIndexes()`, see [10 Model](010-Model.md)).
 - **`db-replica`**: initializes a single-node replica set, needed by transactions ([10 Model](010-Model.md#transactions)). It can't edit MongoDB's config file for you: if MongoDB isn't started as a replica set member, it tells you what to add and where. Safe to run again, it just tells you where things stand.
 - **`queue-worker`**: runs the worker that processes pending jobs (see [18 Queue and Jobs](018-Queue-and-Jobs.md)).
+- **`storage-link`**: sets up `storage/`: creates the config folders (`upload.folder`, `storage.private`, `storage.logs`, `storage.cache`) and the `upload.link` link (`public/upload`) to `upload.folder`. On Windows it's a junction (no admin rights needed), elsewhere a symlink. If `public/upload` is still a real folder, it offers to move its content into `storage/files/public/` (`-y` to ask nothing); it touches nothing if a link already points elsewhere or if a file exists on both sides. Safe to run again.
+
 - **`lang-sync`**: updates the language files with the keys used in the code (`--dry-run`, `--prune`, `--check`, see [12 Internationalization](012-I18n.md)).
 - **`publish`**: copies the framework's default resources into your project (detailed just below).
 

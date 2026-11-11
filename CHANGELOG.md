@@ -12,12 +12,24 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 
 - `Queue::PENDING`/`PROCESSING`/`SUCCESS`/`FAILED` are replaced by the `JobStatus` enum.
 - Run `php craft db-sync` to create the new index on `jobs`.
+- **Everything the app writes moves to `storage/`.** Uploads go to `storage/files/public`
+  (`upload.folder`), served through the `public/upload` link; logs go to `storage/logs`
+  (`storage.logs`). Run `php craft storage-link`: it creates the folders and the link, and moves
+  the content of an existing `public/upload` folder. `upload.url` doesn't change and `StoredFile`
+  only stores relative paths: nothing to migrate in the database. In `.gitignore`, replace
+  `public/upload/*` with `/public/upload` and `/logs` with `/storage/files/public/*`,
+  `/storage/logs/*`, `/storage/cache/*`. The web server must follow symlinks
+  (`Options +FollowSymLinks` on Apache).
 
 ### Added
 
 - `embeddedIn()`: `'many' => true` for a field holding an array of snapshots (e.g. a post's
   tags). Only the matching items are synced (`arrayFilters`), `unset` pulls the item out.
 - `MasterCollection::updateMany()` takes driver options as an optional third argument.
+- `storage/` folder (`STORAGE_FOLDER`, `PRIVATE_FOLDER`, `LOG_FOLDER`, `CACHE_FOLDER`), configured
+  by `upload.link` and `storage.private` / `storage.logs` / `storage.cache`.
+- `php craft storage-link`: creates the storage folders and the `public/upload` link.
+- `Log::folder()`: the logs folder (`storage.logs`).
 
 ### Fixed
 

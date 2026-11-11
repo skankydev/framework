@@ -12,7 +12,7 @@ class ExceptionHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logDir = APP_FOLDER . '/logs';
+        $this->logDir = Log::folder();
 
         if (is_dir($this->logDir)) {
             foreach (glob($this->logDir . '/*.log') as $f) {

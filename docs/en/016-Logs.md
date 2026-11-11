@@ -1,6 +1,6 @@
 # 16 Logs
 
-To log things, there's `SkankyDev\Utilities\Log`, a static class. It writes one file per day in `logs/` at the project root, created automatically when needed.
+To log things, there's `SkankyDev\Utilities\Log`, a static class. It writes one file per day in the folder of the `storage.logs` config (`storage/logs/` by default, `LOG_FOLDER` constant), created automatically when needed. `Log::folder()` gives you that folder.
 
 ```php
 Log::info('message', 'context');      // logs/{date}-context.log (default context: 'skankydev')
@@ -18,4 +18,4 @@ It's not just for exceptions. `Queue` and `QueueWork` use it to trace the life o
 
 ## Cleaning up
 
-`Log::cleanup(int $days = 10)` deletes the files in `logs/` older than `$days` days. Nothing calls it automatically in the framework: it's up to you to trigger it (a dedicated CLI command, a cron on the project side) if you want rotation.
+`Log::cleanup(int $days = 10)` deletes the files in the logs folder older than `$days` days. Nothing calls it automatically in the framework: it's up to you to trigger it (a dedicated CLI command, a cron on the project side) if you want rotation.

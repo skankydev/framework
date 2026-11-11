@@ -30,6 +30,7 @@ config/            your project's config
 public/            the only folder visible from the web
   index.php          the entry point
   dist/              the CSS and JS compiled by Vite
+  upload             link to storage/files/public (php craft storage-link)
 routes/
   routes.php         your hand-declared routes
 src/
@@ -39,7 +40,11 @@ src_front/           everything related to display
   scss/              the styles
   view/              the PHP templates (views, layouts, parts)
   lang/              the translations, one folder per language (see 12 Internationalization)
-logs/              the logs, created when needed
+storage/           everything the application writes (php craft storage-link sets it up)
+  files/public/      the uploaded files, served by the web through public/upload
+  files/private/     the files never exposed by the web
+  logs/              the logs
+  cache/             the cache
 vendor/            the dependencies, including the framework (skankydev/framework)
 .env.dist          the template for your .env
 composer.json

@@ -89,10 +89,18 @@ return [
 	'template' => [
 		'folder' => PUBLISHABLE_FOLDER.DS.'template',
 	],
-	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it
+	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it.
+	// `link` is the link created by `php craft storage-link` in public/, pointing to `folder`.
 	'upload' => [
 		'folder' => UPLOAD_FOLDER,
 		'url'    => '/upload',
+		'link'   => PUBLIC_FOLDER.DS.'upload',
+	],
+	// other folders written by the application (all created by `php craft storage-link`)
+	'storage' => [
+		'private' => PRIVATE_FOLDER,
+		'logs'    => LOG_FOLDER,
+		'cache'   => CACHE_FOLDER,
 	],
 	// queue worker: lease in seconds before a job stuck in processing is claimed again
 	'queue' => [

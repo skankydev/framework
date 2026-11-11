@@ -11,3 +11,7 @@ build/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Storage (logs des tests...)
+/storage
+/logs

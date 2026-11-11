@@ -29,7 +29,18 @@ const TIME_YEAR   = 31536000;
 
 const DS = DIRECTORY_SEPARATOR;
 const PUBLIC_FOLDER = APP_FOLDER.DS.'public';
-const UPLOAD_FOLDER = PUBLIC_FOLDER.DS.'upload';
+
+// Tout ce que l'application écrit sur disque vit dans storage/, hors de public/.
+// Ce ne sont que les valeurs par défaut : le code passe par la config
+// (`upload.*`, `storage.*`), qu'un projet peut surcharger.
+const STORAGE_FOLDER = APP_FOLDER.DS.'storage';
+// fichiers servis par le web, via le lien public/upload (php craft storage-link)
+const UPLOAD_FOLDER = STORAGE_FOLDER.DS.'files'.DS.'public';
+// fichiers jamais exposés directement par le serveur web
+const PRIVATE_FOLDER = STORAGE_FOLDER.DS.'files'.DS.'private';
+const LOG_FOLDER = STORAGE_FOLDER.DS.'logs';
+const CACHE_FOLDER = STORAGE_FOLDER.DS.'cache';
+
 const VIEW_FOLDER = APP_FOLDER.DS.'src_front'.DS.'view';
 const SRC_FOLDER = APP_FOLDER.DS.'src';
 const TEMPLATE_FOLDER = APP_FOLDER.DS.'src_front'.DS.'template';

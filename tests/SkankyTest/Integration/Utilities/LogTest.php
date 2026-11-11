@@ -13,7 +13,7 @@ class LogTest extends IntegrationTestCase
     {
         // Pas besoin de MongoDB pour les logs — on override juste le setUp
         // pour ne pas tenter de connexion inutile
-        $this->logDir = APP_FOLDER . '/logs';
+        $this->logDir = Log::folder();
 
         // Nettoie les logs de test avant chaque test
         if (is_dir($this->logDir)) {

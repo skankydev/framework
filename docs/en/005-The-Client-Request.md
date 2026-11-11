@@ -76,10 +76,13 @@ The upload folder and its public URL come from the config ([04](004-Config.md)),
 
 ```php
 'upload' => [
-    'folder' => UPLOAD_FOLDER,   // public/upload by default
+    'folder' => UPLOAD_FOLDER,   // storage/files/public by default
     'url'    => '/upload',       // or 'https://cdn.mydomain.com' the day you move to a CDN
+    'link'   => PUBLIC_FOLDER.DS.'upload',  // the link created in public/ by php craft storage-link
 ],
 ```
+
+The files aren't kept in `public/`: they live in `storage/files/public/`, and the `public/upload` link is what makes them visible from the web. Once per install, run `php craft storage-link` ([17](017-Craft-and-CLI.md)) to create the folders and that link.
 
 Why so much distrust? Because anything coming from the browser can be faked. If we kept the extension of the name that was sent, a `photo.php` would land in the upload folder (served by the web server) and become executable: anyone could run PHP on your server. Here, the extension comes from the content, so a script disguised as an image ends up as `.bin` or `.txt`, never `.php`. SVG is deliberately missing from the list: it can contain JavaScript.
 

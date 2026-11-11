@@ -9,6 +9,7 @@ use SkankyDev\Model\Enum\JobStatus;
 use SkankyDev\Model\JobCollection;
 use SkankyDev\Queue\Queue;
 use SkankyDev\Queue\Job\MasterJob;
+use SkankyDev\Utilities\Log;
 use SkankyTest\IntegrationTestCase;
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
@@ -53,8 +54,8 @@ class QueueTest extends IntegrationTestCase
         $this->dropCollection('jobs');
 
         // Nettoie les logs générés par Queue::push()
-        if (is_dir(APP_FOLDER . '/logs')) {
-            foreach (glob(APP_FOLDER . '/logs/*.log') as $f) {
+        if (is_dir(Log::folder())) {
+            foreach (glob(Log::folder() . '/*.log') as $f) {
                 unlink($f);
             }
         }
@@ -62,8 +63,8 @@ class QueueTest extends IntegrationTestCase
 
     protected function tearDown(): void
     {
-        if (is_dir(APP_FOLDER . '/logs')) {
-            foreach (glob(APP_FOLDER . '/logs/*.log') as $f) {
+        if (is_dir(Log::folder())) {
+            foreach (glob(Log::folder() . '/*.log') as $f) {
                 unlink($f);
             }
         }
@@ -113,7 +114,7 @@ class QueueTest extends IntegrationTestCase
     {
         Queue::push(new PingJob('test'));
 
-        $logFile = glob(APP_FOLDER . '/logs/*-jobs.log');
+        $logFile = glob(Log::folder() . '/*-jobs.log');
         $this->assertNotEmpty($logFile);
         $content = file_get_contents($logFile[0]);
         $this->assertStringContainsString('QUEUED', $content);
