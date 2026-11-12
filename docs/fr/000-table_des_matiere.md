@@ -49,9 +49,10 @@ Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se
 
 - [17 Craft et CLI](017-Craft-et-CLI.md) : `php craft`, le CrudMaker, le Publishable, créer une commande.
 - [18 La Queue et les Jobs](018-Queue-et-Jobs.md) : les jobs, le worker, Supervisor.
-- [19 Les Mails](019-Les-Mails.md) : l'objet mail, le sender, l'envoi par la queue.
-- [20 Le client HTTP sortant](020-Client-HTTP-Sortant.md) : appeler une API externe.
+- [19 Les Événements](019-Les-Evenements.md) : émettre un événement, les listeners, la config `listeners`.
+- [20 Les Mails](020-Les-Mails.md) : l'objet mail, le sender, l'envoi par la queue.
+- [21 Le client HTTP sortant](021-Client-HTTP-Sortant.md) : appeler une API externe.
 
 ## Le dessous du capot
 
-- [21 Les tests](021-Les-Tests.md) : pourquoi seul le framework est couvert, et comment les lancer.
+- [22 Les tests](022-Les-Tests.md) : pourquoi seul le framework est couvert, et comment les lancer.

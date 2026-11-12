@@ -84,4 +84,4 @@ There's nothing framework-specific in there: `queue-worker` is just a normal, lo
 
 `JobCollection::claimNext()` does the claiming with a pipeline update: the dates (`started_at`, `lease_until`) are computed by Mongo itself with `$$NOW` and `$dateAdd`. Every worker shares the server's clock, and the lease uses the `timeout` stored on the job, without reading it first. `db-sync` creates the `{status, created_at}` index it relies on.
 
-See also: [19 Mails](019-Mails.md) (`SendMailJob`), [10.3 Relations and propagation](010.3-Relations.md) (`SnapshotSyncJob`)
+See also: [20 Mails](020-Mails.md) (`SendMailJob`), [10.3 Relations and propagation](010.3-Relations.md) (`SnapshotSyncJob`)
