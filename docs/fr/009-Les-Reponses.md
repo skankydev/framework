@@ -49,6 +49,23 @@ return redirect(['name' => 'form-page'])
 
 `withErrors()` et `withInput()` vont ensemble : on les utilise après un échec de validation de formulaire ([13 Les Forms](013-Les-Forms.md)). `withFlash()` sert pour n'importe quel message ponctuel (succès, erreur, info), avec ou sans formulaire.
 
+## Envoyer un fichier
+
+`Response::file($fichier, $nom = null, $download = false)` envoie un fichier du disque : un `StoredFile` (typiquement privé, voir [05](005-La-Requete-Client.md)) ou un chemin absolu.
+
+```php
+return Response::file($order->invoice);                        // affiché dans le navigateur s'il sait (image, PDF…)
+return Response::file($order->invoice, download: true);        // téléchargement forcé
+return Response::file($path, 'rapport-2026.csv', download: true);
+```
+
+- Le type vient du `StoredFile` (lu sur le contenu à l'upload), ou de `finfo` pour un chemin. Le nom proposé au navigateur est le nom d'origine du `StoredFile`, ou celui du fichier, sauf si tu en donnes un.
+- Le HTML, le SVG, le XML et le JavaScript partent **toujours en téléchargement** : affichés dans la page, ils pourraient exécuter un script sur ton domaine. `X-Content-Type-Options: nosniff` empêche le navigateur de deviner un autre type.
+- Fichier introuvable : `NotFoundException` (code 404), donc une vraie 404 en production.
+- Le fichier est lu avec `readfile()` au moment de `send()`, il ne passe pas par le body en mémoire.
+
+C'est à toi de vérifier, avant, que la personne a le droit de le voir : `Response::file()` envoie ce que tu lui donnes.
+
 ## Sous le capot
 
 ### `build()` vs `send()`

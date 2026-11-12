@@ -147,6 +147,33 @@ class UploadedFileTest extends TestCase
         $this->make('a.png', $this->pngFile())->store($this->subdir, '../evil');
     }
 
+    // ── storePrivate ──────────────────────────────────────────────────────────
+
+    public function testStorePrivateMovesFileIntoPrivateFolder(): void {
+        $stored = $this->make('Facture.png', $this->pngFile())->storePrivate($this->subdir);
+        $privateDir = \SkankyDev\Config\Config::get('storage.private') . DS . $this->subdir;
+        try {
+            $this->assertTrue($stored->private);
+            $this->assertEquals($privateDir . DS . basename($stored->path), $stored->fullPath());
+            $this->assertFileExists($stored->fullPath());
+            $this->assertDirectoryDoesNotExist($this->uploadDir);
+            $this->assertEquals('Facture.png', $stored->original_name);
+            $this->assertArrayNotHasKey('url', json_decode(json_encode($stored), true));
+        } finally {
+            $stored->delete();
+            @rmdir($privateDir);
+        }
+    }
+
+    public function testStoreIsNotPrivate(): void {
+        $this->assertFalse($this->make('a.png', $this->pngFile())->store($this->subdir)->private);
+    }
+
+    public function testStorePrivateRefusesParentFolder(): void {
+        $this->expectException(\RuntimeException::class);
+        $this->make('a.png', $this->pngFile())->storePrivate('../../outside');
+    }
+
     public function testStoreFollowsUploadFolderConfig(): void {
         $conf = \SkankyDev\Config\Config::get('upload');
         $folder = sys_get_temp_dir() . DS . 'skanky_upload_' . bin2hex(random_bytes(4));

@@ -71,6 +71,7 @@ What the object can tell you:
 - `isImage()`, `dimensions()`: `[width, height]` for an image.
 - `clientName()`, `clientExtension()`, `size()`: the original name and the size, for display.
 - `store($subfolder = '', $name = null)`: moves the file into a subfolder of the upload folder (created if needed) under a random name (or `$name`) + the safe extension, and gives you back a `StoredFile`. The subfolder is relative (`'img'`, `'media/2026'`): a `..` is rejected, there's no way out of the upload folder.
+- `storePrivate($subfolder = '', $name = null)`: same, but in the private folder (`storage.private`, `storage/files/private/` by default), never served by the web server. For a file that mustn't be reachable by everyone: an invoice, an ID document…
 
 The upload folder and its public URL come from the config ([04](004-Config.md)), to override in `master.config.php` if needed:
 
@@ -100,6 +101,18 @@ class Persona extends MasterDocument {
 ```
 
 It only stores the path relative to the upload folder (`img/3f2a….png`), the original name, the type, the size, and the dimensions for an image. The URL is **never stored**: `url()` computes it with `upload.url` + the path (`url(true)` to get it absolute, with the request's domain). Same for `fullPath()` (the path on disk), with `upload.folder`. You change domains, move the files or switch to a CDN: you change the config, nothing to migrate in the database. There's also `isImage()`, `extension()` and `delete()` to remove the file.
+
+A file stored by `storePrivate()` has `private` set to `true` (saved with the rest): `fullPath()` points into `storage.private`, and it has **no URL**. `url()` throws a `LogicException`, and `jsonSerialize()` adds no `url` key. To hand it to someone, a controller checks who's asking, then sends it with `Response::file()` ([09](009-Responses.md)):
+
+```php
+public function invoice(string $id): Response {
+    $order = $this->orders->findById($id);
+    if (!$order || $order->user_id != Auth::user()?->_id) {
+        return notFound();
+    }
+    return Response::file($order->invoice, download: true);
+}
+```
 
 To validate a file (type, size, image), there are the `file`, `image`, `mimes:…` and `max_size:…` rules ([13.2](013.2-Validation.md)).
 

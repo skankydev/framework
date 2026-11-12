@@ -158,4 +158,60 @@ class ResponseTest extends TestCase
         $this->assertEquals(['field' => ['error']], $_SESSION['errors']);
         $this->assertEquals(['field' => 'val'], $_SESSION['old']);
     }
+
+    // ── file ─────────────────────────────────────────────────────────────────
+
+    private function tmpFile(string $content): string {
+        $path = tempnam(sys_get_temp_dir(), 'resp');
+        file_put_contents($path, $content);
+        return $path;
+    }
+
+    public function testFileFromStoredFileIsInlineWithItsMetadata(): void {
+        $path = $this->tmpFile('%PDF-1.4');
+        $stored = new \SkankyDev\Model\Document\StoredFile(['path' => 'x.pdf', 'mime' => 'application/pdf', 'original_name' => 'Facture été.pdf']);
+        $folder = \SkankyDev\Config\Config::get('upload.folder');
+        \SkankyDev\Config\Config::set('upload.folder', dirname($path));
+        $stored->path = basename($path);
+        try {
+            $headers = Response::file($stored)->getHeaders();
+        } finally {
+            \SkankyDev\Config\Config::set('upload.folder', $folder);
+            unlink($path);
+        }
+        $this->assertEquals('application/pdf', $headers['Content-Type']);
+        $this->assertEquals('8', $headers['Content-Length']);
+        $this->assertEquals("inline; filename=\"Facture __t__.pdf\"; filename*=UTF-8''Facture%20%C3%A9t%C3%A9.pdf", $headers['Content-Disposition']);
+        $this->assertEquals('nosniff', $headers['X-Content-Type-Options']);
+    }
+
+    public function testFileCanForceDownloadAndRename(): void {
+        $path = $this->tmpFile('hello');
+        $headers = Response::file($path, 'notes.txt', download: true)->getHeaders();
+        unlink($path);
+        $this->assertStringStartsWith('attachment; filename="notes.txt"', $headers['Content-Disposition']);
+        $this->assertEquals('text/plain', $headers['Content-Type']);
+    }
+
+    public function testFileNeverShowsHtmlInline(): void {
+        $path = $this->tmpFile('<html><body><script>alert(1)</script></body></html>');
+        $headers = Response::file($path)->getHeaders();
+        unlink($path);
+        $this->assertStringStartsWith('attachment;', $headers['Content-Disposition']);
+    }
+
+    public function testFileSendStreamsTheContent(): void {
+        $path = $this->tmpFile('contenu du fichier');
+        ob_start();
+        Response::file($path)->send();
+        $out = ob_get_clean();
+        unlink($path);
+        $this->assertEquals('contenu du fichier', $out);
+    }
+
+    public function testFileMissingThrowsNotFound(): void {
+        $this->expectException(\SkankyDev\Exception\NotFoundException::class);
+        $this->expectExceptionCode(404);
+        Response::file(sys_get_temp_dir() . DS . 'nope_' . bin2hex(random_bytes(4)));
+    }
 }

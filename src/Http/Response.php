@@ -13,16 +13,29 @@
 
 namespace SkankyDev\Http;
 
+use SkankyDev\Exception\NotFoundException;
+use SkankyDev\Model\Document\StoredFile;
 use SkankyDev\View\HtmlView;
 use SkankyDev\Utilities\Session;
 
 class Response {
 
+	/**
+	 * Types the browser would run as a page (scripts included) if shown inline:
+	 * Response::file() always sends them as a download.
+	 */
+	private const NEVER_INLINE = [
+		'text/html', 'application/xhtml+xml', 'image/svg+xml', 'text/xml', 'application/xml',
+		'text/javascript', 'application/javascript',
+	];
+
 	protected array $headers = [];
 	protected string $body = '';
 	protected int $statusCode = 200;
 	protected bool $built = false;
-	
+	/** File sent as the body by send() (cf. Response::file()), streamed instead of $body. */
+	protected ?string $filePath = null;
+
 	/**
 	 * @param string $viewName dot-notation view name e.g. `module.show`
 	 * @param array  $data     variables passed to the view
@@ -31,6 +44,40 @@ class Response {
 		protected string $viewName = '',
 		protected array $data = []
 	) {}
+
+	/**
+	 * Response sending a file from the disk: typically a private StoredFile
+	 * (UploadedFile::storePrivate()), once the controller has checked who asks for it.
+	 * @param StoredFile|string $file     a StoredFile, or the absolute path of a file
+	 * @param string|null       $name     name proposed to the browser (default: the original
+	 *                                    name of the StoredFile, or the file's basename)
+	 * @param bool              $download true to force the download, false to display it in
+	 *                                    the browser when it can (image, PDF...)
+	 * @throws NotFoundException (code 404) when the file doesn't exist
+	 */
+	public static function file(StoredFile|string $file, ?string $name = null, bool $download = false): static {
+		$stored = $file instanceof StoredFile ? $file : null;
+		$path   = $stored ? $stored->fullPath() : $file;
+		if (!is_file($path)) {
+			throw new NotFoundException("File not found: {$path}", 404);
+		}
+
+		$mime = $stored?->mime ?: (mime_content_type($path) ?: 'application/octet-stream');
+		$name ??= ($stored?->original_name ?: basename($path));
+		$disposition = $download || in_array($mime, self::NEVER_INLINE, true) ? 'attachment' : 'inline';
+		// filename : repli ASCII pour les vieux navigateurs, filename* : le vrai nom en UTF-8 (RFC 6266)
+		$ascii = str_replace(['"', '\\'], '', preg_replace('/[^\x20-\x7E]/', '_', $name));
+
+		$response = new static();
+		$response->filePath = $path;
+		$response->built = true;
+		return $response
+			->header('Content-Type', $mime)
+			->header('Content-Length', (string) filesize($path))
+			->header('Content-Disposition', "{$disposition}; filename=\"{$ascii}\"; filename*=UTF-8''" . rawurlencode($name))
+			->header('X-Content-Type-Options', 'nosniff')
+			->header('Cache-Control', 'private, no-cache');
+	}
 
 	/** Adds or overrides a response header. */
 	public function header(string $name, string $value): self {
@@ -99,7 +146,16 @@ class Response {
 				echo "<script>window.location.href = '{$location}';</script>";
 			}
 		}
+		if ($this->filePath !== null) {
+			readfile($this->filePath);
+			return;
+		}
 		echo $this->body;
+	}
+
+	/** Headers set so far (name => value). */
+	public function getHeaders(): array {
+		return $this->headers;
 	}
 
 	/** Flashes validation errors to the session for the next request. */

@@ -17,16 +17,19 @@ use SkankyDev\Config\Config;
 use SkankyDev\Http\Request;
 
 /**
- * A file stored in the upload folder, as returned by UploadedFile::store(),
- * meant to be embedded in a document: `public ?StoredFile $cover = null;`.
+ * A file stored in the upload folder (UploadedFile::store()) or in the private
+ * folder (UploadedFile::storePrivate()), meant to be embedded in a document:
+ * `public ?StoredFile $cover = null;`.
  *
- * Only the path relative to the upload folder is persisted. The disk location
- * (`upload.folder`) and the public URL (`upload.url`) come from the config, so
- * moving the files or serving them from a CDN needs no data migration.
+ * Only the path relative to its folder is persisted. The disk location
+ * (`upload.folder` or `storage.private`) and the public URL (`upload.url`) come
+ * from the config, so moving the files or serving them from a CDN needs no data
+ * migration. A private file has no URL: a controller sends it with Response::file()
+ * after checking who asks for it.
  */
 class StoredFile extends EmbeddedDocument {
 
-	/** Path relative to `upload.folder`, with `/` separators, e.g. `img/3f2a….jpg`. */
+	/** Path relative to its folder, with `/` separators, e.g. `img/3f2a….jpg`. */
 	public string $path = '';
 	/** Name of the file on the client side, for display only. */
 	public string $original_name = '';
@@ -36,12 +39,18 @@ class StoredFile extends EmbeddedDocument {
 	public int $size = 0;
 	public ?int $width = null;
 	public ?int $height = null;
+	/** True when the file lives in `storage.private`, out of the web's reach. */
+	public bool $private = false;
 
 	/**
 	 * Public URL: `upload.url` + path. Absolute on demand, using the scheme and host
 	 * of the current request (unless `upload.url` is already absolute, e.g. a CDN).
+	 * @throws \LogicException for a private file, which has no public URL
 	 */
 	public function url(bool $absolute = false): string {
+		if ($this->private) {
+			throw new \LogicException("Private file {$this->path} has no public URL: send it with Response::file().");
+		}
 		$url = rtrim((string) Config::get('upload.url'), '/') . '/' . $this->path;
 		if (!$absolute || preg_match('#^(https?:)?//#', $url)) {
 			return $url;
@@ -50,9 +59,10 @@ class StoredFile extends EmbeddedDocument {
 		return $request->scheme() . '://' . $request->host() . $url;
 	}
 
-	/** Absolute path on disk: `upload.folder` + path. */
+	/** Absolute path on disk: `upload.folder` (or `storage.private`) + path. */
 	public function fullPath(): string {
-		return rtrim((string) Config::get('upload.folder'), '/\\') . DS . str_replace('/', DS, $this->path);
+		$folder = Config::get($this->private ? 'storage.private' : 'upload.folder');
+		return rtrim((string) $folder, '/\\') . DS . str_replace('/', DS, $this->path);
 	}
 
 	public function isImage(): bool {
@@ -70,8 +80,9 @@ class StoredFile extends EmbeddedDocument {
 		return $this->path !== '' && is_file($file) && unlink($file);
 	}
 
-	/** Adds the computed URL to the JSON output. */
+	/** Adds the computed URL to the JSON output (none for a private file). */
 	public function jsonSerialize(): mixed {
-		return [...parent::jsonSerialize(), 'url' => $this->url()];
+		$data = parent::jsonSerialize();
+		return $this->private ? $data : [...$data, 'url' => $this->url()];
 	}
 }

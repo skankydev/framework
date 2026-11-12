@@ -30,6 +30,10 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
   by `upload.link` and `storage.private` / `storage.logs` / `storage.cache`.
 - `php craft storage-link`: creates the storage folders and the `public/upload` link.
 - `Log::folder()`: the logs folder (`storage.logs`).
+- `UploadedFile::storePrivate()`: stores into `storage.private`, out of the web's reach. The
+  `StoredFile` gets `private = true`: `fullPath()` follows, `url()` throws a `LogicException`.
+- `Response::file()`: sends a `StoredFile` or a path (inline or download, UTF-8 file name, HTML/SVG
+  always downloaded, `NotFoundException` 404 when missing). `Response::getHeaders()`.
 
 ### Fixed
 

@@ -71,6 +71,7 @@ Ce que l'objet sait te dire :
 - `isImage()`, `dimensions()` : `[largeur, hauteur]` pour une image.
 - `clientName()`, `clientExtension()`, `size()` : le nom d'origine et la taille, pour l'affichage.
 - `store($sousDossier = '', $nom = null)` : déplace le fichier dans un sous-dossier du dossier d'upload (créé au besoin) sous un nom aléatoire (ou `$nom`) + l'extension sûre, et te rend un `StoredFile`. Le sous-dossier est relatif (`'img'`, `'media/2026'`) : un `..` est refusé, impossible de sortir du dossier d'upload.
+- `storePrivate($sousDossier = '', $nom = null)` : pareil, mais dans le dossier privé (`storage.private`, `storage/files/private/` par défaut), jamais servi par le serveur web. Pour un fichier qui ne doit pas être accessible à tout le monde : une facture, un document d'identité…
 
 Le dossier d'upload et son URL publique viennent de la config ([04](004-Config.md)), à surcharger dans `master.config.php` si besoin :
 
@@ -100,6 +101,18 @@ class Persona extends MasterDocument {
 ```
 
 Il ne stocke que le chemin relatif au dossier d'upload (`img/3f2a….png`), le nom d'origine, le type, le poids, et les dimensions pour une image. L'URL n'est **jamais stockée** : `url()` la calcule avec `upload.url` + le chemin (`url(true)` pour l'avoir en absolu, avec le domaine de la requête). Pareil pour `fullPath()` (le chemin sur le disque), avec `upload.folder`. Tu changes de domaine, tu déplaces les fichiers ou tu passes sur un CDN : tu changes la config, rien à migrer en base. Il y a aussi `isImage()`, `extension()` et `delete()` pour supprimer le fichier.
+
+Un fichier rangé par `storePrivate()` a `private` à `true` (enregistré avec le reste) : `fullPath()` pointe dans `storage.private`, et il n'a **pas d'URL**. `url()` lève une `LogicException`, et `jsonSerialize()` n'ajoute pas de clé `url`. Pour le donner à quelqu'un, c'est un controller qui vérifie qui demande, puis l'envoie avec `Response::file()` ([09](009-Les-Reponses.md)) :
+
+```php
+public function invoice(string $id): Response {
+    $order = $this->orders->findById($id);
+    if (!$order || $order->user_id != Auth::user()?->_id) {
+        return notFound();
+    }
+    return Response::file($order->invoice, download: true);
+}
+```
 
 Pour valider un fichier (type, poids, image), il y a les règles `file`, `image`, `mimes:…` et `max_size:…` ([13.2](013.2-La-Validation.md)).
 
