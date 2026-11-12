@@ -5,6 +5,8 @@ namespace SkankyTest\Integration\Queue;
 use MongoDB\BSON\UTCDateTime;
 use SkankyDev\Command\QueueWork;
 use SkankyDev\Database\MongoClient;
+use SkankyDev\Event\EventManager;
+use SkankyDev\Queue\Event\JobFailed;
 use SkankyDev\Model\Enum\JobStatus;
 use SkankyDev\Model\JobCollection;
 use SkankyDev\Queue\Queue;
@@ -262,6 +264,39 @@ class QueueTest extends IntegrationTestCase
         $this->assertSame(JobStatus::FAILED, $job->status);
         $this->assertEquals(3, $job->attempts);
         $this->assertNull(Queue::next());
+    }
+
+    public function testWorkerEmitsJobFailedOnlyOnLastAttempt(): void
+    {
+        (new \ReflectionProperty(EventManager::class, '_instance'))->setValue(null, null);
+        $failed = [];
+        EventManager::_listen(JobFailed::class, function (JobFailed $e) use (&$failed) { $failed[] = $e; });
+
+        Queue::push(new BrokenJob());
+        $this->process(Queue::next());
+        $this->process(Queue::next());
+        $this->assertCount(0, $failed);
+
+        $this->process(Queue::next());
+        $this->assertCount(1, $failed);
+        $this->assertInstanceOf(BrokenJob::class, $failed[0]->job);
+        $this->assertSame(JobStatus::FAILED, $failed[0]->jobDoc->status);
+        $this->assertEquals('boom', $failed[0]->exception->getMessage());
+        (new \ReflectionProperty(EventManager::class, '_instance'))->setValue(null, null);
+    }
+
+    public function testJobFailedListenerErrorDoesNotKillTheWorker(): void
+    {
+        (new \ReflectionProperty(EventManager::class, '_instance'))->setValue(null, null);
+        EventManager::_listen(JobFailed::class, function () { throw new \RuntimeException('listener boom'); });
+
+        Queue::push(new BrokenJob());
+        for ($i = 0; $i < 3; $i++) {
+            $this->process(Queue::next());   // ne doit rien lever, même au dernier essai
+        }
+
+        $this->assertSame(JobStatus::FAILED, (new JobCollection())->findOne()->status);
+        (new \ReflectionProperty(EventManager::class, '_instance'))->setValue(null, null);
     }
 
     // ── enum ─────────────────────────────────────────────────────────────────

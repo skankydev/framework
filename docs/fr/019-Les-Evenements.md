@@ -83,6 +83,23 @@ La classe est la clé, comme pour les alias de middlewares : la config est fusio
 - Le listener n'est construit que quand un de ses événements est émis, par `MasterFactory` : son constructeur profite de l'injection de dépendances, comme un controller ([08](008-Controller.md)). Il est ensuite **gardé pour le reste de la requête** : deux émissions, un seul objet.
 - Un listener mal déclaré (classe introuvable, `ListenerInterface` absente, méthode qui n'existe pas) lève une `EventException` au premier `_emit()`, pas en silence.
 
+## Les événements du framework
+
+Le framework n'émet que là où ton code ne peut pas se brancher autrement. Les événements métier (un commentaire posté, un score enregistré), c'est ton application qui les émet.
+
+| Événement | Émis quand | Contenu |
+|---|---|---|
+| `SkankyDev\Auth\Event\LoggedIn` | `login()`, `attempt()` réussi, ou session restaurée par le cookie remember-me | `user`, `remember`, `viaCookie` |
+| `SkankyDev\Auth\Event\LoggedOut` | `logout()` alors que quelqu'un était connecté | `user` |
+| `SkankyDev\Auth\Event\LoginFailed` | `attempt()` raté (login inconnu, mauvais mot de passe, champ vide) | `identifier`, `login` (jamais le mot de passe) |
+| `SkankyDev\Http\Event\PageNotFound` | une 404 part : `notFound()`, ou une `NotFoundException` code 404 attrapée par `Application` (en debug aussi) | `uri`, `exception` |
+| `SkankyDev\Queue\Event\JobFailed` | un job échoue pour la dernière fois (`max_attempts` atteint) | `job`, `jobDoc`, `exception` |
+
+Deux détails :
+
+- Avec le cookie remember-me, la session est restaurée pendant la résolution de l'utilisateur. `LoggedIn` n'est émis qu'**une fois cette résolution finie** : un listener qui appelle `Auth::user()` récupère l'utilisateur sans tout relancer.
+- Si tu redéfinis `notFound()` dans ton projet, ta version doit émettre `PageNotFound` elle aussi.
+
 ## Brancher un callable à la main
 
 Pour un test, ou un cas ponctuel dans `config/bootstrap.php` :
@@ -98,5 +115,7 @@ Les listeners de la config passent d'abord, puis ceux de `_listen()`, dans l'ord
 ## Quand un listener plante
 
 Rien n'est attrapé : l'exception remonte jusqu'à celui qui a émis, puis jusqu'à l'`ExceptionHandler` ([15](015-Gestion-des-Erreurs.md)), comme n'importe quelle autre. Pas d'erreur silencieuse. Ça veut aussi dire qu'un listener peut arrêter la requête : une `NotFoundException` avec le code 404 donne la page 404 en production.
+
+Seule exception : `JobFailed`. Le worker attrape et logue l'erreur d'un de ses listeners, parce que la laisser remonter tuerait le worker, et avec lui tous les jobs suivants.
 
 Si un traitement est long ou peut échouer sans que la requête doive en pâtir (un mail, un appel externe), le listener pousse un job ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)) au lieu de le faire lui-même.

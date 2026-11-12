@@ -36,6 +36,9 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
   `EventManager::_emit()` / `_listen()` / `_hasListeners()`. Listeners are declared in the new
   `listeners` config (`Listener::class => true`, `false` to switch one off), built lazily through
   `MasterFactory` and kept for the request. Docs: new chapter 19, Mails/HTTP client/Tests become 20/21/22.
+- Framework events: `Auth\Event\LoggedIn` / `LoggedOut` / `LoginFailed` (`SessionGate`),
+  `Http\Event\PageNotFound` (`notFound()` and `Application`), `Queue\Event\JobFailed` (worker,
+  last attempt). `notFound()` takes the exception as an optional second argument.
 - `Response::file()`: sends a `StoredFile` or a path (inline or download, UTF-8 file name, HTML/SVG
   always downloaded, `NotFoundException` 404 when missing). `Response::getHeaders()`.
 

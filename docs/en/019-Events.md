@@ -83,6 +83,23 @@ The class is the key, like the middleware aliases: the config is merged by `arra
 - The listener is only built when one of its events is emitted, by `MasterFactory`: its constructor gets dependency injection, like a controller ([08](008-Controller.md)). It's then **kept for the rest of the request**: two emits, one object.
 - A badly declared listener (class not found, missing `ListenerInterface`, method that doesn't exist) throws an `EventException` on the first `_emit()`, not silently.
 
+## The framework's events
+
+The framework only emits where your code can't plug in otherwise. Business events (a posted comment, a saved score) are emitted by your application.
+
+| Event | Emitted when | Content |
+|---|---|---|
+| `SkankyDev\Auth\Event\LoggedIn` | `login()`, a successful `attempt()`, or a session restored by the remember-me cookie | `user`, `remember`, `viaCookie` |
+| `SkankyDev\Auth\Event\LoggedOut` | `logout()` while someone was logged in | `user` |
+| `SkankyDev\Auth\Event\LoginFailed` | a failed `attempt()` (unknown login, wrong password, empty field) | `identifier`, `login` (never the password) |
+| `SkankyDev\Http\Event\PageNotFound` | a 404 goes out: `notFound()`, or a code 404 `NotFoundException` caught by `Application` (in debug too) | `uri`, `exception` |
+| `SkankyDev\Queue\Event\JobFailed` | a job fails for the last time (`max_attempts` reached) | `job`, `jobDoc`, `exception` |
+
+Two details:
+
+- With the remember-me cookie, the session is restored while the user is being resolved. `LoggedIn` is only emitted **once that resolution is done**: a listener calling `Auth::user()` gets the user without starting over.
+- If you redefine `notFound()` in your project, your version must emit `PageNotFound` too.
+
 ## Plugging a callable by hand
 
 For a test, or a one-off case in `config/bootstrap.php`:
@@ -98,5 +115,7 @@ The config listeners go first, then the `_listen()` ones, in the order they were
 ## When a listener crashes
 
 Nothing is caught: the exception goes up to whoever emitted, then to the `ExceptionHandler` ([15](015-Error-Handling.md)), like any other. No silent errors. It also means a listener can stop the request: a `NotFoundException` with code 404 gives the 404 page in production.
+
+One exception: `JobFailed`. The worker catches and logs an error from one of its listeners, because letting it go up would kill the worker, and every job after it.
 
 If some work is long or may fail without the request having to suffer for it (a mail, an external call), the listener pushes a job ([18 Queue and Jobs](018-Queue-and-Jobs.md)) instead of doing it itself.
