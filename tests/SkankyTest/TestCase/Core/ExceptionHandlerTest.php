@@ -4,6 +4,7 @@ namespace SkankyTest\TestCase\Core;
 
 use PHPUnit\Framework\TestCase;
 use SkankyDev\Core\ExceptionHandler;
+use SkankyDev\Utilities\Dumper;
 use SkankyDev\Utilities\Log;
 
 class ExceptionHandlerTest extends TestCase
@@ -16,6 +17,8 @@ class ExceptionHandlerTest extends TestCase
         // PHPUnit runs tests with a reduced error_reporting: handleError() would
         // consider every warning masked
         $this->errorReporting = error_reporting(E_ALL);
+        // The debug page calls debug(), which would detect PHPUnit's CLI
+        Dumper::forceMode('html');
         $this->logDir = Log::folder();
 
         if (is_dir($this->logDir)) {
@@ -28,6 +31,7 @@ class ExceptionHandlerTest extends TestCase
     protected function tearDown(): void
     {
         error_reporting($this->errorReporting);
+        Dumper::forceMode(null);
         if (is_dir($this->logDir)) {
             foreach (glob($this->logDir . '/*.log') as $f) {
                 unlink($f);
@@ -139,6 +143,64 @@ class ExceptionHandlerTest extends TestCase
 
         $this->assertFalse($handled);
         $this->assertSame('', $output);
+    }
+
+    // ── CLI mode ──────────────────────────────────────────────────────────────
+
+    public function testHandleCliRendersTextWithTraceInDebug(): void
+    {
+        $handler = new ExceptionHandler(true, cli: true);
+
+        ob_start();
+        $handler->handle(new \RuntimeException('Cli boom'));
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('RuntimeException', $output);
+        $this->assertStringContainsString('Cli boom', $output);
+        $this->assertStringContainsString('Stack trace', $output);
+        $this->assertStringNotContainsString('<div', $output);
+        $this->assertStringNotContainsString('<html', $output);
+    }
+
+    public function testHandleCliHidesTraceOutOfDebug(): void
+    {
+        $handler = new ExceptionHandler(false, cli: true);
+
+        ob_start();
+        $handler->handle(new \RuntimeException('Cli boom'));
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Cli boom', $output);
+        $this->assertStringNotContainsString('Stack trace', $output);
+    }
+
+    public function testHandleCliLogsTheCommandLine(): void
+    {
+        $handler = new ExceptionHandler(false, cli: true);
+
+        ob_start();
+        $handler->handle(new \RuntimeException('Cli logged'));
+        ob_get_clean();
+
+        $content = file_get_contents(glob($this->logDir . '/*-error.log')[0]);
+        $this->assertStringContainsString('Cli logged', $content);
+        $this->assertStringContainsString('Command: ', $content);
+        $this->assertStringNotContainsString('User-Agent', $content);
+    }
+
+    public function testHandleErrorCliShowsWarningEvenOutOfDebug(): void
+    {
+        $handler = new ExceptionHandler(false, cli: true);
+
+        ob_start();
+        $handled = $handler->handleError(E_WARNING, 'Cli warning', '/app/Command/Foo.php', 7);
+        $output = ob_get_clean();
+
+        $this->assertTrue($handled);
+        $this->assertStringContainsString('Warning', $output);
+        $this->assertStringContainsString('Cli warning', $output);
+        $this->assertStringContainsString('/app/Command/Foo.php', $output);
+        $this->assertStringNotContainsString('<div', $output);
     }
 
     // ── handle() production mode ──────────────────────────────────────────────

@@ -109,4 +109,20 @@ class DumperTest extends TestCase
 
         $this->assertLessThan(1024 * 1024, strlen($html));
     }
+
+    // ── terminal rendering ────────────────────────────────────────────────────
+
+    public function testCliUsesAnsiColoursAndSameLayout(): void
+    {
+        $output = Dumper::cli(['name' => 'bob', 'tags' => range(1, 50)], ['items' => 5]);
+
+        $this->assertStringNotContainsString('<span', $output);
+        $this->assertStringContainsString("[\033[33mname\033[0m] => \033[92mbob\033[0m", $output);
+        $this->assertStringContainsString('… +45 more', $output);
+    }
+
+    public function testCliLeavesStringsUnescaped(): void
+    {
+        $this->assertStringContainsString('<a&b>', Dumper::cli('<a&b>'));
+    }
 }

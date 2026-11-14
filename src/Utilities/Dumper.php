@@ -14,7 +14,8 @@
 namespace SkankyDev\Utilities;
 
 /**
- * Renders any value as coloured HTML (the `debug-*` CSS classes), print_r style.
+ * Renders any value print_r style, coloured: HTML (the `debug-*` CSS classes) for a
+ * page, ANSI escape codes for a terminal.
  * The output is bounded by construction: depth, items per array/object, string
  * length and total number of values are all capped, so dumping a huge graph
  * (a paginator full of documents, a stack trace argument…) can never exhaust
@@ -32,12 +33,25 @@ class Dumper {
 
 	private const INDENT = '    ';
 
+	/** ANSI colour of each `debug-*` CSS class, for the terminal rendering. */
+	private const ANSI = [
+		'var'     => '33',        // yellow
+		'keyword' => '36',        // cyan
+		'integer' => '38;5;208',  // orange
+		'source'  => '32',        // green
+		'text'    => '92',        // bright green
+		'php'     => '91',        // bright red
+	];
+
+	/** Forced output mode (`html` / `cli`), null = detected from the SAPI. See forceMode(). */
+	private static ?string $mode = null;
+
 	private int $nodes = 0;
 
 	/** @var array<int,bool> ids of the objects being rendered (recursion guard) */
 	private array $stack = [];
 
-	private function __construct(private array $limits) { }
+	private function __construct(private array $limits, private bool $ansi = false) { }
 
 	/**
 	 * Returns the HTML dump of $data (no wrapper: meant to be placed in a `<pre>`).
@@ -45,6 +59,34 @@ class Dumper {
 	 */
 	public static function html(mixed $data, array $limits = []): string {
 		return (new self($limits + self::LIMITS))->render($data, 0);
+	}
+
+	/**
+	 * Returns the terminal dump of $data: same layout and limits as html(),
+	 * coloured with ANSI escape codes instead of `<span>`.
+	 */
+	public static function cli(mixed $data, array $limits = []): string {
+		return (new self($limits + self::LIMITS, true))->render($data, 0);
+	}
+
+	/** True when the output goes to a terminal (CLI SAPI, unless a mode is forced). */
+	public static function isCli(): bool {
+		return self::$mode !== null ? self::$mode === 'cli' : PHP_SAPI === 'cli';
+	}
+
+	/**
+	 * Forces the output mode of debug() (`html` or `cli`), null to go back to the
+	 * detection. For the cases where the SAPI lies: tests, a CLI script building HTML…
+	 */
+	public static function forceMode(?string $mode): void {
+		self::$mode = $mode;
+	}
+
+	/** Wraps $text in the colour of a `debug-*` class, for the current output (terminal or HTML). */
+	public static function colour(string $class, string $text): string {
+		return self::isCli()
+			? "\033[" . self::ANSI[$class] . 'm' . $text . "\033[0m"
+			: '<span class="debug-' . $class . '">' . htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</span>';
 	}
 
 	private function render(mixed $value, int $depth): string {
@@ -141,6 +183,9 @@ class Dumper {
 	}
 
 	private function span(string $class, string $text): string {
+		if ($this->ansi) {
+			return "\033[" . self::ANSI[$class] . 'm' . $text . "\033[0m";
+		}
 		return '<span class="debug-' . $class . '">' . htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</span>';
 	}
 

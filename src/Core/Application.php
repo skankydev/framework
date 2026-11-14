@@ -40,26 +40,8 @@ class Application {
 		$debug = Config::get('debug') ?? false;
 		$this->exceptionHandler = new ExceptionHandler($debug);
 		
-		// Enregistrer le gestionnaire global
-		set_exception_handler([$this->exceptionHandler, 'handle']);
-
-		// Warnings, notices and deprecations: logged, and displayed styled in debug mode
-		set_error_handler([$this->exceptionHandler, 'handleError']);
-
-		// Gérer aussi les erreurs fatales
-		register_shutdown_function(function() {
-			$error = error_get_last();
-			if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR])) {
-				$exception = new \ErrorException(
-					$error['message'],
-					0,
-					$error['type'],
-					$error['file'],
-					$error['line']
-				);
-				$this->exceptionHandler->handle($exception);
-			}
-		});
+		// Exceptions, warnings/notices and fatal errors all go through the handler
+		$this->exceptionHandler->register();
 	}
 
 	/**

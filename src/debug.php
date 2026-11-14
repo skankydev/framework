@@ -11,13 +11,15 @@
  *
  */
 
+use SkankyDev\Utilities\Dumper;
+
 // Chaque fonction est protégée par function_exists() : un projet peut définir
 // sa propre version, à condition de la charger AVANT l'autoload de Composer.
 
 //ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ
 if (!function_exists('dd')) {
 	function dd($data,$message = ''){
-		dump($data,$message);
+		debug($data,$message);
 		die();
 	}
 }
@@ -25,38 +27,40 @@ if (!function_exists('dd')) {
 if (!function_exists('dump')) {
 	function dump($data,$message = ''){
 		echo $message;
-		var_dump($data);
+		debug($data);
 	}
 }
 
 if (!function_exists('debug')) {
 	/**
-	 * Echoes a coloured, bounded HTML dump of $data.
+	 * Echoes a coloured, bounded dump of $data: an HTML block (`debug-*` CSS classes)
+	 * on a page, ANSI-coloured text in a terminal (see Dumper::isCli()).
 	 * @param string $message replaces the default "debug : type from …" header
 	 * @param array  $limits  overrides of Dumper::LIMITS (`depth`, `items`, `string`, `nodes`)
 	 */
 	function debug($data,$message = '',array $limits = []){
-		echo '<div class="debug-message">';
 		if(!empty($message)){
-			echo $message;
+			$header = $message;
 		}else{
-			$backtrace = debug_backtrace();
-			$type = gettype($backtrace[0]['args'][0]);
-			if($type === 'object'){
-				$type = get_class($backtrace[0]['args'][0]);
+			$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+			// Called through dump() / dd(): the caller that matters is theirs, one frame up
+			$call = 0;
+			if(!isset($backtrace[1]['class']) && in_array($backtrace[1]['function'] ?? '', ['dump', 'dd'], true)){
+				$call = 1;
 			}
-			$source = '';
-			if(isset($backtrace[1]['class'])){
-				$source = 'class: <span class="debug-keyword">'.$backtrace[1]['class'].'</span> method: <span class="debug-keyword"> '.$backtrace[1]['function'].'</span>';
+			if(isset($backtrace[$call + 1]['class'])){
+				$source = 'class: '.Dumper::colour('keyword', $backtrace[$call + 1]['class']).' method: '.Dumper::colour('keyword', $backtrace[$call + 1]['function']);
 			}else{
-				$source = 'file: <span class="debug-keyword">'.$backtrace[0]['file'].'</span> line: <span class="debug-keyword">'.$backtrace[0]['line'].'</span>';
+				$source = 'file: '.Dumper::colour('keyword', $backtrace[$call]['file']).' line: '.Dumper::colour('keyword', (string) $backtrace[$call]['line']);
 			}
-			echo 'debug : <span class="debug-keyword">'.$type.'</span> from '.$source;
+			$header = 'debug : '.Dumper::colour('keyword', get_debug_type($data)).' from '.$source;
 		}
 
 		// Bounded dump (depth, items, string length…): see Dumper::LIMITS
-		echo "<pre>".\SkankyDev\Utilities\Dumper::html($data, $limits)."</pre>";
-		echo '</div>';
-
+		if(Dumper::isCli()){
+			echo $header."\n".Dumper::cli($data, $limits)."\n";
+			return;
+		}
+		echo '<div class="debug-message">'.$header.'<pre>'.Dumper::html($data, $limits).'</pre></div>';
 	}
 }

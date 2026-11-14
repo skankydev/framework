@@ -2,7 +2,7 @@
 
 ## Le handler global
 
-Toute exception non attrapée finit au même endroit : `ExceptionHandler::handle()`. `Application` l'installe dès son constructeur (`set_exception_handler`), et ajoute une fonction de shutdown qui rattrape même les erreurs fatales (`E_ERROR`, `E_CORE_ERROR`, `E_COMPILE_ERROR`) pour les lui repasser sous forme d'`ErrorException`. Résultat : pas de page blanche silencieuse.
+Toute exception non attrapée finit au même endroit : `ExceptionHandler::handle()`. `Application` l'installe dès son constructeur (`ExceptionHandler::register()` : `set_exception_handler`), et ajoute une fonction de shutdown qui rattrape même les erreurs fatales (`E_ERROR`, `E_CORE_ERROR`, `E_COMPILE_ERROR`) pour les lui repasser sous forme d'`ErrorException`. Résultat : pas de page blanche silencieuse.
 
 ```php
 public function handle(Throwable $exception): void {
@@ -28,7 +28,7 @@ Les arguments de chaque appel de la trace sont affichés par `debug()`, avec des
 
 ## Les warnings, notices et dépréciations
 
-`Application` installe aussi `ExceptionHandler::handleError()` (`set_error_handler`) : une erreur PHP non fatale n'est jamais silencieuse.
+`ExceptionHandler::register()` installe aussi `handleError()` (`set_error_handler`) : une erreur PHP non fatale n'est jamais silencieuse.
 
 - **Toujours loggée** dans le fichier d'erreurs, une seule fois par requête pour un même message/fichier/ligne (un warning dans une boucle ne noie pas le log).
 - **En debug** : affichée sur place, dans un bloc `.debug-message.debug-error` (mêmes classes CSS que `debug()`), à la place de la sortie brute de PHP. Pas d'affichage pour une requête JSON, le bloc casserait la réponse.
@@ -38,7 +38,9 @@ L'opérateur `@` et `error_reporting` restent respectés.
 
 ## `debug()` et le `Dumper`
 
-`debug($data, $message = '', $limits = [])` affiche un dump HTML coloré (classes `debug-*`). Le rendu vient de `SkankyDev\Utilities\Dumper::html()`, borné par construction : ce qui dépasse est remplacé par un marqueur `…`.
+`debug($data, $message = '', $limits = [])` affiche un dump coloré, et choisit son rendu tout seul : un bloc HTML (classes `debug-*`) sur une page, du texte en couleurs ANSI dans un terminal. Le rendu vient de `SkankyDev\Utilities\Dumper` (`html()` / `cli()`), borné par construction : ce qui dépasse est remplacé par un marqueur `…`.
+
+La détection se fait sur la SAPI (`Dumper::isCli()`). Pour les cas où elle se trompe (un test, un script CLI qui fabrique du HTML), `Dumper::forceMode('html')` ou `'cli'` l'impose, `forceMode(null)` rend la main à la détection.
 
 | Limite | Défaut | Rôle |
 |---|---|---|
@@ -50,6 +52,13 @@ L'opérateur `@` et `error_reporting` restent respectés.
 ```php
 debug($paginator, 'scores', ['depth' => 3, 'items' => 10]);
 ```
+
+## En CLI
+
+`CliApplication` enregistre le même handler, en mode terminal (`new ExceptionHandler($debug, cli: true)`). Une commande `craft` qui plante n'affiche donc plus la sortie brute de PHP :
+
+- **Exception non attrapée ou erreur fatale** : classe, message et fichier:ligne en couleur, plus la trace en debug. Loggée comme côté web, avec la ligne de commande à la place de l'URL.
+- **Warning, notice, dépréciation** : une ligne colorée, affichée même hors debug (celui qui lance la commande a le droit de la voir), et loggée.
 
 ## Le code de l'exception = le statut HTTP
 
