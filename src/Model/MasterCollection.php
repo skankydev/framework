@@ -364,7 +364,9 @@ abstract class MasterCollection {
 	 * Returns a paginated result set wrapped in a Paginator.
 	 * Merges default paginator config with the provided info (page, limit, sort).
 	 * @param array $filter       MongoDB filter
-	 * @param array $paginateInfo page, limit and sort — typically from Request::paginateInfo()
+	 * @param array $paginateInfo page, limit and sort — typically from Request::paginateInfo() —
+	 *                            plus an optional `projection` (Mongo projection, e.g. `['replay' => 0]`
+	 *                            to leave a heavy field out of a list)
 	 */
 	public function paginate(array $filter = [], array $paginateInfo = [], array $with = []): Paginator {
 		$paginateInfo = array_merge(Config::get('paginator'),$paginateInfo);
@@ -402,6 +404,12 @@ abstract class MasterCollection {
 			'sort'  => $sort,
 			'with'  => $with,
 		];
+
+		// Query-only key: not a pagination state, so it never reaches the Paginator
+		if (!empty($paginateInfo['projection'])) {
+			$options['projection'] = $paginateInfo['projection'];
+		}
+		unset($paginateInfo['projection']);
 
 		$items = $this->find($filter, $options);
 		$paginateInfo['total'] = $this->count($filter);

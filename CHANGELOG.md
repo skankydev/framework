@@ -41,17 +41,31 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
   last attempt). `notFound()` takes the exception as an optional second argument.
 - `Response::file()`: sends a `StoredFile` or a path (inline or download, UTF-8 file name, HTML/SVG
   always downloaded, `NotFoundException` 404 when missing). `Response::getHeaders()`.
+- `SkankyDev\Utilities\Dumper`: bounded, coloured dump of any value (`html()` / `cli()`), capped in
+  depth, entries, string length and total values. `debug()` is rebuilt on it: values are now
+  escaped, a third `$limits` argument overrides the caps, and the rendering follows the context
+  (HTML block on a page, ANSI text in a terminal; `Dumper::forceMode()` to impose one).
+  `dump()` and `dd()` go through `debug()`.
+- Warnings, notices and deprecations are no longer silent (`ExceptionHandler::handleError()`):
+  logged once per request, and displayed in place as a `.debug-message.debug-error` block in debug
+  mode (not for a JSON request).
+- CLI: `CliApplication` registers the `ExceptionHandler` in terminal mode. Uncaught exceptions,
+  fatal errors and warnings of a `craft` command are logged (with the command line) and displayed
+  in colour. `ExceptionHandler::register()` installs the three handlers, for web and CLI.
+- `MasterCollection::paginate()`: optional `projection` key in `$paginateInfo`, to leave a heavy
+  field out of a list.
+- `MongoClient::_transaction()`, off by default (`db.MongoDB.transaction`, needs a replica set).
+  When on, a write and its snapshot propagation are done in one transaction.
+- `php craft db-replica`: initializes a single-node replica set.
 
 ### Fixed
 
 - Queue: two workers could run the same job (claiming is now atomic), and a job stayed
   `processing` forever when its worker died (lease, see `MasterJob::timeout()`).
+- Debug error page: the arguments of the stack trace were dumped in full, which could exhaust
+  memory on a big object graph. They're now dumped with tight limits, and the exception message
+  is escaped. A project that published `view/error/debug.php` should publish it again.
 
-### Added
-
-- `MongoClient::_transaction()`, off by default (`db.MongoDB.transaction`, needs a replica set).
-  When on, a write and its snapshot propagation are done in one transaction.
-- `php craft db-replica`: initializes a single-node replica set.
 
 ## [0.2.0] - 2026-10-10
 

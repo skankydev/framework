@@ -56,6 +56,7 @@ $collection->find(['status' => 'active']);           // array of Documents, alre
 $collection->findOne(['email' => $email]);
 $collection->findById($id);
 $collection->paginate($filter, Request::_paginateInfo());  // a Paginator ready for the view
+$collection->paginate($filter, ['projection' => ['replay' => 0], ...Request::_paginateInfo()]); // without a heavy field
 
 Collection::_save($document);      // insert if no _id, update otherwise (only the modified fields)
 Collection::_saveSneaky($document); // save without triggering the behaviors (see 10.2)
