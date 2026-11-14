@@ -8,10 +8,11 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 
 ## [Unreleased]
 
-### Upgrading
 
-- `Queue::PENDING`/`PROCESSING`/`SUCCESS`/`FAILED` are replaced by the `JobStatus` enum.
-- Run `php craft db-sync` to create the new index on `jobs`.
+## [0.3.0] - 2026-11-15
+
+### Upgrading from 0.2
+
 - **Everything the app writes moves to `storage/`.** Uploads go to `storage/files/public`
   (`upload.folder`), served through the `public/upload` link; logs go to `storage/logs`
   (`storage.logs`). Run `php craft storage-link`: it creates the folders and the link, and moves
@@ -20,12 +21,17 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
   `public/upload/*` with `/public/upload` and `/logs` with `/storage/files/public/*`,
   `/storage/logs/*`, `/storage/cache/*`. The web server must follow symlinks
   (`Options +FollowSymLinks` on Apache).
+- **Forms no longer get a default submit button.** A form needs `->submit('save')` (or a
+  `submit` field) to show one. `FormBuilder::$submitLabel`, `$submitAttributes` and
+  `renderSubmit()` are removed: a form that overrode them must use `submit()` instead.
+- **`HtmlView` escapes meta values** (`keywords`, `addMeta()`): pass raw text, not
+  already-escaped HTML, or it will be escaped twice.
+- `debug()` escapes the values it prints and caps its output (see `Dumper` below).
+- Warnings, notices and deprecations now show up (log, and on the page in debug mode): code that
+  used to run "quietly" may reveal some.
 
 ### Added
 
-- `embeddedIn()`: `'many' => true` for a field holding an array of snapshots (e.g. a post's
-  tags). Only the matching items are synced (`arrayFilters`), `unset` pulls the item out.
-- `MasterCollection::updateMany()` takes driver options as an optional third argument.
 - `storage/` folder (`STORAGE_FOLDER`, `PRIVATE_FOLDER`, `LOG_FOLDER`, `CACHE_FOLDER`), configured
   by `upload.link` and `storage.private` / `storage.logs` / `storage.cache`.
 - `php craft storage-link`: creates the storage folders and the `public/upload` link.
@@ -35,7 +41,7 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 - Events (`SkankyDev\Event`): `MasterEvent`, `ListenerInterface` (static `subscribe()`), and
   `EventManager::_emit()` / `_listen()` / `_hasListeners()`. Listeners are declared in the new
   `listeners` config (`Listener::class => true`, `false` to switch one off), built lazily through
-  `MasterFactory` and kept for the request. Docs: new chapter 19, Mails/HTTP client/Tests become 20/21/22.
+  `MasterFactory` and kept for the request.
 - Framework events: `Auth\Event\LoggedIn` / `LoggedOut` / `LoginFailed` (`SessionGate`),
   `Http\Event\PageNotFound` (`notFound()` and `Application`), `Queue\Event\JobFailed` (worker,
   last attempt). `notFound()` takes the exception as an optional second argument.
@@ -54,6 +60,39 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
   in colour. `ExceptionHandler::register()` installs the three handlers, for web and CLI.
 - `MasterCollection::paginate()`: optional `projection` key in `$paginateInfo`, to leave a heavy
   field out of a list.
+- `SubmitField` (`submit` field type): the submit button is a field like the others, placed with
+  `renderField('submit')` in a custom layout. It has no `name` (nothing sent in the POST) and
+  `FormBuilder::only()` leaves it out. `submit()` becomes a shortcut for it.
+- `HtmlView::addProperty()` (`<meta property>`, Open Graph; can repeat, e.g. `article:tag`),
+  `HtmlView::addLink()` (`<link rel>`: canonical, alternate…), and a `head` block appended at the
+  end of `getHeader()`.
+
+### Changed
+
+- Debug error page: each stack trace frame with arguments is a collapsible `<details>`.
+- The error layout declares `charset` and `viewport`.
+- Docs: the chapters are renumbered (new chapter 19 Events; Mails/HTTP client/Tests become 20/21/22).
+
+### Fixed
+
+- Debug error page: the arguments of the stack trace were dumped in full, which could exhaust
+  memory on a big object graph. They're now dumped with tight limits, and the exception message
+  is escaped. A project that published `view/error/debug.php` should publish it again.
+
+
+## [0.2.2] - 2026-10-25
+
+### Upgrading
+
+- `Queue::PENDING`/`PROCESSING`/`SUCCESS`/`FAILED` are replaced by the `JobStatus` enum
+  (a breaking change, although shipped in a patch release).
+- Run `php craft db-sync` to create the new index on `jobs`.
+
+### Added
+
+- `embeddedIn()`: `'many' => true` for a field holding an array of snapshots (e.g. a post's
+  tags). Only the matching items are synced (`arrayFilters`), `unset` pulls the item out.
+- `MasterCollection::updateMany()` takes driver options as an optional third argument.
 - `MongoClient::_transaction()`, off by default (`db.MongoDB.transaction`, needs a replica set).
   When on, a write and its snapshot propagation are done in one transaction.
 - `php craft db-replica`: initializes a single-node replica set.
@@ -62,9 +101,17 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 
 - Queue: two workers could run the same job (claiming is now atomic), and a job stayed
   `processing` forever when its worker died (lease, see `MasterJob::timeout()`).
-- Debug error page: the arguments of the stack trace were dumped in full, which could exhaust
-  memory on a big object graph. They're now dumped with tight limits, and the exception message
-  is escaped. A project that published `view/error/debug.php` should publish it again.
+
+
+## [0.2.1] - 2026-10-15
+
+### Changed
+
+- `mongodb/mongodb` is required in `^2.4.1` (security fix of the library), so the `mongodb`
+  extension must be 2.4.1 or later.
+- Docs: the installation chapter lists the download links, the usual traps (three "MongoDB"s,
+  the extension on Windows, the right `php.ini`) and the commands to check everything is ready.
+  Node.js is now optional: the starter ships with its assets compiled.
 
 
 ## [0.2.0] - 2026-10-10
@@ -128,5 +175,8 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 - The delete button of `part.table` pointed to the `edit` action.
 - `MasterCommand::getInfo()` used an undefined variable in its error message.
 
-[Unreleased]: https://github.com/skankydev/framework/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/skankydev/framework/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/skankydev/framework/compare/0.2.2...0.3.0
+[0.2.2]: https://github.com/skankydev/framework/compare/0.2.1...0.2.2
+[0.2.1]: https://github.com/skankydev/framework/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/skankydev/framework/compare/0.1.1...0.2.0
