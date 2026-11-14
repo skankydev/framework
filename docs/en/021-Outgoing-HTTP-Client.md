@@ -1,4 +1,4 @@
-# 20 The outgoing HTTP client
+# 21 The outgoing HTTP client
 
 `SkankyDev\Utilities\Http\HttpClient` is a small cURL wrapper for **outgoing** requests: calling an external API, a third-party service, whatever. It has no state: each request returns its own `HttpResult`, so the same `HttpClient` instance can be used for several calls.
 

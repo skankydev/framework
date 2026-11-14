@@ -49,8 +49,11 @@ if (!function_exists('notFound')) {
 	 * aux pages d'erreur de l'ExceptionHandler — un 404 n'est pas un plantage,
 	 * c'est un résultat attendu (ex: document non trouvé), l'appli tourne bien.
 	 * Vue rendue : src_front/view/error/404.php (à fournir dans le projet, le starter l'a).
+	 * Émet PageNotFound (cf. 19 Les Événements) : une version du projet doit le faire aussi.
+	 * @param \Throwable|null $exception la NotFoundException à l'origine du 404, s'il y en a une
 	 */
-	function notFound(array $data = []) {
+	function notFound(array $data = [], ?\Throwable $exception = null) {
+		\SkankyDev\Event\EventManager::_emit(new \SkankyDev\Http\Event\PageNotFound(\SkankyDev\Http\Request::getInstance()->uri(), $exception));
 		$response = new Response('error.404', $data);
 		$response->status(404);
 		return $response;

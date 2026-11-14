@@ -16,6 +16,8 @@ namespace SkankyDev\Core;
 use Exception;
 use SkankyDev\Config\Config;
 use SkankyDev\Core\ExceptionHandler;
+use SkankyDev\Event\EventManager;
+use SkankyDev\Http\Event\PageNotFound;
 use SkankyDev\Exception\NotFoundException;
 use SkankyDev\Http\Middleware\MiddlewareManager;
 use SkankyDev\Http\Request;
@@ -85,11 +87,16 @@ class Application {
 			// vrai bug de code qui réutilise NotFoundException avec un autre
 			// code (ex: 500 sur un appel de méthode inconnu en interne) — ce
 			// dernier cas doit rester visible comme une vraie erreur en prod.
+			// PageNotFound est émis dans les deux cas d'un vrai 404 : par notFound()
+			// en prod, à la main en debug (qui affiche la trace sans passer par notFound()).
 			if (Config::get('debug') || $e->getCode() !== 404) {
+				if ($e->getCode() === 404) {
+					EventManager::_emit(new PageNotFound(Request::getInstance()->uri(), $e));
+				}
 				$this->exceptionHandler->handle($e);
 			} else {
 				$this->exceptionHandler->log($e);
-				notFound()->send();
+				notFound([], $e)->send();
 			}
 		} catch (Exception $e) {
 			$this->exceptionHandler->handle($e);

@@ -2,6 +2,10 @@
 
 namespace SkankyDev\Auth\Gates;
 
+use SkankyDev\Auth\Event\LoggedIn;
+use SkankyDev\Auth\Event\LoggedOut;
+use SkankyDev\Auth\Event\LoginFailed;
+use SkankyDev\Event\EventManager;
 use SkankyDev\Http\Request;
 use SkankyDev\Utilities\Hash;
 use SkankyDev\Utilities\Session;
@@ -13,6 +17,9 @@ use SkankyDev\Utilities\Token;
  * hashé sur le document (propriété `remember_token`), sa valeur en clair
  * part dans un cookie côté client. Le token est régénéré à chaque usage du
  * cookie (rotation), pour limiter la fenêtre de rejeu si le cookie fuite.
+ *
+ * Événements : LoggedIn (login(), attempt() réussi, session restaurée par le
+ * cookie), LoginFailed (attempt() raté), LoggedOut (logout() d'un connecté).
  */
 class SessionGate extends MasterGate {
 
@@ -25,11 +32,13 @@ class SessionGate extends MasterGate {
 		$password = $credentials['password'] ?? null;
 
 		if (empty($login) || empty($password)) {
+			EventManager::_emit(new LoginFailed($identifier, empty($login) ? null : (string) $login));
 			return false;
 		}
 
 		$user = $this->provider()->findOne([$identifier => $login]);
 		if (!$user || empty($user->password) || !Hash::check($password, $user->password)) {
+			EventManager::_emit(new LoginFailed($identifier, (string) $login));
 			return false;
 		}
 
@@ -41,11 +50,13 @@ class SessionGate extends MasterGate {
 		Session::regenerate();
 		Session::set(self::SESSION_KEY, (string) $user->_id);
 
-		if ($remember && !empty($this->config['remember'])) {
+		$remember = $remember && !empty($this->config['remember']);
+		if ($remember) {
 			$this->remember($user);
 		}
 
 		parent::login($user);
+		EventManager::_emit(new LoggedIn($user, $remember));
 	}
 
 	public function logout(): void {
@@ -57,6 +68,9 @@ class SessionGate extends MasterGate {
 		Session::delete(self::SESSION_KEY);
 		$this->forgetCookie();
 		parent::logout();
+		if ($user !== null) {
+			EventManager::_emit(new LoggedOut($user));
+		}
 	}
 
 	protected function resolve(): ?object {
@@ -94,6 +108,7 @@ class SessionGate extends MasterGate {
 
 		Session::set(self::SESSION_KEY, (string) $user->_id);
 		$this->remember($user);
+		$this->pendingEvent = new LoggedIn($user, remember: true, viaCookie: true);
 		return $user;
 	}
 

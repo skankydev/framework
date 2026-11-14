@@ -56,7 +56,7 @@ LICENSE.txt
 
 One thing to notice: **the framework isn't in your project**. It lives in `vendor/skankydev/framework/`, and you don't touch it. The closest thing to it on the project side is `config/master.config.php`, which overrides its default settings.
 
-The framework has its own tests, but they live in its repository, not in yours ([21 Tests](021-Tests.md)).
+The framework has its own tests, but they live in its repository, not in yours ([22 Tests](022-Tests.md)).
 
 ## Building with modules
 

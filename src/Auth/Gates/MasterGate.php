@@ -2,6 +2,9 @@
 
 namespace SkankyDev\Auth\Gates;
 
+use SkankyDev\Event\EventManager;
+use SkankyDev\Event\MasterEvent;
+
 /**
  * Contrat commun aux gates (mécanismes d'authentification résolus par
  * Auth::keeper() depuis la config `auth.keepers.*` + `class.gates`).
@@ -12,6 +15,12 @@ abstract class MasterGate {
 
 	private ?object $resolvedUser = null;
 	private bool $resolved = false;
+	/**
+	 * Event raised during resolve() (e.g. LoggedIn when the remember-me cookie
+	 * restores the session), emitted by user() once the resolution is finished:
+	 * a listener calling Auth::user() gets the user instead of resolving again.
+	 */
+	protected ?MasterEvent $pendingEvent = null;
 
 	public function __construct(
 		protected array $config,
@@ -38,6 +47,11 @@ abstract class MasterGate {
 		if (!$this->resolved) {
 			$this->resolvedUser = $this->resolve();
 			$this->resolved = true;
+			if ($this->pendingEvent !== null) {
+				$event = $this->pendingEvent;
+				$this->pendingEvent = null;
+				EventManager::_emit($event);
+			}
 		}
 		return $this->resolvedUser;
 	}

@@ -1,4 +1,4 @@
-# 20 Le client HTTP sortant
+# 21 Le client HTTP sortant
 
 `SkankyDev\Utilities\Http\HttpClient` est un petit wrapper cURL pour les requêtes **sortantes** : appeler une API externe, un service tiers, peu importe. Il n'a pas d'état : chaque requête renvoie son propre `HttpResult`, donc la même instance de `HttpClient` peut servir pour plusieurs appels.
 

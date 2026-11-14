@@ -102,6 +102,8 @@ return [
 		'logs'    => LOG_FOLDER,
 		'cache'   => CACHE_FOLDER,
 	],
+	// event listeners (SkankyDev\Event\ListenerInterface): class => true, or false to switch one off
+	'listeners' => [],
 	// queue worker: lease in seconds before a job stuck in processing is claimed again
 	'queue' => [
 		'timeout' => 600,

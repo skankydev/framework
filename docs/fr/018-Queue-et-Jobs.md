@@ -84,4 +84,4 @@ Il n'y a rien de spécifique au framework là-dedans : `queue-worker` est juste 
 
 `JobCollection::claimNext()` fait la réservation avec un update en pipeline : les dates (`started_at`, `lease_until`) sont calculées par Mongo lui-même avec `$$NOW` et `$dateAdd`. Tous les workers partagent l'horloge du serveur, et le bail utilise le `timeout` stocké sur le job, sans avoir à le lire avant. `db-sync` crée l'index `{status, created_at}` sur lequel elle s'appuie.
 
-Voir aussi : [19 Les Mails](019-Les-Mails.md) (`SendMailJob`), [10.3 Relations et propagation](010.3-Relations.md) (`SnapshotSyncJob`)
+Voir aussi : [20 Les Mails](020-Les-Mails.md) (`SendMailJob`), [10.3 Relations et propagation](010.3-Relations.md) (`SnapshotSyncJob`)
