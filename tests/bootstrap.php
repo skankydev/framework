@@ -52,6 +52,7 @@ Config::set('i18n', [
 ]);
 
 Config::set('upload', ['folder' => PUBLIC_FOLDER . DS . 'upload', 'url' => '/upload']);
+Config::set('storage.private', PRIVATE_FOLDER);
 
 Config::set('class.fields', [
     'text'     => \SkankyDev\Form\Fields\TextField::class,
@@ -61,6 +62,7 @@ Config::set('class.fields', [
     'checkbox' => \SkankyDev\Form\Fields\CheckboxField::class,
     'email'    => \SkankyDev\Form\Fields\EmailField::class,
     'hidden'   => \SkankyDev\Form\Fields\HiddenField::class,
+    'submit'   => \SkankyDev\Form\Fields\SubmitField::class,
     'password' => \SkankyDev\Form\Fields\PasswordField::class,
     'file'     => \SkankyDev\Form\Fields\FileField::class,
 ]);

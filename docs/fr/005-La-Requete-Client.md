@@ -34,7 +34,7 @@ $request->isJson();      // Content-Type: application/json
 $request->wantsJson();   // Accept: application/json
 ```
 
-`wantsJson()` est le plus utile : c'est lui qui permet de répondre en JSON à un appel AJAX et en HTML à une navigation classique, avec la même action (voir [11 Les Réponses](011-Les-Reponses.md)).
+`wantsJson()` est le plus utile : c'est lui qui permet de répondre en JSON à un appel AJAX et en HTML à une navigation classique, avec la même action (voir [09 Les Réponses](009-Les-Reponses.md)).
 
 ## Post, Get, et les fichiers
 
@@ -65,27 +65,31 @@ if ($file && $file->isValid()) {
 
 Ce que l'objet sait te dire :
 
-- `isValid()` / `errorMessage()` : l'envoi a marché ? Sinon, pourquoi (fichier trop gros pour le serveur, envoi partiel…). Les codes `UPLOAD_ERR_*` de PHP sont traduits dans la langue courante (domaine `skankydev`, voir [21](021-I18n.md)).
+- `isValid()` / `errorMessage()` : l'envoi a marché ? Sinon, pourquoi (fichier trop gros pour le serveur, envoi partiel…). Les codes `UPLOAD_ERR_*` de PHP sont traduits dans la langue courante (domaine `skankydev`, voir [12](012-I18n.md)).
 - `mimeType()` : le **vrai** type, lu dans le contenu du fichier (`finfo`), pas celui annoncé par le navigateur.
 - `extension()` : l'extension déduite de ce vrai type (`jpg`, `png`, `pdf`…, `bin` si inconnu).
 - `isImage()`, `dimensions()` : `[largeur, hauteur]` pour une image.
 - `clientName()`, `clientExtension()`, `size()` : le nom d'origine et la taille, pour l'affichage.
 - `store($sousDossier = '', $nom = null)` : déplace le fichier dans un sous-dossier du dossier d'upload (créé au besoin) sous un nom aléatoire (ou `$nom`) + l'extension sûre, et te rend un `StoredFile`. Le sous-dossier est relatif (`'img'`, `'media/2026'`) : un `..` est refusé, impossible de sortir du dossier d'upload.
+- `storePrivate($sousDossier = '', $nom = null)` : pareil, mais dans le dossier privé (`storage.private`, `storage/files/private/` par défaut), jamais servi par le serveur web. Pour un fichier qui ne doit pas être accessible à tout le monde : une facture, un document d'identité…
 
 Le dossier d'upload et son URL publique viennent de la config ([04](004-Config.md)), à surcharger dans `master.config.php` si besoin :
 
 ```php
 'upload' => [
-    'folder' => UPLOAD_FOLDER,   // public/upload par défaut
+    'folder' => UPLOAD_FOLDER,   // storage/files/public par défaut
     'url'    => '/upload',       // ou 'https://cdn.mondomaine.com' le jour où tu passes sur un CDN
+    'link'   => PUBLIC_FOLDER.DS.'upload',  // le lien créé dans public/ par php craft storage-link
 ],
 ```
+
+Les fichiers ne sont pas rangés dans `public/` : ils vivent dans `storage/files/public/`, et c'est le lien `public/upload` qui les rend visibles depuis le web. Une fois par installation, lance `php craft storage-link` ([17](017-Craft-et-CLI.md)) pour créer les dossiers et ce lien.
 
 Pourquoi tant de méfiance ? Parce que tout ce qui vient du navigateur se falsifie. Si on gardait l'extension du nom envoyé, un `photo.php` atterrirait dans le dossier d'upload (servi par le serveur web) et deviendrait exécutable : n'importe qui pourrait lancer du PHP sur ton serveur. Ici, l'extension vient du contenu, donc un script déguisé en image finit en `.bin` ou en `.txt`, jamais en `.php`. Le SVG est volontairement absent de la liste : il peut contenir du JavaScript.
 
 ### StoredFile
 
-`StoredFile` est un `EmbeddedDocument` ([09.1](009.1-Persistable.md)) : tu le ranges tel quel dans un document, et Mongo te le rend typé à la relecture.
+`StoredFile` est un `EmbeddedDocument` ([10.1](010.1-Persistable.md)) : tu le ranges tel quel dans un document, et Mongo te le rend typé à la relecture.
 
 ```php
 class Persona extends MasterDocument {
@@ -98,7 +102,19 @@ class Persona extends MasterDocument {
 
 Il ne stocke que le chemin relatif au dossier d'upload (`img/3f2a….png`), le nom d'origine, le type, le poids, et les dimensions pour une image. L'URL n'est **jamais stockée** : `url()` la calcule avec `upload.url` + le chemin (`url(true)` pour l'avoir en absolu, avec le domaine de la requête). Pareil pour `fullPath()` (le chemin sur le disque), avec `upload.folder`. Tu changes de domaine, tu déplaces les fichiers ou tu passes sur un CDN : tu changes la config, rien à migrer en base. Il y a aussi `isImage()`, `extension()` et `delete()` pour supprimer le fichier.
 
-Pour valider un fichier (type, poids, image), il y a les règles `file`, `image`, `mimes:…` et `max_size:…` ([12.2](012.2-La-Validation.md)).
+Un fichier rangé par `storePrivate()` a `private` à `true` (enregistré avec le reste) : `fullPath()` pointe dans `storage.private`, et il n'a **pas d'URL**. `url()` lève une `LogicException`, et `jsonSerialize()` n'ajoute pas de clé `url`. Pour le donner à quelqu'un, c'est un controller qui vérifie qui demande, puis l'envoie avec `Response::file()` ([09](009-Les-Reponses.md)) :
+
+```php
+public function invoice(string $id): Response {
+    $order = $this->orders->findById($id);
+    if (!$order || $order->user_id != Auth::user()?->_id) {
+        return notFound();
+    }
+    return Response::file($order->invoice, download: true);
+}
+```
+
+Pour valider un fichier (type, poids, image), il y a les règles `file`, `image`, `mimes:…` et `max_size:…` ([13.2](013.2-La-Validation.md)).
 
 ## La Session
 
@@ -117,7 +133,7 @@ Le démarrage de la session, t'y touches pas : c'est un middleware qui s'en char
 
 ## Les inputs et les flash
 
-Un formulaire qui rate sa validation, c'est le cas classique : tu veux renvoyer l'utilisateur sur la page avec ce qu'il avait tapé et les erreurs. Tu rediriges avec `->withErrors(...)->withInput(...)` ([12 Les Forms](012-Les-Forms.md)) et ça met tout ça en session, pour une seule requête. Sur la page suivante, tu récupères avec :
+Un formulaire qui rate sa validation, c'est le cas classique : tu veux renvoyer l'utilisateur sur la page avec ce qu'il avait tapé et les erreurs. Tu rediriges avec `->withErrors(...)->withInput(...)` ([13 Les Forms](013-Les-Forms.md)) et ça met tout ça en session, pour une seule requête. Sur la page suivante, tu récupères avec :
 
 ```php
 old('email');           // ce qu'il avait saisi, ou '' par défaut

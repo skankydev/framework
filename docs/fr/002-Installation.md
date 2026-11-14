@@ -6,7 +6,7 @@ On installe, on lance, et on a un CRUD qui tourne avant la fin du café. Promis,
 
 - **PHP 8.4 ou plus** ([php.net/downloads](https://www.php.net/downloads), ou [windows.php.net](https://windows.php.net/download/) sous Windows), avec deux extensions :
   - `mongodb`, en version 2.4.1 ou plus ([installation sur php.net](https://www.php.net/manual/fr/mongodb.installation.php)) ;
-  - `intl`, pour les traductions ([21 I18n](021-I18n.md)). Elle est fournie avec PHP, il suffit souvent de l'activer dans le `php.ini`.
+  - `intl`, pour les traductions ([12 I18n](012-I18n.md)). Elle est fournie avec PHP, il suffit souvent de l'activer dans le `php.ini`.
 - **Composer** ([getcomposer.org/download](https://getcomposer.org/download/)).
 - **Un MongoDB qui tourne** : le [Community Server](https://www.mongodb.com/try/download/community) en local suffit largement. [Compass](https://www.mongodb.com/products/tools/compass) est pratique pour voir ce qu'il y a dans ta base.
 - Un serveur web : Apache avec `mod_rewrite`, ou le serveur intégré de PHP pour essayer.
@@ -65,7 +65,7 @@ DB_MONGO_PORT=27017
 DB_MONGO_DATABASE=MonProjet
 ```
 
-`APP_DEBUG=1` te donne les pages d'erreur détaillées, parfait en dev. En production, tu mets `0` ([14 La gestion des erreurs](014-Gestion-des-Erreurs.md)). Le `.env` ne se commite jamais : c'est là que vivent tes secrets.
+`APP_DEBUG=1` te donne les pages d'erreur détaillées, parfait en dev. En production, tu mets `0` ([15 La gestion des erreurs](015-Gestion-des-Erreurs.md)). Le `.env` ne se commite jamais : c'est là que vivent tes secrets.
 
 ## Lancer le site
 
@@ -89,7 +89,7 @@ Il recompile à chaque modification de `src_front/`. Quand tu as fini, `npm run 
 
 ## Un CRUD en 10 minutes
 
-C'est là que `php craft` entre en jeu ([16 Craft et CLI](016-Craft-et-CLI.md)). Tu lui donnes le nom de ton document, il te pose quelques questions sur les champs, et il génère tout le reste :
+C'est là que `php craft` entre en jeu ([17 Craft et CLI](017-Craft-et-CLI.md)). Tu lui donnes le nom de ton document, il te pose quelques questions sur les champs, et il génère tout le reste :
 
 ```bash
 php craft crud-maker Article
@@ -114,16 +114,16 @@ Et il écrit huit fichiers :
 
 | Fichier | Rôle |
 |---|---|
-| `src/App/Model/Document/Article.php` | le Document : la valeur ([09 Model](009-Model.md)) |
+| `src/App/Model/Document/Article.php` | le Document : la valeur ([10 Model](010-Model.md)) |
 | `src/App/Model/ArticleCollection.php` | la Collection : la parole à MongoDB |
 | `src/App/Controller/ArticleController.php` | `index`, `create`, `store`, `show`, `edit`, `update`, `delete` |
-| `src/App/Form/ArticleForm.php` | le formulaire, avec ses règles de validation ([12 Les Forms](012-Les-Forms.md)) |
+| `src/App/Form/ArticleForm.php` | le formulaire, avec ses règles de validation ([13 Les Forms](013-Les-Forms.md)) |
 | `src_front/view/article/{index,create,edit,show}.php` | les quatre vues |
 
 Pas de route à écrire : le routage par convention s'occupe de tout ([06 Le Routing](006-Le-Routing.md)). Va sur `http://localhost:8000/article` et tu as :
 
 - la liste paginée des articles ;
-- le formulaire de création (`/article/create`), avec la protection CSRF déjà branchée ([12.3 CSRF](012.3-CSRF.md)) ;
+- le formulaire de création (`/article/create`), avec la protection CSRF déjà branchée ([13.3 CSRF](013.3-CSRF.md)) ;
 - l'affichage, l'édition (avec le formulaire pré-rempli) et la suppression ;
 - la validation : si tu laisses `title` vide, tu reviens sur le formulaire avec l'erreur et ce que tu avais tapé.
 

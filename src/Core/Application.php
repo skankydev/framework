@@ -16,6 +16,8 @@ namespace SkankyDev\Core;
 use Exception;
 use SkankyDev\Config\Config;
 use SkankyDev\Core\ExceptionHandler;
+use SkankyDev\Event\EventManager;
+use SkankyDev\Http\Event\PageNotFound;
 use SkankyDev\Exception\NotFoundException;
 use SkankyDev\Http\Middleware\MiddlewareManager;
 use SkankyDev\Http\Request;
@@ -38,23 +40,8 @@ class Application {
 		$debug = Config::get('debug') ?? false;
 		$this->exceptionHandler = new ExceptionHandler($debug);
 		
-		// Enregistrer le gestionnaire global
-		set_exception_handler([$this->exceptionHandler, 'handle']);
-		
-		// Gérer aussi les erreurs fatales
-		register_shutdown_function(function() {
-			$error = error_get_last();
-			if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR])) {
-				$exception = new \ErrorException(
-					$error['message'],
-					0,
-					$error['type'],
-					$error['file'],
-					$error['line']
-				);
-				$this->exceptionHandler->handle($exception);
-			}
-		});
+		// Exceptions, warnings/notices and fatal errors all go through the handler
+		$this->exceptionHandler->register();
 	}
 
 	/**
@@ -85,11 +72,16 @@ class Application {
 			// vrai bug de code qui réutilise NotFoundException avec un autre
 			// code (ex: 500 sur un appel de méthode inconnu en interne) — ce
 			// dernier cas doit rester visible comme une vraie erreur en prod.
+			// PageNotFound est émis dans les deux cas d'un vrai 404 : par notFound()
+			// en prod, à la main en debug (qui affiche la trace sans passer par notFound()).
 			if (Config::get('debug') || $e->getCode() !== 404) {
+				if ($e->getCode() === 404) {
+					EventManager::_emit(new PageNotFound(Request::getInstance()->uri(), $e));
+				}
 				$this->exceptionHandler->handle($e);
 			} else {
 				$this->exceptionHandler->log($e);
-				notFound()->send();
+				notFound([], $e)->send();
 			}
 		} catch (Exception $e) {
 			$this->exceptionHandler->handle($e);

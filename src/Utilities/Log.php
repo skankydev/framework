@@ -19,13 +19,21 @@ use SkankyDev\Config\Config;
 
 class Log {
 
+	/**
+	 * Logs folder: config `storage.logs`, or the default LOG_FOLDER when the config
+	 * isn't loaded yet (an error during the bootstrap must still be logged).
+	 */
+	public static function folder(): string {
+		$folder = empty(Config::$conf) ? null : Config::get('storage.logs');
+		return rtrim($folder ?: LOG_FOLDER, '/\\');
+	}
 
 	/**
 	 * Writes an INFO entry to the daily context log file.
 	 * @param string $context log file prefix, defaults to `skankydev`
 	 */
 	public static function info(string $message, string $context = 'skankydev'): void {
-		$logFile = APP_FOLDER . '/logs/'.date('Y-m-d')."-{$context}.log";
+		$logFile = self::folder() . DS . date('Y-m-d')."-{$context}.log";
 		$formatted = sprintf(
 			"[%s] INFO: %s\n",
 			date('Y-m-d H:i:s'),
@@ -41,7 +49,7 @@ class Log {
 	 *                                       stack trace (e.g. URL/IP/User-Agent)
 	 */
 	public static function error(Throwable $exception, array $context = []): void {
-		$logFile = APP_FOLDER . '/logs/'.date('Y-m-d').'-error.log';
+		$logFile = self::folder() . DS . date('Y-m-d').'-error.log';
 
 		$contextLines = '';
 		foreach ($context as $key => $value) {
@@ -68,7 +76,7 @@ class Log {
 	 * @param string $context log file prefix, defaults to `skankydev`
 	 */
 	public static function warning(string $message, string $context = 'skankydev'): void {
-		$logFile = APP_FOLDER . '/logs/'.date('Y-m-d')."-{$context}.log";
+		$logFile = self::folder() . DS . date('Y-m-d')."-{$context}.log";
 		$formatted = sprintf(
 			"[%s] WARNING: %s\n",
 			date('Y-m-d H:i:s'),
@@ -85,7 +93,7 @@ class Log {
 	 * @param string|null $details optional extra context
 	 */
 	public static function job(string $jobName, string $status, ?string $details = null): void {
-		$logFile = APP_FOLDER . '/logs/'.date('Y-m-d').'-jobs.log';
+		$logFile = self::folder() . DS . date('Y-m-d').'-jobs.log';
 		$message = sprintf(
 			"[%s] [%s] %s",
 			date('Y-m-d H:i:s'),
@@ -112,7 +120,7 @@ class Log {
 			return;
 		}
 		
-		$logFile = APP_FOLDER . '/logs/'.date('Y-m-d').'-debug.log';
+		$logFile = self::folder() . DS . date('Y-m-d').'-debug.log';
 		
 		$formatted = sprintf(
 			"[%s] DEBUG: %s",
@@ -146,7 +154,7 @@ class Log {
 	 * Deletes log files older than $days days from the logs directory.
 	 */
 	public static function cleanup(int $days = 10): void {
-		$logDir = APP_FOLDER . '/logs';
+		$logDir = self::folder();
 		
 		if (!is_dir($logDir)) {
 			return;

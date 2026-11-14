@@ -73,4 +73,26 @@ class StoredFileTest extends TestCase
         $this->assertFileDoesNotExist($file->fullPath());
         $this->assertFalse($file->delete());
     }
+
+    // ── private ──────────────────────────────────────────────────────────────
+
+    public function testPrivateFullPathIsUnderPrivateFolder(): void {
+        $this->assertEquals(\SkankyDev\Config\Config::get('storage.private') . DS . 'img' . DS . 'abc.png', $this->make(['private' => true])->fullPath());
+    }
+
+    public function testPrivateFileHasNoUrl(): void {
+        $this->expectException(\LogicException::class);
+        $this->make(['private' => true])->url();
+    }
+
+    public function testPrivateJsonHasNoUrl(): void {
+        $json = json_decode(json_encode($this->make(['private' => true])), true);
+        $this->assertArrayNotHasKey('url', $json);
+        $this->assertTrue($json['private']);
+    }
+
+    public function testBsonRoundTripKeepsPrivate(): void {
+        $back = \MongoDB\BSON\Document::fromPHP(['file' => $this->make(['private' => true])])->toPHP();
+        $this->assertTrue($back->file->private);
+    }
 }

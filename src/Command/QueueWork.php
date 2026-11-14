@@ -3,6 +3,8 @@
 namespace SkankyDev\Command;
 
 use SkankyDev\Command\MasterCommand;
+use SkankyDev\Event\EventManager;
+use SkankyDev\Queue\Event\JobFailed;
 use SkankyDev\Model\Document\JobDoc;
 use SkankyDev\Model\Enum\JobStatus;
 use SkankyDev\Model\JobCollection;
@@ -57,6 +59,21 @@ class QueueWork extends MasterCommand {
 			$jobInfo->error = $e->getMessage();
 			$jobInfo->status = $jobInfo->attempts >= $jobInfo->max_attempts ? JobStatus::FAILED : JobStatus::PENDING;
 			JobCollection::_save($jobInfo);
+			if ($jobInfo->status === JobStatus::FAILED) {
+				$this->emitFailed($jobInfo, $e);
+			}
+		}
+	}
+
+	/**
+	 * Emits JobFailed. The only place where a listener's exception is caught
+	 * (and logged): letting it go up would kill the worker, and every job after it.
+	 */
+	private function emitFailed(JobDoc $jobInfo, \Throwable $e): void {
+		try {
+			EventManager::_emit(new JobFailed($jobInfo->payload, $jobInfo, $e));
+		} catch (\Throwable $listenerError) {
+			Log::error($listenerError);
 		}
 	}
 	

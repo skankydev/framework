@@ -3,9 +3,54 @@
 namespace SkankyTest\TestCase;
 
 use PHPUnit\Framework\TestCase;
+use SkankyDev\Utilities\Dumper;
 
 class DebugTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        // PHPUnit runs in CLI: force the page rendering, the terminal one has its own tests
+        Dumper::forceMode('html');
+    }
+
+    protected function tearDown(): void
+    {
+        Dumper::forceMode(null);
+    }
+
+    // ── debug() in a terminal ─────────────────────────────────────────────────
+
+    public function testDebugDetectsCliFromSapi(): void {
+        Dumper::forceMode(null);
+
+        $this->assertTrue(Dumper::isCli());
+    }
+
+    public function testDebugCliOutputsAnsiNotHtml(): void {
+        Dumper::forceMode('cli');
+
+        ob_start();
+        debug(['key' => 'val']);
+        $output = ob_get_clean();
+
+        $this->assertStringNotContainsString('<div', $output);
+        $this->assertStringNotContainsString('<span', $output);
+        $this->assertStringContainsString("\033[", $output);
+        $this->assertStringContainsString('key', $output);
+        $this->assertStringContainsString('val', $output);
+        $this->assertStringContainsString('debug : ', $output);
+    }
+
+    public function testDebugCliDoesNotEscapeHtml(): void {
+        Dumper::forceMode('cli');
+
+        ob_start();
+        debug('<b>bold</b>', 'label');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('<b>bold</b>', $output);
+    }
+
     // ── debug() ───────────────────────────────────────────────────────────────
 
     public function testDebugOutputsDiv(): void {
@@ -69,16 +114,34 @@ class DebugTest extends TestCase
 
     // ── dump() ────────────────────────────────────────────────────────────────
 
-    public function testDumpOutputsPlainText(): void {
-        // dump() est la version terminal-friendly : du texte brut (var_dump),
-        // pas le HTML de debug() — illisible une fois dumpé tel quel dans un
-        // terminal. C'est la différence voulue entre les deux fonctions.
+    public function testDumpRendersLikeDebug(): void {
+        // dump() is debug() behind an optional label: same rendering, picked the
+        // same way (HTML block on a page, ANSI text in a terminal).
         ob_start();
         dump('test-value');
-        $output = ob_get_clean();
+        $html = ob_get_clean();
 
-        $this->assertStringNotContainsString('<div class="debug-message">', $output);
-        $this->assertStringContainsString('test-value', $output);
+        $this->assertStringContainsString('<div class="debug-message">', $html);
+        $this->assertStringContainsString('test-value', $html);
+
+        Dumper::forceMode('cli');
+        ob_start();
+        dump('test-value');
+        $text = ob_get_clean();
+
+        $this->assertStringNotContainsString('<div', $text);
+        $this->assertStringContainsString('test-value', $text);
+    }
+
+    public function testDumpHeaderPointsAtItsOwnCaller(): void {
+        // Not at the debug() call inside dump() itself
+        ob_start();
+        dump('test-value');
+        $html = ob_get_clean();
+
+        $this->assertStringContainsString('DebugTest', $html);
+        $this->assertStringContainsString(__FUNCTION__, $html);
+        $this->assertStringNotContainsString('debug.php', $html);
     }
 
     public function testDumpWithMessagePrefixesOutput(): void {

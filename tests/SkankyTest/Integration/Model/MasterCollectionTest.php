@@ -690,6 +690,17 @@ class MasterCollectionTest extends IntegrationTestCase
         $this->assertEquals(7, $info['total']);
     }
 
+    public function testPaginateProjectionLeavesFieldsOut(): void
+    {
+        $this->col->insert(new TestItem(['name' => 'heavy', 'value' => 42]));
+
+        $paginator = $this->col->paginate([], ['page' => 1, 'projection' => ['value' => 0]]);
+
+        $this->assertSame('heavy', $paginator->data[0]->name);
+        $this->assertSame(0, $paginator->data[0]->value); // left out → property default
+        $this->assertArrayNotHasKey('projection', $paginator->getOption());
+    }
+
     // ── createId ─────────────────────────────────────────────────────────────
 
     public function testCreateIdReturnsObjectId(): void

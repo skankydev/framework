@@ -16,6 +16,20 @@ class TestForm extends FormBuilder {
             'label'   => 'Type',
             'options' => ['a' => 'A', 'b' => 'B'],
         ]);
+        $this->submit('Enregistrer');
+    }
+}
+
+class TestNoSubmitForm extends FormBuilder {
+    public function build(): void {
+        $this->add('name', 'text', ['label' => 'Nom']);
+    }
+}
+
+class TestSubmitFieldForm extends FormBuilder {
+    public function build(): void {
+        $this->add('name', 'text', ['label' => 'Nom']);
+        $this->add('save', 'submit', ['label' => 'Sauver', 'attributes' => ['class' => 'btn btn-danger', 'type' => 'button']]);
     }
 }
 
@@ -231,5 +245,38 @@ class FormBuilderTest extends TestCase
 
         $this->assertFalse($result);
         $this->assertArrayHasKey('name', $form->getErrors());
+    }
+
+    public function testRenderFieldRendersSubmit(): void {
+        $form = $this->makeForm();
+        $form->build();
+        $html = $form->renderField('submit');
+
+        $this->assertStringContainsString('<button', $html);
+        $this->assertStringContainsString('Enregistrer', $html);
+        $this->assertStringContainsString('btn btn-primary', $html);
+        $this->assertStringNotContainsString('name=', $html);
+    }
+
+    public function testSubmitFieldDeclaredWithAdd(): void {
+        $form = new TestSubmitFieldForm();
+        $form->build();
+        $html = $form->renderField('save');
+
+        $this->assertStringContainsString('Sauver', $html);
+        $this->assertStringContainsString('btn btn-danger', $html);
+        // type is always forced to submit
+        $this->assertStringContainsString('type="submit"', $html);
+    }
+
+    public function testRenderHasNoDefaultSubmit(): void {
+        $form = new TestNoSubmitForm();
+        $this->assertStringNotContainsString('<button', $form->render());
+    }
+
+    public function testOnlyExcludesSubmitField(): void {
+        $form = $this->makeForm();
+        $result = $form->only(['name' => 'Simon', 'submit' => 'x']);
+        $this->assertEquals(['name' => 'Simon'], $result);
     }
 }

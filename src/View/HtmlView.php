@@ -30,6 +30,10 @@ class HtmlView {
 	public string $keywords      = '';
 	public string $title         = '';
 	public array  $meta          = [];
+	/** @var array<array{0: string, 1: string}> [property, content] pairs — a property may repeat (article:tag). */
+	public array  $properties    = [];
+	/** @var array<array{0: string, 1: string}> [rel, href] pairs */
+	public array  $links         = [];
 	public string $css           = '';
 	public string $js            = '';
 	public string $content       = '';
@@ -202,16 +206,24 @@ class HtmlView {
 	}
 
 	/**
-	 * Returns the full `<head>` meta/CSS/JS block.
+	 * Returns the full `<head>` block: metas, properties, links, CSS, JS, then the `head` block.
+	 * Meta, property and link values are escaped here: callers pass raw text.
 	 * Called inside the layout template: `<?= $this->getHeader() ?>`.
 	 */
 	public function getHeader(): string {
-		$retour  = '<meta name="keywords" content="' . $this->keywords . '" />' . PHP_EOL;
+		$retour  = '<meta name="keywords" content="' . e($this->keywords) . '" />' . PHP_EOL;
 		foreach ($this->meta as $name => $content) {
-			$retour .= '<meta name="' . $name . '" content="' . $content . '" />' . PHP_EOL;
+			$retour .= '<meta name="' . e($name) . '" content="' . e($content) . '" />' . PHP_EOL;
+		}
+		foreach ($this->properties as [$property, $content]) {
+			$retour .= '<meta property="' . e($property) . '" content="' . e($content) . '" />' . PHP_EOL;
+		}
+		foreach ($this->links as [$rel, $href]) {
+			$retour .= '<link rel="' . e($rel) . '" href="' . e($href) . '" />' . PHP_EOL;
 		}
 		$retour .= $this->css;
 		$retour .= $this->js;
+		$retour .= $this->getBlock('head');
 		return $retour;
 	}
 
@@ -252,6 +264,21 @@ class HtmlView {
 	 */
 	public function addMeta(string $name, string $content): void {
 		$this->meta[$name] = $content;
+	}
+
+	/**
+	 * Adds a `<meta property="…">` tag (Open Graph: og:title, article:tag…).
+	 * Unlike addMeta(), a property can be added several times.
+	 */
+	public function addProperty(string $property, string $content): void {
+		$this->properties[] = [$property, $content];
+	}
+
+	/**
+	 * Adds a `<link rel="…" href="…">` tag to the header buffer (canonical, alternate…).
+	 */
+	public function addLink(string $rel, string $href): void {
+		$this->links[] = [$rel, $href];
 	}
 
 	/**

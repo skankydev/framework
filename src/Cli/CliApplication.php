@@ -15,6 +15,7 @@ namespace SkankyDev\Cli;
 
 use SkankyDev\Cli\Tools\ArgParser;
 use SkankyDev\Config\Config;
+use SkankyDev\Core\ExceptionHandler;
 use SkankyDev\Core\MasterFactory;
 use SkankyDev\Utilities\Traits\CliMessage;
 use SkankyDev\Utilities\Traits\StringFacility;
@@ -27,11 +28,14 @@ class CliApplication {
 	private array $commandsInfo = [];
 
 	/**
-	 * Initializes config, parses CLI arguments and starts execution.
+	 * Initializes config, installs the error handler, parses CLI arguments and starts execution.
 	 * @param array $info raw argv passed by the `craft` entry point
 	 */
 	public function __construct(array $info){
 		Config::initConf();
+		// Same handler as the web side, rendering for a terminal: exceptions, warnings
+		// and fatal errors are logged and displayed in colour
+		(new ExceptionHandler(Config::get('debug') ?? false, cli: true))->register();
 		$this->arg = ArgParser::_pars($info);
 		$this->run();
 

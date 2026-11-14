@@ -23,7 +23,7 @@ return [
 		'range' => 5,
 	],
 	'skankydev'  => [
-		'version'=>'0.2.1'
+		'version'=>'0.3.0'
 	],
 	'debug' => true,
 	'auth' => false,
@@ -56,6 +56,7 @@ return [
 			'password' => \SkankyDev\Form\Fields\PasswordField::class,
 			'file'     => \SkankyDev\Form\Fields\FileField::class,
 			'hidden'   => \SkankyDev\Form\Fields\HiddenField::class,
+			'submit'   => \SkankyDev\Form\Fields\SubmitField::class,
 			'default'  => \SkankyDev\Form\Fields\TextField::class,
 		],
 		'rules' => [
@@ -88,11 +89,21 @@ return [
 	'template' => [
 		'folder' => PUBLISHABLE_FOLDER.DS.'template',
 	],
-	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it
+	// uploaded files (UploadedFile::store / StoredFile): disk folder and the public URL serving it.
+	// `link` is the link created by `php craft storage-link` in public/, pointing to `folder`.
 	'upload' => [
 		'folder' => UPLOAD_FOLDER,
 		'url'    => '/upload',
+		'link'   => PUBLIC_FOLDER.DS.'upload',
 	],
+	// other folders written by the application (all created by `php craft storage-link`)
+	'storage' => [
+		'private' => PRIVATE_FOLDER,
+		'logs'    => LOG_FOLDER,
+		'cache'   => CACHE_FOLDER,
+	],
+	// event listeners (SkankyDev\Event\ListenerInterface): class => true, or false to switch one off
+	'listeners' => [],
 	// queue worker: lease in seconds before a job stuck in processing is claimed again
 	'queue' => [
 		'timeout' => 600,

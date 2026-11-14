@@ -161,6 +161,22 @@ class UploadedFile {
 	 * @throws \RuntimeException when the upload is invalid, the folder escapes `upload.folder` or the move fails
 	 */
 	public function store(string $subdir = '', ?string $name = null): StoredFile {
+		return $this->moveTo(false, $subdir, $name);
+	}
+
+	/**
+	 * Same as store(), but into the private folder (config `storage.private`), never
+	 * served by the web server: the StoredFile is flagged `private`, has no URL, and
+	 * a controller sends it with Response::file() after checking who asks for it.
+	 * @param string      $subdir folder relative to `storage.private` ('' = root)
+	 * @param string|null $name   base name without extension (random when null)
+	 * @throws \RuntimeException when the upload is invalid, the folder escapes `storage.private` or the move fails
+	 */
+	public function storePrivate(string $subdir = '', ?string $name = null): StoredFile {
+		return $this->moveTo(true, $subdir, $name);
+	}
+
+	private function moveTo(bool $private, string $subdir, ?string $name): StoredFile {
 		if (!$this->isValid()) {
 			throw new \RuntimeException('Invalid uploaded file (upload error code ' . $this->error . ')');
 		}
@@ -173,7 +189,11 @@ class UploadedFile {
 			throw new \RuntimeException("Invalid file name: {$name}");
 		}
 
-		$dir = rtrim(Config::get('upload.folder'), '/\\') . ($subdir !== '' ? DS . str_replace('/', DS, $subdir) : '');
+		$root = (string) Config::get($private ? 'storage.private' : 'upload.folder');
+		if ($root === '') {
+			throw new \RuntimeException('No folder configured for ' . ($private ? 'storage.private' : 'upload.folder'));
+		}
+		$dir = rtrim($root, '/\\') .($subdir !== '' ? DS . str_replace('/', DS, $subdir) : '');
 		if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
 			throw new \RuntimeException("Unable to create folder {$dir}");
 		}
@@ -196,6 +216,7 @@ class UploadedFile {
 			'size'          => $this->size,
 			'width'         => $dimensions[0] ?? null,
 			'height'        => $dimensions[1] ?? null,
+			'private'       => $private,
 		]);
 	}
 

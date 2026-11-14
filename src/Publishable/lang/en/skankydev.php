@@ -69,7 +69,7 @@ return [
 			'file_exists'   => '⚠ The file {file} already exists!',
 			'overwrite'     => 'Overwrite the file',
 			'skipped'       => '→ {file} skipped',
-			'generated'     => '✔️ {file} generated',
+			'generated'     => '✓ {file} generated',
 		],
 		'db_sync' => [
 			'help'         => 'Creates/syncs the Mongo indexes declared by the Collections',
@@ -116,6 +116,22 @@ return [
 		'queue_worker' => [
 			'help'    => 'Runs the queue worker (processes pending jobs, runs until killed)',
 			'started' => '🚀 Queue worker started',
+		],
+		'storage_link' => [
+			'help'           => 'Creates the storage/ folders and the public/upload link to the public files (-y to ask nothing)',
+			'folder_exists'  => '→ {path} already exists',
+			'folder_created' => '✓ {path} created',
+			'target_missing' => '✗ The target folder {target} doesn’t exist.',
+			'already_linked' => '✓ {link} already points to {target}',
+			'link_taken'     => '✗ {link} already exists and doesn’t point to {target}: nothing was changed.',
+			'real_folder'    => '⚠ {link} is a real folder ({count, plural, one {# item} other {# items}}), it has to make room for the link.',
+			'move_confirm'   => 'Move its content into {target}',
+			'move_cancelled' => '→ Nothing was moved, the link isn’t created.',
+			'conflict'       => '✗ Already in {target}: {list}. Nothing was moved.',
+			'move_failed'    => '✗ Unable to move {path}',
+			'moved'          => '✓ {count, plural, one {# item moved} other {# items moved}} into {target}',
+			'link_failed'    => '✗ Unable to create the link {link} → {target}',
+			'linked'         => '✓ Link created: {link} → {target}',
 		],
 		'lang_sync' => [
 			'help'            => 'Syncs the language files with the translation keys used in the code (--dry-run, --prune, --check)',
