@@ -30,7 +30,12 @@ if (!function_exists('dump')) {
 }
 
 if (!function_exists('debug')) {
-	function debug($data,$message = ''){
+	/**
+	 * Echoes a coloured, bounded HTML dump of $data.
+	 * @param string $message replaces the default "debug : type from …" header
+	 * @param array  $limits  overrides of Dumper::LIMITS (`depth`, `items`, `string`, `nodes`)
+	 */
+	function debug($data,$message = '',array $limits = []){
 		echo '<div class="debug-message">';
 		if(!empty($message)){
 			echo $message;
@@ -49,42 +54,8 @@ if (!function_exists('debug')) {
 			echo 'debug : <span class="debug-keyword">'.$type.'</span> from '.$source;
 		}
 
-		if(is_bool($data)){
-			$output = $data?'true':'false';
-		}else{
-			ob_start();
-			print_r($data);
-			$output = ob_get_clean();
-		}
-		$output = preg_replace("/\n[ ]*\(/", " (", $output);
-		$output = preg_replace("/\(\n[[:space:]]*\)/", "()", $output);
-		$output = preg_replace("/[ ]{4}+\)/", ")", $output);
-		$output = preg_replace("/[ ]{4}/", "\t", $output);
-		$output = preg_replace("/\n\n/", "\n", $output);
-		$tab = "\t\t";
-		for ($i=3; $i < 9; $i++) {
-			$reg = '/\t{'.$i.'}\[/';
-			$output = preg_replace($reg, "{$tab}[", $output);
-			$reg = '/\t{'.$i.'}\)/';
-			$output = preg_replace($reg, "{$tab})", $output);
-			$tab .="\t";
-		}
-		$output = preg_replace("/\t/", "    ", $output);
-
-		$output = preg_replace_callback("/\[[a-zA-Z0-9:_$ ]*\]/",function($result){
-			return preg_replace("/[a-zA-Z0-9:_$]+/", "<span class=\"debug-var\">$0</span>", $result[0]);
-		}, $output);
-		$output = preg_replace_callback("/ [A-Z][a-zA-Z\ ]+ \(/",function($result){
-			return preg_replace("/[A-Z][a-zA-Z0-9\ ]+/", "<span class=\"debug-source\">$0</span>", $result[0]);
-		}, $output);
-		$output = preg_replace_callback("/ \=\> [a-zA-Z0-9-\/][\S]*/",function($result){
-			if(preg_match("/\=\> [0-9\-.]+$/", $result[0])){
-				return preg_replace("/ [0-9]+$/", "<span class=\"debug-integer\">$0</span>", $result[0]);
-			}
-			$result = substr($result[0],-strlen($result[0])+4);//we je sais ca bug
-			return ' => <span class="debug-text">'.$result.'</span>';
-		}, $output);
-		echo "<pre>".$output."</pre>";
+		// Bounded dump (depth, items, string length…): see Dumper::LIMITS
+		echo "<pre>".\SkankyDev\Utilities\Dumper::html($data, $limits)."</pre>";
 		echo '</div>';
 
 	}

@@ -2,7 +2,7 @@
 	<h1 class="corner-accent-error mb-m">
 		Error <?= $exception->getCode() ?><br>
 	</h1>
-	<div class="legend"><?= $exception->getMessage() ?></div>
+	<div class="legend"><?= htmlspecialchars($exception->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
 </header>
 <div class="pb-m">
 	<div><span  class="text-error">Class</span> : <?= get_class($exception) ?> </div>
@@ -23,7 +23,7 @@
 			</<?= $hasArgs ? 'summary' : 'div' ?>>
 			<?php if ($hasArgs): ?>
 			<section class="trace-args">
-				<?php debug($value['args'],' '); ?>
+				<?php debug($value['args'], ' ', ['depth' => 3, 'items' => 20, 'string' => 200, 'nodes' => 300]); ?>
 			</section>
 			<?php endif ?>
 		</<?= $hasArgs ? 'details' : 'div' ?>>

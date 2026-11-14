@@ -42,7 +42,10 @@ class Application {
 		
 		// Enregistrer le gestionnaire global
 		set_exception_handler([$this->exceptionHandler, 'handle']);
-		
+
+		// Warnings, notices and deprecations: logged, and displayed styled in debug mode
+		set_error_handler([$this->exceptionHandler, 'handleError']);
+
 		// Gérer aussi les erreurs fatales
 		register_shutdown_function(function() {
 			$error = error_get_last();

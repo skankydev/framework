@@ -20,8 +20,10 @@ use SkankyDev\Utilities\Log;
 use Throwable;
 
 class ExceptionHandler {
-	
-	
+
+	/** @var array<string,bool> PHP errors already logged during this request (see handleError()) */
+	protected array $seenErrors = [];
+
 	/**
 	 * @param bool $debug true renders the full stack trace, false renders a generic error page
 	 */
@@ -49,6 +51,57 @@ class ExceptionHandler {
 	 */
 	public function log(Throwable $exception): void {
 		Log::error($exception, $this->requestContext());
+	}
+
+	/**
+	 * PHP error handler (see set_error_handler() in Application): warnings, notices
+	 * and deprecations are never silent. Each one is logged (once per request for a
+	 * given message/file/line, so a warning in a loop doesn't flood the log) and, in
+	 * debug mode, echoed in place as a styled block instead of PHP's raw output.
+	 * Not echoed for a JSON request (it would corrupt the body): the log is the trace.
+	 * Fatal errors don't come through here, the shutdown function handles them.
+	 * @return bool true = handled (PHP's own output is skipped), false = left to PHP
+	 */
+	public function handleError(int $severity, string $message, string $file = '', int $line = 0): bool {
+		// Masked by error_reporting or silenced with @
+		if (!(error_reporting() & $severity)) {
+			return false;
+		}
+
+		$key = $severity . '|' . $message . '|' . $file . '|' . $line;
+		if (!isset($this->seenErrors[$key])) {
+			$this->seenErrors[$key] = true;
+			$this->log(new \ErrorException(self::errorLabel($severity) . ': ' . $message, 0, $severity, $file, $line));
+		}
+
+		if ($this->debug && !Request::getInstance()->wantsJson()) {
+			echo $this->renderError($severity, $message, $file, $line);
+		}
+
+		return true;
+	}
+
+	/** Styled block for a PHP error (same `debug-*` CSS classes as debug()). */
+	protected function renderError(int $severity, string $message, string $file, int $line): string {
+		$esc = fn(string $text) => htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+		return '<div class="debug-message debug-error">'
+			. '<span class="debug-php">' . self::errorLabel($severity) . '</span> : '
+			. '<span class="debug-error-text">' . $esc($message) . '</span> in '
+			. '<span class="debug-keyword">' . $esc($file) . '</span>:'
+			. '<span class="debug-integer">' . $line . '</span>'
+			. '</div>';
+	}
+
+	/** Human name of a PHP error level. */
+	protected static function errorLabel(int $severity): string {
+		return match ($severity) {
+			E_WARNING, E_USER_WARNING, E_CORE_WARNING, E_COMPILE_WARNING => 'Warning',
+			E_NOTICE, E_USER_NOTICE => 'Notice',
+			E_DEPRECATED, E_USER_DEPRECATED => 'Deprecated',
+			E_USER_ERROR, E_RECOVERABLE_ERROR => 'Error',
+			default => 'PHP error',
+		};
 	}
 
 	/**

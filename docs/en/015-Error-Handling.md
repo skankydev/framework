@@ -24,6 +24,33 @@ The paths are configurable (`view.error` and `view.error_layout`). By default, t
 
 These pages are in English, hardcoded: they don't go through the translations, so that the error page can't crash in turn because of a broken language file ([12 Internationalization](012-I18n.md)). Exception messages are in English too.
 
+The arguments of each call in the trace are rendered by `debug()` with tight limits (depth, number of entries, string length): a trace carrying a big object graph stays a light page.
+
+## Warnings, notices and deprecations
+
+`Application` also installs `ExceptionHandler::handleError()` (`set_error_handler`): a non-fatal PHP error is never silent.
+
+- **Always logged** to the error file, once per request for a given message/file/line (a warning in a loop doesn't flood the log).
+- **In debug**: displayed in place, in a `.debug-message.debug-error` block (same CSS classes as `debug()`), instead of PHP's raw output. Not displayed for a JSON request, the block would break the response.
+- **Out of debug**: nothing is displayed.
+
+The `@` operator and `error_reporting` are still honoured.
+
+## `debug()` and the `Dumper`
+
+`debug($data, $message = '', $limits = [])` prints a coloured HTML dump (`debug-*` classes). The rendering comes from `SkankyDev\Utilities\Dumper::html()`, bounded by construction: whatever exceeds a limit is replaced by a `…` marker.
+
+| Limit | Default | Role |
+|---|---|---|
+| `depth` | 6 | nesting levels |
+| `items` | 100 | entries per array / object |
+| `string` | 2000 | characters per string |
+| `nodes` | 5000 | values in total |
+
+```php
+debug($paginator, 'scores', ['depth' => 3, 'items' => 10]);
+```
+
 ## The exception's code = the HTTP status
 
 It's a convention throughout the framework: the code you pass to the exception is used as the HTTP status.

@@ -56,6 +56,7 @@ $collection->find(['status' => 'active']);           // tableau de Document, dé
 $collection->findOne(['email' => $email]);
 $collection->findById($id);
 $collection->paginate($filter, Request::_paginateInfo());  // un Paginator prêt pour la vue
+$collection->paginate($filter, ['projection' => ['replay' => 0], ...Request::_paginateInfo()]); // sans un champ lourd
 
 Collection::_save($document);      // insert si pas d'_id, update sinon (seulement les champs modifiés)
 Collection::_saveSneaky($document); // save sans déclencher les behaviors (voir 10.2)
