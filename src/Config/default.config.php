@@ -23,7 +23,7 @@ return [
 		'range' => 5,
 	],
 	'skankydev'  => [
-		'version'=>'0.3.0'
+		'version'=>'0.3.1'
 	],
 	'debug' => true,
 	'auth' => false,
