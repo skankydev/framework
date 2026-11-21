@@ -77,12 +77,6 @@ Puis tu le déclares dans la config :
 
 La classe est la clé, comme pour les alias de middlewares : la config est fusionnée par `array_replace_recursive` ([04 Config](004-Config.md)), et avec une liste numérotée, la liste d'un projet écraserait celle d'un module case par case au lieu de s'y ajouter. Un module peut déclarer ses listeners dans son propre `Config/config.php`, et le projet peut en couper un en le passant à `false`.
 
-## Ce qui se passe sous le capot
-
-- `subscribe()` est **statique** : l'`EventManager` le lit sans construire le listener. Ça se fait au **premier** `_emit()` de la requête, une seule fois. Une requête qui n'émet rien ne paie rien.
-- Le listener n'est construit que quand un de ses événements est émis, par `MasterFactory` : son constructeur profite de l'injection de dépendances, comme un controller ([08](008-Controller.md)). Il est ensuite **gardé pour le reste de la requête** : deux émissions, un seul objet.
-- Un listener mal déclaré (classe introuvable, `ListenerInterface` absente, méthode qui n'existe pas) lève une `EventException` au premier `_emit()`, pas en silence.
-
 ## Les événements du framework
 
 Le framework n'émet que là où ton code ne peut pas se brancher autrement. Les événements métier (un commentaire posté, un score enregistré), c'est ton application qui les émet.
@@ -121,3 +115,9 @@ Rien n'est attrapé : l'exception remonte jusqu'à celui qui a émis, puis jusqu
 Seule exception : `JobFailed`. Le worker attrape et logue l'erreur d'un de ses listeners, parce que la laisser remonter tuerait le worker, et avec lui tous les jobs suivants.
 
 Si un traitement est long ou peut échouer sans que la requête doive en pâtir (un mail, un appel externe), le listener pousse un job ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)) au lieu de le faire lui-même.
+
+## Sous le capot
+
+- `subscribe()` est **statique** : l'`EventManager` le lit sans construire le listener. Ça se fait au **premier** `_emit()` de la requête, une seule fois. Une requête qui n'émet rien ne paie rien.
+- Le listener n'est construit que quand un de ses événements est émis, par `MasterFactory` : son constructeur profite de l'injection de dépendances, comme un controller ([08](008-Controller.md)). Il est ensuite **gardé pour le reste de la requête** : deux émissions, un seul objet.
+- Un listener mal déclaré (classe introuvable, `ListenerInterface` absente, méthode qui n'existe pas) lève une `EventException` au premier `_emit()`, pas en silence.

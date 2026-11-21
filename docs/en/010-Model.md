@@ -1,4 +1,4 @@
-# 10 Model (Document + Collection + CRUD)
+# 10 Model
 
 ## Separating the collection from the value
 
@@ -158,4 +158,4 @@ The original state is tucked away in an internal `WeakMap` (`$originals`). So it
 
 The comparison is done on the serialized BSON form, not with a naive `===` on the PHP properties, so it stays correct for a `DateTime`, an `ObjectId` or an embedded sub-document. `hasOriginal()` tells you whether the document has an original state (`false` for a document never read or saved).
 
-See also: [10.1 The Persistable (EmbeddedDocument · EmbeddedSnapshot)](010.1-Persistable.md) · [10.2 Behaviors](010.2-Behaviors.md) · [10.3 Relations and propagation](010.3-Relations.md)
+See also: [10.1 The Persistable](010.1-Persistable.md) · [10.2 Behaviors](010.2-Behaviors.md) · [10.3 Relations and propagation](010.3-Relations.md)

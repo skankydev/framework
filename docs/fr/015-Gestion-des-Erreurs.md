@@ -1,4 +1,4 @@
-# 15 La gestion des erreurs
+# 15 Gestion des erreurs
 
 ## Le handler global
 
@@ -65,7 +65,7 @@ debug($paginator, 'scores', ['depth' => 3, 'items' => 10]);
 C'est une convention dans tout le framework : le code que tu passes à l'exception sert de statut HTTP.
 
 ```php
-throw new ModelNotFoundException("Document introuvable", 404);
+throw new ModelNotFoundException("Document not found", 404);
 ```
 
 ## Le cas particulier des `NotFoundException`

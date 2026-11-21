@@ -77,12 +77,6 @@ Then you declare it in the config:
 
 The class is the key, like the middleware aliases: the config is merged by `array_replace_recursive` ([04 Config](004-Config.md)), and with a numbered list, a project's list would overwrite a module's one slot by slot instead of adding to it. A module can declare its listeners in its own `Config/config.php`, and the project can switch one off by setting it to `false`.
 
-## Under the hood
-
-- `subscribe()` is **static**: the `EventManager` reads it without building the listener. That happens on the **first** `_emit()` of the request, only once. A request that emits nothing pays nothing.
-- The listener is only built when one of its events is emitted, by `MasterFactory`: its constructor gets dependency injection, like a controller ([08](008-Controller.md)). It's then **kept for the rest of the request**: two emits, one object.
-- A badly declared listener (class not found, missing `ListenerInterface`, method that doesn't exist) throws an `EventException` on the first `_emit()`, not silently.
-
 ## The framework's events
 
 The framework only emits where your code can't plug in otherwise. Business events (a posted comment, a saved score) are emitted by your application.
@@ -121,3 +115,9 @@ Nothing is caught: the exception goes up to whoever emitted, then to the `Except
 One exception: `JobFailed`. The worker catches and logs an error from one of its listeners, because letting it go up would kill the worker, and every job after it.
 
 If some work is long or may fail without the request having to suffer for it (a mail, an external call), the listener pushes a job ([18 Queue and Jobs](018-Queue-and-Jobs.md)) instead of doing it itself.
+
+## Under the hood
+
+- `subscribe()` is **static**: the `EventManager` reads it without building the listener. That happens on the **first** `_emit()` of the request, only once. A request that emits nothing pays nothing.
+- The listener is only built when one of its events is emitted, by `MasterFactory`: its constructor gets dependency injection, like a controller ([08](008-Controller.md)). It's then **kept for the rest of the request**: two emits, one object.
+- A badly declared listener (class not found, missing `ListenerInterface`, method that doesn't exist) throws an `EventException` on the first `_emit()`, not silently.

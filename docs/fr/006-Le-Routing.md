@@ -14,7 +14,7 @@ Par exemple, l'URL
 
 ira chercher `PersonaController::show` en lui passant `6a256b9f4f04f94e41005473` en paramètre.
 
-Si aucune route prédéfinie ne matche l'URI, on retombe sur la convention ci-dessus — c'est comme ça que le controller/action sont trouvés quand t'as rien déclaré explicitement.
+Si aucune route prédéfinie ne matche l'URI, on retombe sur la convention ci-dessus : c'est comme ça que le controller/action sont trouvés quand t'as rien déclaré explicitement.
 
 Le framework retient tout seul le module de la route courante (`Config::getCurrentNamespace()`), donc t'as pas besoin de remettre `'namespace' => 'Admin'` dans le tableau link à chaque `$this->url(...)` tant que tu restes dans le même module. C'est de la tambouille interne, si tu veux le détail c'est dans [04 Config](004-Config.md).
 
@@ -56,7 +56,7 @@ Router::_add('/password/reset/:user/:token', [
 Tu peux aussi ajouter des middlewares directement sur la route avec la méthode `setMiddlewares`. C'est une liste, tu peux donner soit un alias déclaré dans `class.middlewares`, soit directement le nom de classe complet :
 
 ```php
-Router::_add('/admin', [...])->setMiddlewares(['Auth', 'Session']);
+Router::_add('/admin', [...])->setMiddlewares(['Auth', 'PostOnly']);
 ```
 
 Et si le middleware a besoin d'arguments (comme `RateLimit` qui prend une clé, un nombre d'essais et une durée), même syntaxe qu'avec l'attribut `#[Middleware(...)]` sur un controller, mais en clé => tableau :
