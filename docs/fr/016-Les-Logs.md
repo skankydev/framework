@@ -1,6 +1,6 @@
 # 16 Les Logs
 
-Pour logger, il y a `SkankyDev\Utilities\Log`, une classe statique. Elle écrit un fichier par jour dans le dossier de la config `storage.logs` (`storage/logs/` par défaut, constante `LOG_FOLDER`), créé automatiquement au besoin. `Log::folder()` te donne ce dossier.
+Pour logger, j'ai fait `SkankyDev\Utilities\Log`, une classe statique. Elle écrit un fichier par jour dans le dossier de la config `storage.logs` (`storage/logs/` par défaut, constante `LOG_FOLDER`), créé automatiquement au besoin. `Log::folder()` te donne ce dossier.
 
 ```php
 Log::info('message', 'context');      // logs/{date}-context.log (context par défaut : 'skankydev')
@@ -10,12 +10,12 @@ Log::error($exception, $context);     // logs/{date}-error.log, exception compl�
 Log::job($jobName, $status, $details);// logs/{date}-jobs.log, cycle de vie d'un job
 ```
 
-Ce n'est pas réservé aux exceptions. `Queue` et `QueueWork` s'en servent pour tracer la vie des jobs (`queued`, `completed`, `failed`, voir [18 La Queue et les Jobs](018-Queue-et-Jobs.md)), indépendamment de toute erreur.
+C'est pas réservé aux exceptions. `Queue` et `QueueWork` s'en servent pour tracer la vie des jobs (`queued`, `completed`, `failed`, voir [18 La Queue et les Jobs](018-Queue-et-Jobs.md)), indépendamment de toute erreur.
 
 `Log::error()` est ce qu'appelle `ExceptionHandler` ([15 Gestion des erreurs](015-Gestion-des-Erreurs.md)), mais rien ne t'empêche de l'appeler toi-même ailleurs.
 
-`Log::debug()` est le seul à être conditionnel : si la config `debug` est désactivée, il ne fait rien, sans bruit. Pas la peine de l'entourer d'un `if` à chaque appel.
+`Log::debug()` est le seul conditionnel : si la config `debug` est désactivée, il fait rien, sans bruit. Pas la peine de l'entourer d'un `if` à chaque appel.
 
 ## Nettoyage
 
-`Log::cleanup(int $days = 10)` supprime les fichiers du dossier des logs plus vieux que `$days` jours. Rien ne l'appelle automatiquement dans le framework : c'est à toi de le déclencher (une commande CLI dédiée, un cron côté projet) si tu veux une rotation.
+`Log::cleanup(int $days = 10)` supprime les fichiers du dossier des logs plus vieux que `$days` jours. Rien l'appelle automatiquement dans le framework : c'est à toi de le lancer (une commande CLI dédiée, un cron côté projet) si tu veux une rotation.

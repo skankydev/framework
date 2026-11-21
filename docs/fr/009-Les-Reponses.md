@@ -95,3 +95,5 @@ if (!$this->built && ($this->statusCode < 300 || $this->statusCode >= 400)) {
 Donc `build()` tourne pour les 2xx (contenu normal) et pour les 4xx/5xx (une page d'erreur a un corps), mais pas entre les deux.
 
 **Filet de sécurité** : si des headers sont déjà partis (un `echo` égaré avant, un warning PHP...) alors que la réponse est une redirection, `send()` retombe sur un `<script>window.location.href = '...'</script>` plutôt que de planter avec un header déjà expédié.
+
+Après `send()`, `finish()` clôt l'échange avec le client : la session est écrite (son verrou ferait attendre la requête suivante du visiteur), puis, sous PHP-FPM, la connexion est fermée (`fastcgi_finish_request()`). Le script continue de tourner, mais plus rien n'arrive au navigateur. `Application` l'appelle après chaque `send()`, juste avant d'émettre `ResponseSent` (voir [19 Les Événements](019-Les-Evenements.md)).

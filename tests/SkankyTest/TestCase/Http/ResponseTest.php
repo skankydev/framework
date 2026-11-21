@@ -209,6 +209,34 @@ class ResponseTest extends TestCase
         $this->assertEquals('contenu du fichier', $out);
     }
 
+    // ── finish ────────────────────────────────────────────────────────────────
+
+    public function testFinishDoesNotThrowOutsideFpm(): void {
+        // Ni session active ni FPM en CLI/tests -> no-op silencieux, pas de warning.
+        (new Response())->finish();
+        $this->assertTrue(true);
+    }
+
+    // ── getStatus / getContentType ────────────────────────────────────────────
+
+    public function testGetStatusDefaultsTo200(): void {
+        $this->assertEquals(200, (new Response())->getStatus());
+        $this->assertEquals(404, (new Response())->status(404)->getStatus());
+    }
+
+    public function testGetContentTypeIsNullBeforeBuild(): void {
+        $this->assertNull((new Response('module.index'))->getContentType());
+    }
+
+    public function testGetContentTypeDropsParametersAndIgnoresCase(): void {
+        $response = (new Response())->header('content-type', 'Text/HTML; charset=UTF-8');
+        $this->assertEquals('text/html', $response->getContentType());
+    }
+
+    public function testGetContentTypeOfADataResponse(): void {
+        $this->assertEquals('application/json', (new Response())->build()->getContentType());
+    }
+
     public function testFileMissingThrowsNotFound(): void {
         $this->expectException(\SkankyDev\Exception\NotFoundException::class);
         $this->expectExceptionCode(404);

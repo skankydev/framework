@@ -19,9 +19,9 @@ class WelcomeMail extends MasterMail {
 }
 ```
 
-Le rendu (`content()`) est appelé par le sender, jamais par toi : il rend la vue `mail.welcome` avec `$data`, sans layout. Un mail HTML n'a pas besoin du header, de la nav ni du footer du site, juste de son propre contenu.
+Le rendu (`content()`), c'est le sender qui l'appelle, pas toi : il rend la vue `mail.welcome` avec `$data`, sans layout. Un mail HTML a pas besoin du header, de la nav ni du footer du site, juste de son contenu.
 
-Une règle à retenir : ne mets dans `$data` que des valeurs simples (des strings, des nombres), jamais un Document complet. Un mail peut partir dans un job, et tout ce qui part dans un job traîne dans la collection `jobs` jusqu'à son traitement ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)).
+Une règle à retenir : mets dans `$data` que des valeurs simples (des strings, des nombres), jamais un Document complet. Un mail peut partir dans un job, et tout ce qui part dans un job traîne dans la collection `jobs` jusqu'à son traitement ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)).
 
 ## Le sender
 
@@ -49,13 +49,13 @@ En cas d'échec d'envoi (SMTP mal configuré, connexion refusée...), tu reçois
 
 ## Le job pour la queue
 
-Envoyer un mail, c'est lent (il faut ouvrir une connexion SMTP). Tu ne veux pas faire attendre la requête qui vient de le déclencher (une inscription, une action de l'utilisateur). `SendMailJob` enveloppe l'appel à `MailSender` pour le faire passer par la queue ([18](018-Queue-et-Jobs.md)) :
+Envoyer un mail, c'est lent (faut ouvrir une connexion SMTP). Tu veux pas faire attendre la requête qui vient de le déclencher (une inscription, une action de l'utilisateur). `SendMailJob` enveloppe l'appel à `MailSender` pour le faire passer par la queue ([18](018-Queue-et-Jobs.md)) :
 
 ```php
 Queue::push(new SendMailJob($email, new WelcomeMail($name, $verifyUrl)));
 ```
 
-Le job ne fait qu'un appel à `MailSender::_send()` dans `run()`. C'est le worker qui l'exécute en tâche de fond, et la requête HTTP d'origine ne l'attend pas.
+Le job fait juste un appel à `MailSender::_send()` dans `run()`. C'est le worker qui l'exécute en tâche de fond, et la requête HTTP d'origine l'attend pas.
 
 ## Sous le capot
 

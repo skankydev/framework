@@ -22,8 +22,14 @@ $request->uri();         // '/module/show/abc' (without the query string)
 $request->fullUri();     // same but with the ?thing=stuff
 $request->scheme();       // 'http' or 'https'
 $request->host();        // 'skankyblog.local'
-$request->ip();          // handles X-Forwarded-For if you're behind a proxy
+$request->ip();          // the client IP (see below for proxies)
 $request->userAgent();
+```
+
+`ip()` returns `REMOTE_ADDR`. The `X-Forwarded-For` header is only read when the request comes from a proxy listed in the `trusted_proxies` config (exact IPs): anybody can send it, and trusting it blindly lets a visitor pick their own IP (and get around a `RateLimitMiddleware`). Behind one or more proxies, the chain is read from the right and the first IP that isn't a trusted proxy wins.
+
+```php
+'trusted_proxies' => ['127.0.0.1'],   // an nginx reverse proxy on the same machine
 ```
 
 And three little checks that save you from digging through the headers by hand:

@@ -27,11 +27,11 @@ return view('article.create', ['form' => $form]);
 <?= $form->render() ?>
 ```
 
-`render()` sort le `<form>` complet : la balise ouvrante (avec le token CSRF ajouté tout seul pour une méthode POST, voir [13.3 CSRF](013.3-CSRF.md)), tous les champs, le bouton submit, la balise fermante. Tu n'as pas à appeler `build()` toi-même : il tourne tout seul au premier besoin (via `render()`, `validate()` ou `only()`).
+`render()` sort le `<form>` complet : la balise ouvrante (avec le token CSRF ajouté tout seul pour une méthode POST, voir [13.3 CSRF](013.3-CSRF.md)), tous les champs, le bouton submit, la balise fermante. `build()`, t'as pas à l'appeler toi-même : il tourne tout seul au premier besoin (via `render()`, `validate()` ou `only()`).
 
-Si tu veux un layout plus perso que l'enchaînement automatique des champs, tu as les morceaux séparés : `$form->open()`, `$form->renderField('title')` un par un, puis `$form->close()`.
+Si tu veux un layout plus perso que les champs enchaînés automatiquement, t'as les morceaux séparés : `$form->open()`, `$form->renderField('title')` un par un, puis `$form->close()`.
 
-Le bouton est un champ comme les autres (`SubmitField`, type `submit`). `submit('Enregistrer')` est un raccourci pour `add('submit', 'submit', ['label' => 'Enregistrer'])` : dans un layout perso, il se place avec `$form->renderField('submit')`. Tu peux aussi le déclarer toi-même avec `add()`, sous le nom que tu veux. Il n'y a pas de bouton par défaut : un form sans `submit()` (ni champ `submit`) n'en a pas. Le `<button>` ne porte pas d'attribut `name`, donc rien n'est envoyé dans le POST, et `only()` l'ignore.
+Le bouton est un champ comme les autres (`SubmitField`, type `submit`). `submit('Enregistrer')` est un raccourci pour `add('submit', 'submit', ['label' => 'Enregistrer'])` : dans un layout perso, il se place avec `$form->renderField('submit')`. Tu peux aussi le déclarer toi-même avec `add()`, sous le nom que tu veux. Par contre, pas de bouton par défaut : un form sans `submit()` (ni champ `submit`) en a pas. Le `<button>` a pas d'attribut `name`, donc rien part dans le POST, et `only()` l'ignore.
 
 ## Pré-remplissage
 
@@ -42,7 +42,7 @@ $form = new ArticleForm(['name' => 'article-update', 'params' => [$article->_id]
 $form->setData($article);
 ```
 
-Après un échec de validation, c'est géré pour toi : une nouvelle instance du même form retrouve toute seule les valeurs saisies au tour d'avant et les erreurs de chaque champ ([05](005-La-Requete-Client.md) et [09](009-Les-Reponses.md) expliquent le mécanisme). Tu n'as rien de spécial à écrire dans `build()`.
+Après un échec de validation, t'as rien à faire : une nouvelle instance du même form retrouve toute seule les valeurs saisies au tour d'avant et les erreurs de chaque champ ([05](005-La-Requete-Client.md) et [09](009-Les-Reponses.md) expliquent le mécanisme). Rien de spécial à écrire dans `build()`.
 
 ## Et la validation avec le FormBuilder
 
@@ -67,6 +67,6 @@ public function store(Request $request) {
 
 `validate($data)` récupère les règles déclarées sur chaque champ (le `'rules' => '...'` passé à `add()`) et les fait tourner avec le `Validator` ([13.2 La Validation](013.2-La-Validation.md)). En cas d'échec, les erreurs sont posées sur le form et sur chaque champ (donc visibles directement si tu réaffiches le même form), et `getErrors()` te les rend pour les flasher en session avant la redirection.
 
-`only($data)` ne garde que les clés déclarées comme champs du form. C'est un garde-fou contre le *mass assignment* quand tu construis un Document directement depuis l'input brut (`new Article($form->only($input))`) : seuls les champs que *toi* tu as déclarés dans `build()` peuvent atterrir sur le Document, pas n'importe quoi d'autre envoyé dans le POST.
+`only($data)` garde seulement les clés déclarées comme champs du form. C'est un garde-fou contre le *mass assignment* quand tu construis un Document direct depuis l'input brut (`new Article($form->only($input))`) : seuls les champs que *toi* t'as déclarés dans `build()` peuvent atterrir sur le Document, pas n'importe quoi d'autre qu'on aurait glissé dans le POST.
 
 Voir aussi : [13.1 Les Fields](013.1-Les-Fields.md) · [13.2 La Validation](013.2-La-Validation.md) · [13.3 CSRF](013.3-CSRF.md)

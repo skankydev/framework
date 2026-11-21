@@ -1,4 +1,4 @@
-# 10 Model (Document + Collection + CRUD)
+# 10 Model
 
 ## Séparer la collection de la valeur
 
@@ -158,4 +158,4 @@ L'état d'origine est planqué dans une `WeakMap` interne (`$originals`). Il n'a
 
 La comparaison se fait sur la forme BSON sérialisée, pas avec un `===` naïf sur les propriétés PHP, donc ça reste correct pour un `DateTime`, un `ObjectId` ou un sous-document embarqué. `hasOriginal()` te dit si le document a un état d'origine (`false` pour un document jamais lu ni sauvé).
 
-Voir aussi : [10.1 Le Persistable (EmbeddedDocument · EmbeddedSnapshot)](010.1-Persistable.md) · [10.2 Behaviors](010.2-Behaviors.md) · [10.3 Relations et propagation](010.3-Relations.md)
+Voir aussi : [10.1 Le Persistable](010.1-Persistable.md) · [10.2 Behaviors](010.2-Behaviors.md) · [10.3 Relations et propagation](010.3-Relations.md)

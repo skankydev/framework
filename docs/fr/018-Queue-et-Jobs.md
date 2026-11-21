@@ -26,11 +26,11 @@ Pour le mettre en attente, tu fais `Queue::push()` :
 Queue::push(new SendMailJob($email, new WelcomeMail($name)));
 ```
 
-`push()` range le job dans un `JobDoc` (statut `pending`, `attempts` à 0, `max_attempts` à 3 par défaut) et le sauve dans la collection `jobs`. C'est tout : la requête en cours continue sans attendre que le job tourne.
+`push()` range le job dans un `JobDoc` (statut `pending`, `attempts` à 0, `max_attempts` à 3 par défaut) et le sauve dans la collection `jobs`. Et c'est tout : la requête en cours continue sans attendre que le job tourne.
 
 ## La commande pour les workers
 
-Le worker, c'est lui qui exécute les jobs. Tu le lances avec :
+Le worker, c'est lui qui bosse. Tu le lances avec :
 
 ```bash
 php craft queue-worker
@@ -38,20 +38,20 @@ php craft queue-worker
 
 C'est une boucle infinie : il réserve le job `pending` le plus ancien (passé en `processing`, `attempts` + 1), exécute `run()`, puis :
 
-- **succès** : le `JobDoc` est supprimé. Pas besoin de le garder en base, et ça évite qu'un contenu potentiellement sensible y traîne indéfiniment.
+- **succès** : le `JobDoc` est supprimé. Pas besoin de le garder en base, et comme ça un contenu potentiellement sensible y traîne pas pour toujours.
 - **échec** (tout ce qui est lancé, `\Error` compris) : le statut repasse à `pending` pour un nouvel essai, sauf si `max_attempts` est atteint : le statut devient alors `failed`. L'erreur est loggée (`Log::error()`, voir [16 Les Logs](016-Les-Logs.md)) et son message est gardé sur le `JobDoc`.
 
-Sans job en attente, la boucle attend une seconde avant de reboucler (`sleep(1)`).
+Pas de job en attente ? La boucle attend une seconde et recommence (`sleep(1)`).
 
 Le statut est un enum `JobStatus` (`PENDING`, `PROCESSING`, `FAILED`). Dans une requête Mongo brute, on passe sa valeur : `['status' => JobStatus::FAILED->value]`.
 
 ### Plusieurs workers
 
-Tu peux lancer autant de workers que tu veux : réserver un job est une seule opération atomique (`findOneAndUpdate`), donc deux workers ne récupèrent jamais le même job.
+Tu peux lancer autant de workers que tu veux : réserver un job est une seule opération atomique (`findOneAndUpdate`), donc deux workers récupèrent jamais le même job.
 
 ### Le bail : quand un worker meurt
 
-Si un worker meurt en plein job (crash, kill, mémoire saturée), le job resterait `processing` pour toujours. Pour l'éviter, chaque job réservé reçoit un **bail** : `lease_until` = heure de réservation + le `timeout` du job. Une fois le bail dépassé, le job est considéré comme abandonné et un autre worker peut le reprendre.
+Si un worker meurt en plein job (crash, kill, mémoire saturée), le job resterait coincé en `processing` pour toujours. Pour éviter ça, chaque job réservé reçoit un **bail** : `lease_until` = heure de réservation + le `timeout` du job. Une fois le bail dépassé, le job est considéré comme abandonné et un autre worker peut le reprendre.
 
 Le `timeout` est de 600 secondes par défaut (`queue.timeout` dans la config). Un job qui dure légitimement plus longtemps doit le dire, sinon il tournerait deux fois :
 
@@ -67,7 +67,7 @@ Comme `attempts` augmente à la réservation (et pas à l'échec), un job qui tu
 
 ## Faire tourner le worker en continu
 
-Le worker n'est pas censé s'arrêter tout seul. En production, il te faut un superviseur de process qui le relance s'il plante ou si le serveur redémarre (Supervisor, systemd, ou l'équivalent selon ton déploiement). Un exemple avec Supervisor :
+Le worker est pas censé s'arrêter tout seul. En production, il te faut un superviseur de process qui le relance s'il plante ou si le serveur redémarre (Supervisor, systemd, ou l'équivalent selon ton déploiement). Un exemple avec Supervisor :
 
 ```ini
 [program:queue-worker]
@@ -76,7 +76,7 @@ autostart=true
 autorestart=true
 ```
 
-Il n'y a rien de spécifique au framework là-dedans : `queue-worker` est juste un process PHP normal, longue durée, qu'on garde en vie comme n'importe quel worker.
+Rien de spécifique au framework là-dedans : `queue-worker` est juste un process PHP normal, longue durée, qu'on garde en vie comme n'importe quel worker.
 
 ## Sous le capot
 

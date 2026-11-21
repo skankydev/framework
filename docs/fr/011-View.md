@@ -120,17 +120,17 @@ Des bouts de vue réutilisables : un header, une pagination, un tableau généri
 
 Le nom suit la même dot-notation que `view()`, dans le même dossier de vues : `part.header` → `src_front/view/part/header.php`.
 
-Deux parts sont fournis par le framework (SkankyDev) : `part.table` (un tableau générique, piloté par `getDisplayField()` d'une Collection, voir [10 Model](010-Model.md)) et `part.paginator`. Mais attention : `part()` ne cherche que dans **ton** dossier de vues, donc ils ne marchent qu'une fois **publiés** dans ton projet (le starter les contient déjà). Si tu vois « the file … part/table.php does not exist » :
+Deux parts sont fournies par le framework (SkankyDev) : `part.table` (un tableau générique, piloté par `getDisplayField()` d'une Collection, voir [10 Model](010-Model.md)) et `part.paginator`. Mais attention : `part()` ne cherche que dans **ton** dossier de vues, donc elles ne marchent qu'une fois **publiées** dans ton projet (le starter les contient déjà). Si tu vois « the file … part/table.php does not exist » :
 
 ```bash
 php craft publish -p=part
 ```
 
-([17 Craft et CLI](017-Craft-et-CLI.md) détaille le Publishable.) Les autres parts que tu verras dans un projet (`part.breadcrumb`, `part.header`...) sont côté `App`, pas fournis par défaut.
+([17 Craft et CLI](017-Craft-et-CLI.md) détaille le Publishable.) Les autres parts que tu verras dans un projet (`part.breadcrumb`, `part.header`...) sont côté `App`, pas fournies par défaut.
 
 ### C'est encore plus cool, on peut lier des bouts de code
 
-Un part peut avoir une classe compagnon qui lui prépare des variables. Elle est trouvée par convention de nom, sous le **module courant** : `part.auth` → `{ModuleCourant}\View\Part\AuthPart`. Elle étend `MasterPart` et n'a qu'une méthode à écrire :
+Une part peut avoir une classe compagnon qui lui prépare des variables. Elle est trouvée par convention de nom, sous le **module courant** : `part.auth` → `{ModuleCourant}\View\Part\AuthPart`. Elle étend `MasterPart` et n'a qu'une méthode à écrire :
 
 ```php
 class AuthPart extends MasterPart {
@@ -140,9 +140,9 @@ class AuthPart extends MasterPart {
 }
 ```
 
-Les données que renvoie `data()` sont fusionnées avec les options passées à l'appel, puis le template est rendu. Cette classe est facultative : sans elle, le part est juste un template classique. Tu t'en sers seulement quand tu as besoin de calculer quelque chose avant l'affichage. Et comme la classe est construite par le `MasterFactory`, elle profite de l'injection de dépendance ([08 Controller](008-Controller.md)).
+Les données que renvoie `data()` sont fusionnées avec les options passées à l'appel, puis le template est rendu. Cette classe est facultative : sans elle, la part est juste un template classique. Tu t'en sers seulement quand tu as besoin de calculer quelque chose avant l'affichage. Et comme la classe est construite par le `MasterFactory`, elle profite de l'injection de dépendance ([08 Controller](008-Controller.md)).
 
-Si le part que tu appelles ne vit pas dans le module courant (un part partagé, ou un module tiers), la convention n'ira pas le chercher au bon endroit. Dans ce cas, tu forces la classe dans la config `class.parts`, avec le nom complet donné à `part()` comme clé :
+Si la part que tu appelles ne vit pas dans le module courant (une part partagée, ou un module tiers), la convention n'ira pas le chercher au bon endroit. Dans ce cas, tu forces la classe dans la config `class.parts`, avec le nom complet donné à `part()` comme clé :
 
 ```php
 'class' => [

@@ -157,7 +157,7 @@ class SessionGateTest extends TestCase
         $user->remember_token = new Token(['value' => Hash::hashToken($plain->value), 'time' => $plain->time]);
         $provider->addUser($user);
 
-        $_COOKIE['auth.remember_token'] = 'u1|' . $plain->value;
+        $_COOKIE['auth_remember_token'] = 'u1|' . $plain->value;
 
         $gate = new TestableSessionGate(['identifier' => 'email', 'remember' => true], $provider);
         $this->assertSame($user, $gate->user());
@@ -171,7 +171,7 @@ class SessionGateTest extends TestCase
         $user->remember_token = new Token(['value' => Hash::hashToken($plain->value), 'time' => $plain->time]);
         $provider->addUser($user);
 
-        $_COOKIE['auth.remember_token'] = 'u1|not-the-right-token';
+        $_COOKIE['auth_remember_token'] = 'u1|not-the-right-token';
 
         $gate = new TestableSessionGate(['identifier' => 'email', 'remember' => true], $provider);
         $this->assertNull($gate->user());
@@ -184,7 +184,7 @@ class SessionGateTest extends TestCase
         $user->remember_token = new Token(['value' => Hash::hashToken($plain->value), 'time' => $plain->time]);
         $provider->addUser($user);
 
-        $_COOKIE['auth.remember_token'] = 'u1|' . $plain->value;
+        $_COOKIE['auth_remember_token'] = 'u1|' . $plain->value;
 
         // 'remember' absent de la config -> le cookie n'est jamais consulté
         $gate = new TestableSessionGate(['identifier' => 'email'], $provider);
@@ -266,7 +266,7 @@ class SessionGateTest extends TestCase
         $plain = new Token();
         $user->remember_token = new Token(['value' => Hash::hashToken($plain->value), 'time' => $plain->time]);
         $provider->addUser($user);
-        $_COOKIE['auth.remember_token'] = 'u1|' . $plain->value;
+        $_COOKIE['auth_remember_token'] = 'u1|' . $plain->value;
         // Request garde les cookies du premier test qui l'a instancié
         (new \ReflectionProperty(\SkankyDev\Http\Request::class, '_instance'))->setValue(null, null);
 

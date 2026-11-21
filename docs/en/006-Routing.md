@@ -14,7 +14,7 @@ For example, the URL
 
 will go to `PersonaController::show`, passing it `6a256b9f4f04f94e41005473` as a parameter.
 
-If no predefined route matches the URI, we fall back on the convention above — that's how the controller/action are found when you haven't declared anything explicitly.
+If no predefined route matches the URI, we fall back on the convention above: that's how the controller/action are found when you haven't declared anything explicitly.
 
 The framework remembers the module of the current route on its own (`Config::getCurrentNamespace()`), so you don't need to put `'namespace' => 'Admin'` back in the link array on every `$this->url(...)` as long as you stay in the same module. It's internal plumbing, if you want the details they're in [04 Config](004-Config.md).
 
@@ -56,7 +56,7 @@ Router::_add('/password/reset/:user/:token', [
 You can also add middlewares directly on the route with the `setMiddlewares` method. It's a list, you can give either an alias declared in `class.middlewares`, or the full class name directly:
 
 ```php
-Router::_add('/admin', [...])->setMiddlewares(['Auth', 'Session']);
+Router::_add('/admin', [...])->setMiddlewares(['Auth', 'PostOnly']);
 ```
 
 And if the middleware needs arguments (like `RateLimit`, which takes a key, a number of attempts and a duration), same syntax as with the `#[Middleware(...)]` attribute on a controller, but as key => array:
