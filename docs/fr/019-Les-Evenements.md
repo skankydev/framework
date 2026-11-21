@@ -2,7 +2,7 @@
 
 ## Pourquoi
 
-Un commentaire est posté, et tu veux donner un trophée à son auteur, prévenir l'admin, vider un cache… Si tout ça s'écrit dans le controller des commentaires, il finit par connaître la moitié de l'application. Avec un événement, le controller dit seulement « un commentaire vient d'être créé », et ceux que ça intéresse s'en occupent. C'est le pattern Observer : celui qui émet ne sait pas qui écoute.
+Un commentaire est posté, et tu veux donner un trophée à son auteur, prévenir l'admin, vider un cache… Si tu mets tout ça dans le controller des commentaires, il finit par connaître la moitié de l'appli. Avec un événement, le controller dit seulement « un commentaire vient d'être créé », et ceux que ça intéresse s'en occupent. C'est le pattern Observer : celui qui émet sait pas qui écoute, et il s'en fiche.
 
 Trois pièces, toutes dans `SkankyDev\Event` :
 
@@ -27,9 +27,9 @@ class CommentCreated extends MasterEvent {
 }
 ```
 
-Son nom, c'est sa classe : on écoute `CommentCreated::class`, pas une chaîne qu'on risque de mal taper. `getName()` le renvoie, et tu peux le surcharger si un jour tu veux un autre nom.
+Son nom, c'est sa classe : on écoute `CommentCreated::class`, pas une chaîne qu'on finira forcément par mal taper. `getName()` le renvoie, et tu peux le surcharger si un jour tu veux un autre nom.
 
-Les propriétés sont libres : `readonly` si tu veux qu'aucun listener ne puisse les modifier, modifiables si un listener doit remplir quelque chose pour l'appelant (voir plus bas). Un événement n'est jamais sauvé en base : il vit le temps de l'émission.
+Les propriétés sont libres : `readonly` si tu veux qu'aucun listener ne puisse les modifier, modifiables si un listener doit remplir quelque chose pour l'appelant (voir plus bas). Un événement est jamais sauvé en base : il vit le temps de l'émission, point.
 
 ## Émettre
 
@@ -79,7 +79,7 @@ La classe est la clé, comme pour les alias de middlewares : la config est fusio
 
 ## Les événements du framework
 
-Le framework n'émet que là où ton code ne peut pas se brancher autrement. Les événements métier (un commentaire posté, un score enregistré), c'est ton application qui les émet.
+Le framework émet seulement là où ton code peut pas se brancher autrement. Les événements métier (un commentaire posté, un score enregistré), c'est ton application qui les émet.
 
 | Événement | Émis quand | Contenu |
 |---|---|---|
@@ -110,14 +110,14 @@ Les listeners de la config passent d'abord, puis ceux de `_listen()`, dans l'ord
 
 ## Quand un listener plante
 
-Rien n'est attrapé : l'exception remonte jusqu'à celui qui a émis, puis jusqu'à l'`ExceptionHandler` ([15](015-Gestion-des-Erreurs.md)), comme n'importe quelle autre. Pas d'erreur silencieuse. Ça veut aussi dire qu'un listener peut arrêter la requête : une `NotFoundException` avec le code 404 donne la page 404 en production.
+Rien est attrapé : l'exception remonte jusqu'à celui qui a émis, puis jusqu'à l'`ExceptionHandler` ([15](015-Gestion-des-Erreurs.md)), comme n'importe quelle autre. Pas d'erreur qui passe en douce. Ça veut aussi dire qu'un listener peut arrêter la requête : une `NotFoundException` avec le code 404 donne la page 404 en production.
 
 Seule exception : `JobFailed`. Le worker attrape et logue l'erreur d'un de ses listeners, parce que la laisser remonter tuerait le worker, et avec lui tous les jobs suivants.
 
-Si un traitement est long ou peut échouer sans que la requête doive en pâtir (un mail, un appel externe), le listener pousse un job ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)) au lieu de le faire lui-même.
+Si un traitement est long ou peut échouer sans que la requête doive en pâtir (un mail, un appel externe), le listener pousse un job ([18 La Queue et les Jobs](018-Queue-et-Jobs.md)) plutôt que de le faire lui-même.
 
 ## Sous le capot
 
-- `subscribe()` est **statique** : l'`EventManager` le lit sans construire le listener. Ça se fait au **premier** `_emit()` de la requête, une seule fois. Une requête qui n'émet rien ne paie rien.
+- `subscribe()` est **statique** : l'`EventManager` le lit sans construire le listener. Ça se fait au **premier** `_emit()` de la requête, une seule fois. Une requête qui émet rien paie rien.
 - Le listener n'est construit que quand un de ses événements est émis, par `MasterFactory` : son constructeur profite de l'injection de dépendances, comme un controller ([08](008-Controller.md)). Il est ensuite **gardé pour le reste de la requête** : deux émissions, un seul objet.
-- Un listener mal déclaré (classe introuvable, `ListenerInterface` absente, méthode qui n'existe pas) lève une `EventException` au premier `_emit()`, pas en silence.
+- Un listener mal déclaré (classe introuvable, `ListenerInterface` absente, méthode qui n'existe pas) lève une `EventException` au premier `_emit()`, pas en douce.

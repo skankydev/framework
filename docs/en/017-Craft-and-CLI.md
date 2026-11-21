@@ -19,7 +19,7 @@ The same startup as `public/index.php`: `Bootstrap::boot()` for the framework (t
 
 ### Arguments
 
-A simple convention, with no dependency on an external parser:
+A simple convention, I didn't want to depend on an external parser for this:
 
 - the first argument without `-` is the command (`php craft queue-worker` → `queue-worker`);
 - `--key=value` or `--key value` gives `['key' => 'value']`;

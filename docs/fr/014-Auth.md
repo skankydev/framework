@@ -2,7 +2,7 @@
 
 ## Comment on login et on logout
 
-`Auth` est une façade statique : tu passes par elle partout, et elle délègue au bon mécanisme en coulisses.
+`Auth` est une façade statique : tu passes par elle partout, et elle se débrouille pour appeler le bon mécanisme derrière.
 
 ```php
 Auth::attempt(['email' => $email, 'password' => $password]); // bool
@@ -13,16 +13,16 @@ Auth::check();          // bool, raccourci de user() !== null
 Auth::id();              // son _id, ou null
 ```
 
-Il n'y a rien de plus à câbler dans un controller. `Auth::attempt()` retrouve le provider (le Document utilisateur), vérifie les identifiants, et connecte si ça passe. Tu peux appeler `Auth::user()` autant de fois que tu veux dans une requête : il ne résout l'utilisateur qu'une fois.
+Y a rien de plus à câbler dans un controller. `Auth::attempt()` retrouve le provider (le Document utilisateur), vérifie les identifiants, et connecte si ça passe. Tu peux appeler `Auth::user()` autant de fois que tu veux dans une requête : il va chercher l'utilisateur qu'une fois.
 
-Pour protéger une route derrière l'authentification, ne vérifie pas toi-même dans chaque action : pose `#[Middleware('Auth')]`. Le détail est dans [07 Les Middlewares](007-Les-Middlewares.md).
+Pour protéger une route derrière l'authentification, vérifie pas toi-même dans chaque action : pose `#[Middleware('Auth')]`. Le détail est dans [07 Les Middlewares](007-Les-Middlewares.md).
 
 ## Keepers, Gates, Providers
 
 Trois notions empilées, toutes déclarées en config (`auth` + `class.gates`) :
 
-- **Provider** : la classe Document qui représente une identité (`\App\Model\Document\Member::class`, par exemple). Le framework ne connaît que son nom, et il en déduit la Collection par la convention habituelle ([10 Model](010-Model.md)).
-- **Gate** : le mécanisme d'authentification lui-même (comment on sait « qui est connecté », comment on login et logout). `SessionGate` est la seule livrée : identifiant + mot de passe, portée par la session PHP, avec un remember-me optionnel (cookie + token).
+- **Provider** : la classe Document qui représente une identité (`\App\Model\Document\Member::class`, par exemple). Le framework connaît que son nom, et il en déduit la Collection par la convention habituelle ([10 Model](010-Model.md)).
+- **Gate** : le mécanisme d'authentification lui-même (comment on sait « qui est connecté », comment on login et logout). Pour l'instant, y a que `SessionGate` de livrée : identifiant + mot de passe, portée par la session PHP, avec un remember-me optionnel (cookie + token).
 - **Keeper** : un emplacement nommé qui combine une gate, un provider et des options propres à cette gate. Plusieurs keepers peuvent coexister (un pour le site, un pour une API par token, chacun avec son provider).
 
 ```php
@@ -88,7 +88,7 @@ Ensuite, tu l'enregistres sous un alias dans `class.gates` et tu l'utilises dans
 ],
 ```
 
-Tu n'as pas à te soucier d'être appelé plusieurs fois : `resolve()` n'est exécuté qu'une fois par requête, `MasterGate` met le résultat en cache.
+T'as pas à t'inquiéter d'être appelé plusieurs fois : `resolve()` tourne qu'une fois par requête, `MasterGate` garde le résultat en cache.
 
 ## Sous le capot
 

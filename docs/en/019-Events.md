@@ -2,7 +2,7 @@
 
 ## Why
 
-A comment gets posted, and you want to give its author a trophy, notify the admin, clear a cache… If all of that is written in the comments controller, it ends up knowing half of the application. With an event, the controller only says "a comment was just created", and whoever cares takes it from there. That's the Observer pattern: the one emitting doesn't know who's listening.
+A comment gets posted, and you want to give its author a trophy, notify the admin, clear a cache… If you put all of that in the comments controller, it ends up knowing half of the app. With an event, the controller only says "a comment was just created", and whoever cares takes it from there. That's the Observer pattern: the one emitting doesn't know who's listening, and doesn't care.
 
 Three pieces, all in `SkankyDev\Event`:
 
@@ -27,9 +27,9 @@ class CommentCreated extends MasterEvent {
 }
 ```
 
-Its name is its class: you listen to `CommentCreated::class`, not to a string you might mistype. `getName()` returns it, and you can override it if one day you want another name.
+Its name is its class: you listen to `CommentCreated::class`, not to a string you'll end up mistyping sooner or later. `getName()` returns it, and you can override it if one day you want another name.
 
-The properties are up to you: `readonly` if no listener should be able to change them, writable if a listener has to fill something in for the caller (see below). An event is never saved to the database: it lives for the duration of the emit.
+The properties are up to you: `readonly` if no listener should be able to change them, writable if a listener has to fill something in for the caller (see below). An event is never saved to the database: it lives for the duration of the emit, that's it.
 
 ## Emitting
 

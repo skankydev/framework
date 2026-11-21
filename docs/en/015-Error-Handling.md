@@ -2,7 +2,7 @@
 
 ## The global handler
 
-Every uncaught exception ends up in the same place: `ExceptionHandler::handle()`. `Application` installs it right in its constructor (`ExceptionHandler::register()`: `set_exception_handler`), and adds a shutdown function that catches even fatal errors (`E_ERROR`, `E_CORE_ERROR`, `E_COMPILE_ERROR`) to hand them over as an `ErrorException`. Result: no silent blank page.
+Every uncaught exception ends up in the same place: `ExceptionHandler::handle()`. `Application` installs it right in its constructor (`ExceptionHandler::register()`: `set_exception_handler`), and adds a shutdown function that catches even fatal errors (`E_ERROR`, `E_CORE_ERROR`, `E_COMPILE_ERROR`) to hand them over as an `ErrorException`. Result: no more blank page with no explanation.
 
 ```php
 public function handle(Throwable $exception): void {

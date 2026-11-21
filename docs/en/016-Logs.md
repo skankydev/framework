@@ -1,6 +1,6 @@
 # 16 Logs
 
-To log things, there's `SkankyDev\Utilities\Log`, a static class. It writes one file per day in the folder of the `storage.logs` config (`storage/logs/` by default, `LOG_FOLDER` constant), created automatically when needed. `Log::folder()` gives you that folder.
+To log things, I made `SkankyDev\Utilities\Log`, a static class. It writes one file per day in the folder of the `storage.logs` config (`storage/logs/` by default, `LOG_FOLDER` constant), created automatically when needed. `Log::folder()` gives you that folder.
 
 ```php
 Log::info('message', 'context');      // logs/{date}-context.log (default context: 'skankydev')
