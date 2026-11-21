@@ -23,7 +23,7 @@ return [
 		'range' => 5,
 	],
 	'skankydev'  => [
-		'version'=>'0.3.1'
+		'version'=>'0.3.2'
 	],
 	'debug' => true,
 	// reverse proxies (exact IPs) allowed to give the client IP through X-Forwarded-For.
