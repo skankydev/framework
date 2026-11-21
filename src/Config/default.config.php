@@ -26,6 +26,9 @@ return [
 		'version'=>'0.3.1'
 	],
 	'debug' => true,
+	// reverse proxies (exact IPs) allowed to give the client IP through X-Forwarded-For.
+	// Empty = Request::ip() is always REMOTE_ADDR (PHP served straight by nginx).
+	'trusted_proxies' => [],
 	'auth' => false,
 	'middlewares'=>[
 		'Session'=>'Session',

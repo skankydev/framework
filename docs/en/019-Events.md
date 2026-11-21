@@ -92,13 +92,15 @@ The framework only emits where your code can't plug in otherwise. Business event
 | `SkankyDev\Auth\Event\LoggedIn` | `login()`, a successful `attempt()`, or a session restored by the remember-me cookie | `user`, `remember`, `viaCookie` |
 | `SkankyDev\Auth\Event\LoggedOut` | `logout()` while someone was logged in | `user` |
 | `SkankyDev\Auth\Event\LoginFailed` | a failed `attempt()` (unknown login, wrong password, empty field) | `identifier`, `login` (never the password) |
+| `SkankyDev\Http\Event\ResponseSent` | the response has gone out (not on a redirection nor an error page) | `request`, `response` |
 | `SkankyDev\Http\Event\PageNotFound` | a 404 goes out: `notFound()`, or a code 404 `NotFoundException` caught by `Application` (in debug too) | `uri`, `exception` |
 | `SkankyDev\Queue\Event\JobFailed` | a job fails for the last time (`max_attempts` reached) | `job`, `jobDoc`, `exception` |
 
-Two details:
+A few details:
 
 - With the remember-me cookie, the session is restored while the user is being resolved. `LoggedIn` is only emitted **once that resolution is done**: a listener calling `Auth::user()` gets the user without starting over.
 - If you redefine `notFound()` in your project, your version must emit `PageNotFound` too.
+- `ResponseSent` is for work the visitor doesn't have to wait for (stats, logs...). Under PHP-FPM the connection is already closed (`fastcgi_finish_request()`); elsewhere the listener just runs before the end of the script. The session is closed: `$_SESSION` can be read, but what's written to it is lost. A listener's exception is logged, never shown.
 
 ## Plugging a callable by hand
 

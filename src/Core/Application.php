@@ -18,11 +18,13 @@ use SkankyDev\Config\Config;
 use SkankyDev\Core\ExceptionHandler;
 use SkankyDev\Event\EventManager;
 use SkankyDev\Http\Event\PageNotFound;
+use SkankyDev\Http\Event\ResponseSent;
+use SkankyDev\Http\Response;
+use Throwable;
 use SkankyDev\Exception\NotFoundException;
 use SkankyDev\Http\Middleware\MiddlewareManager;
 use SkankyDev\Http\Request;
 use SkankyDev\Http\Routing\Router;
-use SkankyDev\Utilities\Session;
 
 
 class Application {
@@ -62,18 +64,9 @@ class Application {
 			});
 			if($response){
 				$response->send();
+				$this->afterResponse($request, $response);
 			}
 		} catch (NotFoundException $e) {
-			// Pas un plantage : méthode/controller/donnée introuvable. En debug
-			// la trace reste utile (ExceptionHandler::handle() normal) ; en
-			// prod on affiche la vraie 404 (vue normale, cf. notFound()) plutôt
-			// que la page d'erreur générique — ExceptionHandler se contente de logger.
-			// Le code 404 distingue "vraiment pas trouvé" (route/donnée) d'un
-			// vrai bug de code qui réutilise NotFoundException avec un autre
-			// code (ex: 500 sur un appel de méthode inconnu en interne) — ce
-			// dernier cas doit rester visible comme une vraie erreur en prod.
-			// PageNotFound est émis dans les deux cas d'un vrai 404 : par notFound()
-			// en prod, à la main en debug (qui affiche la trace sans passer par notFound()).
 			if (Config::get('debug') || $e->getCode() !== 404) {
 				if ($e->getCode() === 404) {
 					EventManager::_emit(new PageNotFound(Request::getInstance()->uri(), $e));
@@ -85,6 +78,19 @@ class Application {
 			}
 		} catch (Exception $e) {
 			$this->exceptionHandler->handle($e);
+		}
+	}
+
+	/**
+	 * Hands the response over to the client, then emits ResponseSent.
+	 */
+	protected function afterResponse(Request $request, Response $response): void {
+		$response->finish();
+		try {
+			EventManager::_emit(new ResponseSent($request, $response));
+		} catch (Throwable $e) {
+			// The page is gone: an error here can only be logged
+			$this->exceptionHandler->log($e);
 		}
 	}
 }

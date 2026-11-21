@@ -153,9 +153,40 @@ class Response {
 		echo $this->body;
 	}
 
+	/**
+	 * Ends the exchange with the client, once send() is done: the session is written
+	 * (its lock would keep the visitor's next request waiting), then under PHP-FPM the
+	 * connection is closed. The script keeps running, but nothing it outputs reaches
+	 * the client any more. Elsewhere (CLI, built-in server) only the session is closed.
+	 */
+	public function finish(): void {
+		Session::close();
+		if (function_exists('fastcgi_finish_request')) {
+			fastcgi_finish_request();
+		}
+	}
+
 	/** Headers set so far (name => value). */
 	public function getHeaders(): array {
 		return $this->headers;
+	}
+
+	/** HTTP status code of the response. */
+	public function getStatus(): int {
+		return $this->statusCode;
+	}
+
+	/**
+	 * Content-Type header without its parameters (`text/html`), or null when not set.
+	 * The header name is matched case-insensitively (build() and file() don't write it the same way).
+	 */
+	public function getContentType(): ?string {
+		foreach ($this->headers as $name => $value) {
+			if (strtolower($name) === 'content-type') {
+				return strtolower(trim(explode(';', $value)[0]));
+			}
+		}
+		return null;
 	}
 
 	/** Flashes validation errors to the session for the next request. */

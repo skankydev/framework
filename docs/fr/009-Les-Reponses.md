@@ -86,6 +86,8 @@ public function build(): self {
 
 Un détail : `send()` ne construit **pas** de corps pour une redirection (3xx). Il n'y a rien à afficher, juste le header `Location` et un `exit` une fois les headers envoyés.
 
+Après `send()`, `finish()` clôt l'échange avec le client : la session est écrite (son verrou ferait attendre la requête suivante du visiteur), puis, sous PHP-FPM, la connexion est fermée (`fastcgi_finish_request()`). Le script continue de tourner, mais plus rien n'arrive au navigateur. `Application` l'appelle après chaque `send()`, juste avant d'émettre `ResponseSent` (cf. [Les événements](019-Les-Evenements.md)).
+
 ```php
 if (!$this->built && ($this->statusCode < 300 || $this->statusCode >= 400)) {
     $this->build();

@@ -92,13 +92,15 @@ Le framework n'émet que là où ton code ne peut pas se brancher autrement. Les
 | `SkankyDev\Auth\Event\LoggedIn` | `login()`, `attempt()` réussi, ou session restaurée par le cookie remember-me | `user`, `remember`, `viaCookie` |
 | `SkankyDev\Auth\Event\LoggedOut` | `logout()` alors que quelqu'un était connecté | `user` |
 | `SkankyDev\Auth\Event\LoginFailed` | `attempt()` raté (login inconnu, mauvais mot de passe, champ vide) | `identifier`, `login` (jamais le mot de passe) |
+| `SkankyDev\Http\Event\ResponseSent` | la réponse est partie (pas sur une redirection ni une page d'erreur) | `request`, `response` |
 | `SkankyDev\Http\Event\PageNotFound` | une 404 part : `notFound()`, ou une `NotFoundException` code 404 attrapée par `Application` (en debug aussi) | `uri`, `exception` |
 | `SkankyDev\Queue\Event\JobFailed` | un job échoue pour la dernière fois (`max_attempts` atteint) | `job`, `jobDoc`, `exception` |
 
-Deux détails :
+Quelques détails :
 
 - Avec le cookie remember-me, la session est restaurée pendant la résolution de l'utilisateur. `LoggedIn` n'est émis qu'**une fois cette résolution finie** : un listener qui appelle `Auth::user()` récupère l'utilisateur sans tout relancer.
 - Si tu redéfinis `notFound()` dans ton projet, ta version doit émettre `PageNotFound` elle aussi.
+- `ResponseSent` sert au travail que le visiteur n'a pas à attendre (stats, logs…). Sous PHP-FPM, la connexion est déjà fermée (`fastcgi_finish_request()`) ; ailleurs, le listener tourne juste avant la fin du script. La session est fermée : `$_SESSION` se lit, mais ce qu'on y écrit est perdu. Une exception d'un listener est loggée, jamais affichée.
 
 ## Brancher un callable à la main
 
