@@ -42,7 +42,7 @@ Un petit framework PHP MVC maison, pensé pour faire du CRUD sur MongoDB sans se
 
 ## Quand ça se passe mal
 
-- [15 La gestion des erreurs](015-Gestion-des-Erreurs.md) : le handler global, le debug, les 404.
+- [15 Gestion des erreurs](015-Gestion-des-Erreurs.md) : le handler global, le debug, les 404.
 - [16 Les Logs](016-Les-Logs.md) : ce qui est écrit, où, et le nettoyage.
 
 ## Hors de la page web

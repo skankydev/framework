@@ -65,7 +65,7 @@ DB_MONGO_PORT=27017
 DB_MONGO_DATABASE=MonProjet
 ```
 
-`APP_DEBUG=1` te donne les pages d'erreur détaillées, parfait en dev. En production, tu mets `0` ([15 La gestion des erreurs](015-Gestion-des-Erreurs.md)). Le `.env` ne se commite jamais : c'est là que vivent tes secrets.
+`APP_DEBUG=1` te donne les pages d'erreur détaillées, parfait en dev. En production, tu mets `0` ([15 Gestion des erreurs](015-Gestion-des-Erreurs.md)). Le `.env` ne se commite jamais : c'est là que vivent tes secrets.
 
 ## Lancer le site
 

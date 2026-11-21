@@ -22,7 +22,7 @@ To protect a route behind authentication, don't check it yourself in every actio
 Three stacked notions, all declared in the config (`auth` + `class.gates`):
 
 - **Provider**: the Document class that represents an identity (`\App\Model\Document\Member::class`, for example). The framework only knows its name, and deduces the Collection from it with the usual convention ([10 Model](010-Model.md)).
-- **Gate**: the authentication mechanism itself (how we know "who's logged in", how we log in and out). `SessionGate` is the only one shipped: identifier + password, carried by the PHP session, with an optional remember-me (cookie + token).
+- **Gate**: the authentication mechanism itself (how we know "who's logged in", how we log in and out). For now, `SessionGate` is the only one shipped: identifier + password, carried by the PHP session, with an optional remember-me (cookie + token).
 - **Keeper**: a named slot that combines a gate, a provider and options specific to that gate. Several keepers can coexist (one for the site, one for a token-based API, each with its provider).
 
 ```php

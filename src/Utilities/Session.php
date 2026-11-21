@@ -79,6 +79,16 @@ class Session
 	}
 
 	/**
+	 * Writes the session and releases its lock, when one is open.
+	 * get() still works afterwards, but what set() writes is lost.
+	 */
+	static function close(): void {
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_write_close();
+		}
+	}
+
+	/**
 	 * Destroys the PHP session and all its data.
 	 */
 	static function destroy(): void {

@@ -1,6 +1,6 @@
 # 21 Le client HTTP sortant
 
-`SkankyDev\Utilities\Http\HttpClient` est un petit wrapper cURL pour les requêtes **sortantes** : appeler une API externe, un service tiers, peu importe. Il n'a pas d'état : chaque requête renvoie son propre `HttpResult`, donc la même instance de `HttpClient` peut servir pour plusieurs appels.
+`SkankyDev\Utilities\Http\HttpClient` est un petit wrapper cURL pour les requêtes **sortantes** : appeler une API externe, un service tiers, peu importe. Il a pas d'état : chaque requête renvoie son propre `HttpResult`, donc la même instance de `HttpClient` peut servir pour plusieurs appels.
 
 ```php
 $client = new HttpClient();
@@ -29,7 +29,7 @@ $client->withHeader('Authorization', 'Bearer ' . $token)
 
 ## Le résultat
 
-`HttpResult`, c'est la réponse *reçue* d'un serveur distant. À ne pas confondre avec `SkankyDev\Http\Response`, qui est la réponse *sortante* vers le navigateur ([09](009-Les-Reponses.md)).
+`HttpResult`, c'est la réponse *reçue* d'un serveur distant. À pas confondre avec `SkankyDev\Http\Response`, qui est la réponse *sortante* vers le navigateur ([09](009-Les-Reponses.md)).
 
 ```php
 $res->status();     // code HTTP (0 si la requête n'a pas abouti)
@@ -41,4 +41,4 @@ $res->header('...'); // un header de réponse, insensible à la casse
 $res->error();       // message d'erreur de transport (cURL), vide si la requête a abouti
 ```
 
-Attention : un échec réseau (timeout, DNS, connexion refusée...) **ne lève pas d'exception**. Tu récupères un `HttpResult` avec `status() === 0` et `error()` rempli. À toi de vérifier `ok()` ou `failed()` plutôt que de supposer que la requête est passée.
+Attention : un échec réseau (timeout, DNS, connexion refusée...) **lève pas d'exception**. Tu récupères un `HttpResult` avec `status() === 0` et `error()` rempli. À toi de vérifier `ok()` ou `failed()`, pas de supposer que la requête est passée.

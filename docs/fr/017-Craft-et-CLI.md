@@ -1,4 +1,4 @@
-# 17 Craft et CLI (CrudMaker + Publishable)
+# 17 Craft et CLI
 
 ## Le point d'entrée
 
@@ -19,7 +19,7 @@ Le même démarrage que `public/index.php` : `Bootstrap::boot()` pour le framewo
 
 ### Les arguments
 
-Une convention simple, sans dépendance à un parseur externe :
+Une convention simple, je voulais pas dépendre d'un parseur externe pour ça :
 
 - le premier argument sans `-` est la commande (`php craft queue-worker` → `queue-worker`) ;
 - `--cle=valeur` ou `--cle valeur` donne `['cle' => 'valeur']` ;
@@ -50,7 +50,7 @@ class Cleanup extends MasterCommand {
 
 `$help` peut aussi être une clé de traduction (`'app.cli.cleanup.help'`, voir [12 L'internationalisation](012-I18n.md)) : si la clé existe, `php craft` affiche sa traduction, sinon il affiche le texte tel quel. Les commandes du framework font comme ça, et parlent la langue de `i18n.locale` (en CLI, il n'y a pas de navigateur pour en demander une autre).
 
-Tu n'as rien à enregistrer : `CliApplication::autoRegister()` scanne le dossier `Command/` de chaque module déclaré en config, plus celui de SkankyDev lui-même. Une classe valide dans le bon dossier suffit pour apparaître dans `php craft help`.
+T'as rien à enregistrer : `CliApplication::autoRegister()` scanne le dossier `Command/` de chaque module déclaré en config, plus celui de SkankyDev lui-même. Une classe valide dans le bon dossier, et hop, elle apparaît dans `php craft help`.
 
 ### Les helpers d'affichage
 
@@ -77,10 +77,9 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // menu numéroté
   ```
   Si tu as publié les templates (`php craft publish -p=template`), ta copie doit utiliser `$module` et `$viewPath` à la place de `App` et de `$dashed` dans les noms de vues, sinon elle générera toujours dans `App`.
 - **`db-sync`** : synchronise les index Mongo déclarés (`getIndexes()` de chaque Collection, voir [10 Model](010-Model.md)).
-- **`db-replica`** : initialise un replica set à un nœud, nécessaire aux transactions ([10 Model](010-Model.md#transactions)). Elle ne peut pas modifier le fichier de config de MongoDB à ta place : si MongoDB n'est pas lancé en replica set, elle te dit quoi ajouter et où. Tu peux la relancer sans risque, elle te dit simplement où tu en es.
+- **`db-replica`** : initialise un replica set à un nœud, nécessaire aux transactions ([10 Model](010-Model.md#transactions)). Elle peut pas modifier le fichier de config de MongoDB à ta place : si MongoDB n'est pas lancé en replica set, elle te dit quoi ajouter et où. Tu peux la relancer sans risque, elle te dit simplement où tu en es.
 - **`queue-worker`** : lance le worker qui traite les jobs en attente (voir [18 La Queue et les Jobs](018-Queue-et-Jobs.md)).
-- **`storage-link`** : prépare `storage/` : crée les dossiers de la config (`upload.folder`, `storage.private`, `storage.logs`, `storage.cache`) et le lien `upload.link` (`public/upload`) vers `upload.folder`. Sous Windows c'est une junction (pas besoin des droits admin), ailleurs un symlink. Si `public/upload` est encore un vrai dossier, elle propose de déplacer son contenu dans `storage/files/public/` (`-y` pour ne rien demander) ; elle ne touche à rien si un lien pointe déjà ailleurs ou si un fichier existe des deux côtés. Tu peux la relancer sans risque.
-
+- **`storage-link`** : prépare `storage/` : crée les dossiers de la config (`upload.folder`, `storage.private`, `storage.logs`, `storage.cache`) et le lien `upload.link` (`public/upload`) vers `upload.folder`. Sous Windows c'est une junction (pas besoin des droits admin), ailleurs un symlink. Si `public/upload` est encore un vrai dossier, elle propose de déplacer son contenu dans `storage/files/public/` (`-y` pour ne rien demander) ; elle touche à rien si un lien pointe déjà ailleurs ou si un fichier existe des deux côtés. Tu peux la relancer sans risque.
 - **`lang-sync`** : met les fichiers de langue à jour avec les clés utilisées dans le code (`--dry-run`, `--prune`, `--check`, voir [12 L'internationalisation](012-I18n.md)).
 - **`publish`** : copie dans ton projet les ressources par défaut du framework (détaillé juste en dessous).
 
@@ -88,13 +87,13 @@ $this->choice(['a' => 'Option A', 'b' => 'Option B']); // menu numéroté
 
 Le dossier `Publishable/` du framework (`vendor/skankydev/framework/src/Publishable/`) contient les ressources génériques du framework qui ont une valeur par défaut, mais qu'un projet peut vouloir personnaliser : les vues d'erreur ([15](015-Gestion-des-Erreurs.md)), les templates du CrudMaker, quelques parts utilitaires (`table`, `paginator`, voir [11 View](011-View.md)), les templates des fields du `FormBuilder` ([13.1](013.1-Les-Fields.md)), les traductions du framework ([12](012-I18n.md)).
 
-Tant que tu n'y touches pas, presque tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. **Les parts (`table`, `paginator`) sont l'exception** : elles n'ont pas de clé de config, `part()` ne regarde que ton dossier de vues ([11 View](011-View.md)), donc il faut les publier pour qu'elles marchent (le starter les contient déjà). Les traductions (`lang`) n'ont pas de clé non plus, mais pour la raison inverse : le `Translator` lit d'abord le `skankydev.php` de ton dossier de langues et retombe tout seul sur celui du framework, donc une fois publié, il n'y a rien à configurer. Le jour où tu veux personnaliser une de ces pièces, ou pour récupérer les parts, `php craft publish` la copie dans ton propre projet :
+Tant que t'y touches pas, presque tout marche avec les défauts du framework : les clés de config concernées (`view.error`, `template.folder`, `view.fields`...) pointent directement dans `Publishable/`. **Les parts (`table`, `paginator`) sont l'exception** : elles n'ont pas de clé de config, `part()` ne regarde que ton dossier de vues ([11 View](011-View.md)), donc il faut les publier pour qu'elles marchent (le starter les contient déjà). Les traductions (`lang`) n'ont pas de clé non plus, mais pour la raison inverse : le `Translator` lit d'abord le `skankydev.php` de ton dossier de langues et retombe tout seul sur celui du framework, donc une fois publié, y a rien à configurer. Le jour où tu veux personnaliser une de ces pièces, ou pour récupérer les parts, `php craft publish` la copie dans ton propre projet :
 
 ```bash
 php craft publish -p=error      # une ressource précise
 php craft publish               # menu interactif
 ```
 
-La commande affiche ensuite le morceau de config à vérifier ou à ajouter dans `config/master.config.php` pour pointer sur ta copie. Elle **ne modifie jamais ce fichier toute seule**, je trouvais trop risqué de casser sa structure à coups d'édition automatique. Et si un fichier de destination existe déjà, elle te demande confirmation avant de l'écraser.
+La commande affiche ensuite le morceau de config à vérifier ou à ajouter dans `config/master.config.php` pour pointer sur ta copie. Elle **modifie jamais ce fichier toute seule**, je trouvais trop risqué de casser sa structure à coups d'édition automatique. Et si un fichier de destination existe déjà, elle te demande confirmation avant de l'écraser.
 
-Le but : éviter que des fichiers génériques, jamais personnalisés, traînent dans chaque nouveau projet. Publier est un choix explicite, pas un point de départ.
+Le but : pas avoir des fichiers génériques, jamais retouchés, qui traînent dans chaque nouveau projet. Publier, c'est un choix, pas un point de départ.

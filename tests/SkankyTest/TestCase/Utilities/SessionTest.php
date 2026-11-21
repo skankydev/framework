@@ -101,4 +101,13 @@ class SessionTest extends TestCase
         Session::regenerate();
         $this->assertTrue(true);
     }
+
+    // ── close ─────────────────────────────────────────────────────────────────
+
+    public function testCloseDoesNotThrowWithoutActiveSession(): void
+    {
+        // Pas de session active en CLI/tests -> no-op silencieux, pas de warning.
+        Session::close();
+        $this->assertTrue(true);
+    }
 }

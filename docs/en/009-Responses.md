@@ -95,3 +95,5 @@ if (!$this->built && ($this->statusCode < 300 || $this->statusCode >= 400)) {
 So `build()` runs for 2xx (normal content) and for 4xx/5xx (an error page has a body), but not in between.
 
 **Safety net**: if headers have already gone out (a stray `echo` before, a PHP warning...) while the response is a redirect, `send()` falls back on a `<script>window.location.href = '...'</script>` rather than crashing on a header that's already been sent.
+
+After `send()`, `finish()` ends the exchange with the client: the session is written (its lock would keep the visitor's next request waiting), then under PHP-FPM the connection is closed (`fastcgi_finish_request()`). The script keeps running, but nothing reaches the browser any more. `Application` calls it after every `send()`, right before emitting `ResponseSent` (see [19 Events](019-Events.md)).

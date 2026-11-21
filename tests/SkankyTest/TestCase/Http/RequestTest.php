@@ -3,11 +3,17 @@
 namespace SkankyTest\TestCase\Http;
 
 use PHPUnit\Framework\TestCase;
+use SkankyDev\Config\Config;
 use SkankyDev\Http\Request;
 
 class RequestTest extends TestCase
 {
+    protected function tearDown(): void {
+        Config::set('trusted_proxies', []);
+    }
+
     protected function setUp(): void {
+        Config::set('trusted_proxies', []);
         // Reset Singleton so each test gets a fresh instance
         $ref = new \ReflectionProperty(Request::class, '_instance');
         $ref->setValue(null, null);
@@ -67,9 +73,34 @@ class RequestTest extends TestCase
         $this->assertEquals('192.168.1.100', $this->makeRequest()->ip());
     }
 
-    public function testIpFromProxy(): void {
-        $_SERVER['HTTP_X_FORWARDED_FOR'] = '10.0.0.1, 10.0.0.2';
-        $this->assertEquals('10.0.0.1', $this->makeRequest()->ip());
+    public function testIpIgnoresForwardedForWithoutTrustedProxy(): void {
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '6.6.6.6';
+        $this->assertEquals('127.0.0.1', $this->makeRequest()->ip());
+    }
+
+    public function testIpIgnoresForwardedForFromUntrustedRemote(): void {
+        Config::set('trusted_proxies', ['10.0.0.254']);
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '6.6.6.6';
+        $this->assertEquals('127.0.0.1', $this->makeRequest()->ip());
+    }
+
+    public function testIpFromTrustedProxy(): void {
+        Config::set('trusted_proxies', ['127.0.0.1']);
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.7';
+        $this->assertEquals('203.0.113.7', $this->makeRequest()->ip());
+    }
+
+    public function testIpTakesTheRightmostUntrustedHop(): void {
+        // the client forged the first entry, our proxies appended the real ones
+        Config::set('trusted_proxies', ['127.0.0.1', '10.0.0.2']);
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '6.6.6.6, 203.0.113.7, 10.0.0.2';
+        $this->assertEquals('203.0.113.7', $this->makeRequest()->ip());
+    }
+
+    public function testIpSkipsInvalidHops(): void {
+        Config::set('trusted_proxies', ['127.0.0.1']);
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = 'not-an-ip';
+        $this->assertEquals('127.0.0.1', $this->makeRequest()->ip());
     }
 
     public function testUserAgent(): void {

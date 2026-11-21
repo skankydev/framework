@@ -24,7 +24,9 @@ use SkankyDev\Utilities\Token;
 class SessionGate extends MasterGate {
 
 	private const SESSION_KEY = 'auth.user_id';
-	private const COOKIE_NAME = 'auth.remember_token';
+	// No dot in the name: PHP turns '.' into '_' in incoming $_COOKIE keys,
+	// so a dotted cookie would be sent but never read back.
+	private const COOKIE_NAME = 'auth_remember_token';
 
 	public function attempt(array $credentials): bool {
 		$identifier = $this->config['identifier'] ?? 'email';

@@ -2,7 +2,7 @@
 
 ## Le .env
 
-Il existe un fichier `.env.dist` dans le projet. Il faut le copier et le renommer en `.env` pour avoir les configurations secrètes, qui dépendent de l'environnement.
+Le `.env` contient les configurations secrètes, celles qui dépendent de l'environnement. Son modèle, c'est `.env.dist` ([02 Installation](002-Installation.md)).
 
 ## Comment retrouver une valeur
 
@@ -23,7 +23,7 @@ Config::set('path.to.value', $value);
 La config est construite par `Config::initConf()`, appelé une seule fois au démarrage (par `Application` ou `CliApplication`). Elle fusionne trois sources, et le dernier écrase le précédent :
 
 1. `default.config.php`, dans le framework (`vendor/skankydev/framework/src/Config/`) : les défauts du framework ;
-2. `src/{Module}/Config/config.php` : la config de chaque module déclaré dans `Module` (pour l'instant, juste `App`) ;
+2. `src/{Module}/Config/config.php` : la config de chaque module déclaré dans `Module` ([03 Introduction](003-Introduction.md)) ;
 3. `config/master.config.php` : la config du projet, qui a toujours le dernier mot.
 
 En clair : tu n'as jamais besoin de toucher aux défauts du framework. Si tu veux changer une valeur, tu la remets dans ton `master.config.php`, et c'est la tienne qui gagne.

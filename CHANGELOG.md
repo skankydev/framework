@@ -9,6 +9,43 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 ## [Unreleased]
 
 
+## [0.3.2] - 2026-11-21
+
+### Upgrading
+
+- **The remember-me cookie is renamed** `auth_remember_token` (was `auth.remember_token`): users
+  logged in with "remember me" have to log in again, once.
+- **`Request::ip()` no longer trusts `X-Forwarded-For` by default.** Behind a reverse proxy, list
+  its IPs in the new `trusted_proxies` config, or `ip()` returns the proxy's address.
+
+### Added
+
+- `Http\Event\ResponseSent`: emitted by `Application` once the response is sent, for work the
+  visitor shouldn't wait for (stats, logs...). Under PHP-FPM the connection is already closed.
+  The session is closed too: `Session::get()` still works, `Session::set()` is lost. Not emitted
+  for redirections nor error pages, and a listener's exception is logged, never shown.
+- `Response::finish()`: writes the session, then closes the connection under PHP-FPM
+  (`fastcgi_finish_request()`).
+- `Response::getStatus()` and `Response::getContentType()` (without its parameters, header name
+  matched case-insensitively).
+- `Session::close()`: writes the session and releases its lock.
+- `trusted_proxies` config: exact IPs of the reverse proxies allowed to give the client IP.
+
+### Fixed
+
+- Remember-me never worked: PHP turns `.` into `_` in incoming cookie names, so the
+  `auth.remember_token` cookie was sent but never read back.
+- `Request::ip()` took the first IP of `X-Forwarded-For`, which anyone can forge. The header is
+  now read only from a trusted proxy, walking the chain from the right.
+
+
+## [0.3.1] - 2026-11-15
+
+### Fixed
+
+- `skankydev.version` still said `0.3.0`.
+
+
 ## [0.3.0] - 2026-11-15
 
 ### Upgrading from 0.2
@@ -175,7 +212,9 @@ version (`0.1` → `0.2`) may contain breaking changes: they're listed under **U
 - The delete button of `part.table` pointed to the `edit` action.
 - `MasterCommand::getInfo()` used an undefined variable in its error message.
 
-[Unreleased]: https://github.com/skankydev/framework/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/skankydev/framework/compare/0.3.2...HEAD
+[0.3.2]: https://github.com/skankydev/framework/compare/0.3.1...0.3.2
+[0.3.1]: https://github.com/skankydev/framework/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/skankydev/framework/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/skankydev/framework/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/skankydev/framework/compare/0.2.0...0.2.1

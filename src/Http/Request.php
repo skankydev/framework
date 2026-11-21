@@ -13,6 +13,7 @@
 
 namespace SkankyDev\Http;
 
+use SkankyDev\Config\Config;
 use SkankyDev\Utilities\Traits\Singleton;
 
 class Request {
@@ -148,14 +149,25 @@ class Request {
 		return $this->json[$key] ?? $default;
 	}
 
-	/** Returns the client IP, respecting X-Forwarded-For for proxied requests. */
+	/**
+	 * Returns the client IP.
+	 * X-Forwarded-For is anybody's to forge: it's only read when the request comes from
+	 * a proxy listed in the `trusted_proxies` config. The chain is then walked from the
+	 * right (the hops our proxies added) and the first IP that isn't a trusted proxy wins.
+	 */
 	public function ip(): string {
-		// Gérer les proxies
-		if (!empty($this->server['HTTP_X_FORWARDED_FOR'])) {
-			$ips = explode(',', $this->server['HTTP_X_FORWARDED_FOR']);
-			return trim($ips[0]);
+		$remote  = $this->server['REMOTE_ADDR'] ?? '0.0.0.0';
+		$trusted = empty(Config::$conf) ? [] : (array) Config::get('trusted_proxies');
+		if (empty($this->server['HTTP_X_FORWARDED_FOR']) || !in_array($remote, $trusted, true)) {
+			return $remote;
 		}
-		return $this->server['REMOTE_ADDR'] ?? '0.0.0.0';
+		$chain = array_reverse(array_map('trim', explode(',', $this->server['HTTP_X_FORWARDED_FOR'])));
+		foreach ($chain as $ip) {
+			if (!in_array($ip, $trusted, true) && filter_var($ip, FILTER_VALIDATE_IP)) {
+				return $ip;
+			}
+		}
+		return $remote;
 	}
 
 	/** Returns the User-Agent string, or null if not present. */
