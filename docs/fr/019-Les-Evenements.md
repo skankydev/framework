@@ -100,7 +100,7 @@ Quelques détails :
 
 - Avec le cookie remember-me, la session est restaurée pendant la résolution de l'utilisateur. `LoggedIn` n'est émis qu'**une fois cette résolution finie** : un listener qui appelle `Auth::user()` récupère l'utilisateur sans tout relancer.
 - Si tu redéfinis `notFound()` dans ton projet, ta version doit émettre `PageNotFound` elle aussi.
-- `ResponseSent` sert au travail que le visiteur n'a pas à attendre (stats, logs…). Sous PHP-FPM, la connexion est déjà fermée (`fastcgi_finish_request()`) ; ailleurs, le listener tourne juste avant la fin du script. La session est fermée : `$_SESSION` se lit, mais ce qu'on y écrit est perdu. Une exception d'un listener est loggée, jamais affichée.
+- `ResponseSent` sert au travail que le visiteur n'a pas à attendre (stats, logs…). Sous PHP-FPM, la connexion est déjà fermée (`fastcgi_finish_request()`) ; ailleurs, le listener tourne juste avant la fin du script. La session est fermée : `Session::get()` marche toujours, mais ce qu'on écrit avec `Session::set()` est perdu. Une exception d'un listener est loggée, jamais affichée.
 
 ## Brancher un callable à la main
 

@@ -100,7 +100,7 @@ A few details:
 
 - With the remember-me cookie, the session is restored while the user is being resolved. `LoggedIn` is only emitted **once that resolution is done**: a listener calling `Auth::user()` gets the user without starting over.
 - If you redefine `notFound()` in your project, your version must emit `PageNotFound` too.
-- `ResponseSent` is for work the visitor doesn't have to wait for (stats, logs...). Under PHP-FPM the connection is already closed (`fastcgi_finish_request()`); elsewhere the listener just runs before the end of the script. The session is closed: `$_SESSION` can be read, but what's written to it is lost. A listener's exception is logged, never shown.
+- `ResponseSent` is for work the visitor doesn't have to wait for (stats, logs...). Under PHP-FPM the connection is already closed (`fastcgi_finish_request()`); elsewhere the listener just runs before the end of the script. The session is closed: `Session::get()` still works, but what `Session::set()` writes is lost. A listener's exception is logged, never shown.
 
 ## Plugging a callable by hand
 

@@ -80,7 +80,7 @@ class Session
 
 	/**
 	 * Writes the session and releases its lock, when one is open.
-	 * $_SESSION can still be read afterwards, but what's written to it is lost.
+	 * get() still works afterwards, but what set() writes is lost.
 	 */
 	static function close(): void {
 		if (session_status() === PHP_SESSION_ACTIVE) {

@@ -24,7 +24,7 @@ use SkankyDev\Http\Response;
  * Emitted by Application once send() is done. Under PHP-FPM the connection is
  * already closed (fastcgi_finish_request()), so a listener costs the visitor nothing;
  * elsewhere (CLI, built-in server) it simply runs before the end of the script.
- * The session is closed too: a listener can read $_SESSION but its writes are lost.
+ * The session is closed too: Session::get() still works, but what Session::set() writes is lost.
  *
  * Not emitted for redirections (send() exits on a 3xx) nor for error pages.
  * A listener's exception is logged, never shown: there is no page left to show it on.
